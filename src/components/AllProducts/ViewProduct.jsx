@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import "./ViewProduct.css";
 
@@ -55,7 +55,9 @@ const products = [
 const ViewProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const product = products.find((p) => p.id === parseInt(id));
 
   if (!product) {
