@@ -96,6 +96,12 @@ const ProductPage = () => {
                 <p className="product-type">{product.type}</p>
                 <p className="product-price">₹{product.price}</p>
                 <button className="add-to-cart">Add to Cart</button>
+                <button
+                  className="view-btn"
+                  onClick={() => navigate(`/product/${product.id}`)} // 👉 navigate to product detail
+                >
+                  View
+                </button>
               </div>
             </SwiperSlide>
           ))}
