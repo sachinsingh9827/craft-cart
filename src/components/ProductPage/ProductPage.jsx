@@ -1,133 +1,156 @@
 import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import "swiper/css/pagination";
-import "./productPage.css";
 import { useNavigate } from "react-router-dom";
 
 const products = [
   {
     id: 1,
-    name: "Mehandi Platter For Mehendi Ceremony",
+    name: "Mehandi Platter",
     type: "Alphabet Keychain",
     price: 199,
-    image:
-      "https://media.istockphoto.com/id/1294925648/photo/cake.webp?b=1&s=612x612&w=0&k=20&c=NXgPLgob3-Ug2jV_tx1iEw4XL2_kPywBPK85Gqyx2Uk=",
+    color: "#FF6B6B", // Red
+    image: "https://media.istockphoto.com/id/1294925648/photo/cake.webp",
   },
   {
     id: 2,
     name: "Resin Keychain M",
     type: "Alphabet Keychain",
     price: 249,
+    color: "#6BCB77", // Green
     image:
       "https://image.shutterstock.com/image-photo/keychain-alphabet-m-resin-art-260nw-1924196675.jpg",
   },
   {
     id: 3,
     name: "Wedding Hoop Art",
-    type: "Personalized Wedding Gifts",
+    type: "Wedding Gifts",
     price: 199,
+    color: "#4D96FF", // Blue
     image:
-      "https://media.istockphoto.com/id/1171638539/photo/gold-sparkles-on-white-background-white-circle-shape-for-text-and-design.webp?b=1&s=612x612&w=0&k=20&c=Tnxx8gLMT2HD7PK1njxoG-1Va6gWMXfl5DYGHJ6Enkc=",
+      "https://media.istockphoto.com/id/1171638539/photo/gold-sparkles-on-white-background.webp",
   },
   {
     id: 4,
-    name: "Lippan Art Wall Decor",
-    type: "Mud & Mirror Work Frame (White,18*18 sq inches)",
+    name: "Lippan Art",
+    type: "Wall Decor",
     price: 299,
+    color: "#FFB84C", // Orange
     image:
-      "https://media.istockphoto.com/id/1314236759/photo/beautiful-decorative-mandala-hanging-on-wall.webp?b=1&s=612x612&w=0&k=20&c=wVWi5UeJuHPSfQFS_WsNgTuDfgC0XDsnvPVyQRmgzM4=",
-  },
-  {
-    id: 5,
-    name: "Wall Hanging",
-    type: "Wall Hanging",
-    price: 399,
-    image:
-      "https://image.shutterstock.com/image-photo/handmade-macrame-100-cotton-wall-260nw-2143166935.jpg",
-  },
-  {
-    id: 6,
-    name: "Product 6",
-    type: "Type 6",
-    price: 499,
-    image: "https://via.placeholder.com/260x180.png?text=Product+6",
+      "https://media.istockphoto.com/id/1314236759/photo/beautiful-decorative-mandala-hanging-on-wall.webp",
   },
 ];
 
 const ProductPage = () => {
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const navigate = useNavigate();
 
-  // Update isMobile on window resize
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const visibleProducts = products.slice(0, visibleCount);
-
-  const navigate = useNavigate();
-
-  const handleViewMore = () => {
-    navigate("/all-products");
-  };
+  const handleViewMore = () => navigate("/shop");
 
   return (
-    <section className="product-page">
-      <h2 className="page-title">Our Products</h2>
+    <section className="px-4 py-10 bg-white/30 backdrop-blur-md rounded-lg min-h-[98vh] mt-10">
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-8 uppercase">
+        Our Products
+      </h2>
 
       {isMobile ? (
-        <Swiper
-          spaceBetween={20}
-          slidesPerView={1}
-          pagination={{ clickable: true }}
-        >
-          {visibleProducts.map((product) => (
-            <SwiperSlide key={product.id}>
-              <div className="product-card">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="product-image"
-                />
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-type">{product.type}</p>
-                <p className="product-price">₹{product.price}</p>
-                <button className="add-to-cart">Add to Cart</button>
-                <button
-                  className="view-btn"
-                  onClick={() => navigate(`/product/${product.id}`)} // 👉 navigate to product detail
-                >
-                  View
-                </button>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <>
+          <Swiper
+            spaceBetween={20}
+            slidesPerView={1}
+            onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+          >
+            {products.slice(0, 4).map((product) => (
+              <SwiperSlide key={product.id}>
+                <div className="bg-white rounded-xl shadow-md p-5 text-center transition-transform hover:scale-105">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-md mb-4"
+                  />
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-500">{product.type}</p>
+                  <p className="text-blue-600 font-bold text-lg">
+                    ₹{product.price}
+                  </p>
+                  <div className="mt-4 space-y-2">
+                    <button className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#004080] font-semibold py-2 rounded-lg transition duration-200">
+                      Add to Cart
+                    </button>
+                    <button
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      className="w-full bg-white text-[#004080] font-semibold py-2 rounded-lg border border-yellow-400 hover:bg-yellow-100 transition duration-200"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {/* Custom Pagination Dots */}
+          <div className="flex justify-center mt-4 space-x-2">
+            {products.slice(0, 4).map((product, index) => (
+              <span
+                key={index}
+                className="w-3 h-3 rounded-full"
+                style={{
+                  backgroundColor: product.color,
+                  opacity: activeIndex === index ? 1 : 0.5,
+                  transform: activeIndex === index ? "scale(1.3)" : "scale(1)",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            ))}
+          </div>
+        </>
       ) : (
-        <div className="product-list">
-          {visibleProducts.map((product) => (
-            <div className="product-card" key={product.id}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.slice(0, 4).map((product) => (
+            <div
+              key={product.id}
+              className="bg-white rounded-xl shadow-md p-5 text-center transition-transform hover:scale-105"
+            >
               <img
                 src={product.image}
                 alt={product.name}
-                className="product-image"
+                className="w-full h-48 object-cover rounded-md mb-4"
               />
-              <h3 className="product-name">{product.name}</h3>
-              <p className="product-type">{product.type}</p>
-              <p className="product-price">₹{product.price}</p>
-              <button className="add-to-cart">Add to Cart</button>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {product.name}
+              </h3>
+              <p className="text-gray-500">{product.type}</p>
+              <p className="text-blue-600 font-bold text-lg">
+                ₹{product.price}
+              </p>
+              <div className="mt-4">
+                <button className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#004080] font-semibold py-2 rounded-lg transition duration-200">
+                  Add to Cart
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-      {!isMobile && visibleCount < products.length && (
-        <button className="view-more-btn" onClick={handleViewMore}>
+
+      <div className="mt-10 flex justify-center">
+        <button
+          onClick={handleViewMore}
+          className="w-1/3 bg-white text-[#004080] font-semibold py-2 rounded-lg border border-yellow-400 hover:bg-yellow-100 transition duration-200"
+        >
           View More
         </button>
-      )}
+      </div>
     </section>
   );
 };

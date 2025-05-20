@@ -1,17 +1,30 @@
+/* Reset default margin/padding on html and body */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 .App {
   text-align: center;
   background-color: #282c34;
-  /* New background image styles */
-  background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
-  background-size: cover;       /* cover whole container */
-  background-position: center;  /* center the image */
-  background-repeat: no-repeat; /* don't repeat */
-  background-attachment: fixed; /* fixed on scroll for a parallax effect */
-  color: white;                 /* ensure text is readable */
-  min-height: 100vh;            /* fill full viewport height */
+  /* Remove background image */
+  background-image: url('https://image.shutterstock.com/image-photo/painted-wooden-wheel-traditional-costa-260nw-1344973241.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: white;
+  min-height: 100vh;
+  font-family: "montserrat";
+
+  /* remove top margin */
+  /* If you want to pull it up, uncomment below */
+  margin-top: -20px;
 }
 
 /* Existing styles below */
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -32,6 +45,8 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+
+  margin-top: 0; /* ensure no margin here as well */
 }
 
 .App-link {

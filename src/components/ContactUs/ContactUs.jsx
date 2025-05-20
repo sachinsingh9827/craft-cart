@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./ContactUs.css";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +18,7 @@ const ContactUs = () => {
     } else if (
       !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)
     ) {
-      errs.email = "Invalid email";
+      errs.email = "Invalid email address";
     }
     if (!formData.message.trim()) errs.message = "Message is required";
     return errs;
@@ -36,55 +35,96 @@ const ContactUs = () => {
       setSubmitted(true);
       console.log("Message Sent:", formData);
       setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setSubmitted(false), 4000);
     } else {
       setSubmitted(false);
     }
   };
 
   return (
-    <div className="contact-page">
-      <div className="contact-left">
-        <img
-          src="https://cdn.pixabay.com/photo/2015/01/08/18/29/office-593360_960_720.jpg"
-          alt="Contact illustration"
-        />
-      </div>
-      <div className="contact-right">
-        <h2>Contact Us</h2>
-        {submitted && <p className="success-msg">Thanks for contacting us!</p>}
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Your Name"
-            value={formData.name}
-            onChange={handleChange}
-            className={errors.name ? "error" : ""}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 to-white p-6">
+      <div className="w-full max-w-5xl bg-white shadow-xl rounded-xl overflow-hidden md:flex">
+        {/* Left - Image */}
+        <div className="hidden md:block md:w-1/2">
+          <img
+            src="https://images.unsplash.com/photo-1581291518857-4e27b48ff24e"
+            alt="Contact Us"
+            className="h-full w-full object-cover"
           />
-          {errors.name && <p className="error-msg">{errors.name}</p>}
+        </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Your Email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? "error" : ""}
-          />
-          {errors.email && <p className="error-msg">{errors.email}</p>}
+        {/* Right - Form */}
+        <div className="w-full md:w-1/2 p-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            Get in Touch
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Have a question or want to work with us? Fill out the form below!
+          </p>
 
-          <textarea
-            name="message"
-            placeholder="Your Message"
-            rows="5"
-            value={formData.message}
-            onChange={handleChange}
-            className={errors.message ? "error" : ""}
-          ></textarea>
-          {errors.message && <p className="error-msg">{errors.message}</p>}
+          {submitted && (
+            <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
+              Your message has been sent. We’ll be in touch soon.
+            </div>
+          )}
 
-          <button type="submit">Send</button>
-        </form>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="mb-4">
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <textarea
+                name="message"
+                placeholder="Your Message"
+                rows="4"
+                value={formData.message}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border resize-none ${
+                  errors.message ? "border-red-500" : "border-gray-300"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
+              />
+              {errors.message && (
+                <p className="text-red-500 text-sm mt-1">{errors.message}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#004080] font-semibold py-3 rounded-lg transition duration-200"
+            >
+              Send Message
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

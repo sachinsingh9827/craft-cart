@@ -1,31 +1,57 @@
-import React from "react";
-import "./banner.css";
+import { useEffect, useRef, useState } from "react";
 
-const Banner = () => {
+export default function OfferBanner() {
+  const [isVisible, setIsVisible] = useState(false);
+  const contentRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.3 }
+    );
+
+    if (contentRef.current) observer.observe(contentRef.current);
+
+    return () => {
+      if (contentRef.current) observer.unobserve(contentRef.current);
+    };
+  }, []);
+
   return (
-    <section className="banner-container full-width">
-      {/* Discount badge */}
-      <div className="discount-badge">30% OFF</div>
-
-      <div className="banner-content">
-        <div className="banner-image">
+    <div className="w-full bg-primary text-white py-10 px-5 md:px-16 rounded-xl shadow-2xl relative overflow-hidden">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
+        {/* Image Section */}
+        <div className="w-full md:w-1/2 animate-fade-in">
           <img
-            src="https://image.shutterstock.com/image-photo/keychain-made-resin-shape-letter-260nw-2058950864.jpg"
-            alt="Resin Letter Keychain"
+            src="https://media.istockphoto.com/id/1294925648/photo/cake.webp?b=1&s=612x612&w=0&k=20&c=NXgPLgob3-Ug2jV_tx1iEw4XL2_kPywBPK85Gqyx2Uk="
+            alt="Offer"
+            className="rounded-xl shadow-lg w-full object-cover"
           />
         </div>
-        <div className="banner-text">
-          <h2 className="banner-title">Resin Letter Keychain</h2>
-          <p className="banner-description">
-            Personalize your style with our handcrafted resin letter keychains.
-            Each piece is uniquely made to add a touch of charm and
-            individuality to your keys or bags.
+
+        {/* Text Section */}
+        <div
+          className={`w-full md:w-1/2 text-center md:text-left transition-all duration-700 ease-out ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+          ref={contentRef}
+        >
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-yellow-400 mb-4 animate-fade-in-up">
+            Special Offer Just for You!
+          </h2>
+
+          <p className="text-lg mb-6 animate-fade-in-delay">
+            Get 50% off our premium course. Learn coding, build projects, and
+            launch your tech career today.
           </p>
-          <button className="banner-button">Shop Now</button>
+
+          <button className="bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-yellow-300 transition transform hover:scale-105 animate-bounce-slow">
+            Shop Now
+          </button>
         </div>
       </div>
-    </section>
+    </div>
   );
-};
-
-export default Banner;
+}

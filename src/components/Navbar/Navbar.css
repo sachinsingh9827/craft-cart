@@ -1,16 +1,4 @@
-/* Basic reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f7fa;
-    color: #333;
-  }
-  
+
   
   /* Navbar container */
   .navbar {
@@ -25,8 +13,7 @@
     z-index: 100;
     border-radius: 12px;
     margin: 10px auto;
-    max-width: 95%;
-    width: 100%;
+  
   }
   
   /* Inner container */
