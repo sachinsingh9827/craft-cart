@@ -1,6 +1,9 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -24,6 +27,7 @@ const SignupPage = () => {
         <h1 className="text-center text-4xl font-extrabold text-[#004080] mb-10 tracking-widest uppercase drop-shadow-lg">
           Craft-Cart Signup
         </h1>
+        <ToastContainer position="bottom-right" autoClose={3000} />
 
         <Formik
           initialValues={{
@@ -33,14 +37,34 @@ const SignupPage = () => {
             confirmPassword: "",
           }}
           validationSchema={SignupSchema}
-          onSubmit={(values, { setSubmitting, resetForm }) => {
-            setTimeout(() => {
-              alert(
-                `Account created!\nName: ${values.name}\nEmail: ${values.email}`
+          onSubmit={async (values, { setSubmitting, resetForm }) => {
+            try {
+              const response = await axios.post(
+                "https://craft-cart-backend.vercel.app/api/admin/auth/register",
+                {
+                  name: values.name,
+                  email: values.email,
+                  password: values.password,
+                }
               );
+
+              if (response.data.success) {
+                toast.success(
+                  response.data.message || "Registration successful!"
+                );
+                resetForm();
+              } else {
+                toast.error(response.data.message || "Registration failed.");
+              }
+            } catch (error) {
+              console.error("Registration error:", error);
+              toast.error(
+                error.response?.data?.message ||
+                  "An error occurred during registration."
+              );
+            } finally {
               setSubmitting(false);
-              resetForm();
-            }, 1200);
+            }
           }}
         >
           {({ errors, touched, isSubmitting }) => (

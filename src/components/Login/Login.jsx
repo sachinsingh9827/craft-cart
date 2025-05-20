@@ -1,6 +1,8 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -12,23 +14,54 @@ const LoginSchema = Yup.object().shape({
 });
 
 const LoginPage = () => {
+  // Simple toast substitute with alert; you can replace with a toast library like react-toastify
+  const showToast = (message, type = "info") => {
+    // type can be 'success', 'error', etc.
+    alert(`${type.toUpperCase()}: ${message}`);
+  };
+
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    try {
+      const response = await axios.post(
+        "https://craft-cart-backend.vercel.app/api/admin/auth/login",
+        {
+          email: values.email,
+          password: values.password,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Login successful!", "success");
+
+        // Store token in localStorage or cookie as needed
+        localStorage.setItem("token", response.data.data.token);
+
+        // Reset form or redirect user to dashboard, etc.
+        resetForm();
+      } else {
+        showToast(response.data.message || "Login failed", "error");
+      }
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "An error occurred during login",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden ">
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
         <h1 className="text-center text-4xl font-extrabold text-[#004080] mb-10 tracking-widest uppercase drop-shadow-lg">
           Craft-Cart Login
         </h1>
-
+        <ToastContainer position="bottom-right" autoClose={3000} />
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
-          onSubmit={(values, { setSubmitting, resetForm }) => {
-            setTimeout(() => {
-              alert(`Welcome back!\nEmail: ${values.email}`);
-              setSubmitting(false);
-              resetForm();
-            }, 1200);
-          }}
+          onSubmit={handleSubmit}
         >
           {({ errors, touched, isSubmitting }) => (
             <Form noValidate className="space-y-8">
