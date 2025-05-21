@@ -138,7 +138,7 @@ const ContactUs = () => {
 
         {/* Right - Form */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-bold text-[#004080] mb-4">
+          <h2 className="text-3xl font-bold text-[#004080] mb-4 uppercase text-center">
             Get in Touch
           </h2>
           <p className="text-[#004080] mb-6">
@@ -170,7 +170,9 @@ const ContactUs = () => {
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                <p className="text-red-500 text-sm mt-1 text-left">
+                  {errors.name} *
+                </p>
               )}
             </div>
 
@@ -186,7 +188,9 @@ const ContactUs = () => {
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                <p className="text-red-500 text-sm mt-1 text-left">
+                  {errors.email} *
+                </p>
               )}
             </div>
 
@@ -198,11 +202,15 @@ const ContactUs = () => {
                 value={formData.message}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border resize-none text-[#004080] ${
-                  errors.message ? "border-red-500" : "border-gray-300"
+                  errors.message
+                    ? "border-red-500 text-left"
+                    : "border-gray-300"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />
               {errors.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message}</p>
+                <p className="text-red-500 text-sm  text-left">
+                  {errors.message} *
+                </p>
               )}
             </div>
 

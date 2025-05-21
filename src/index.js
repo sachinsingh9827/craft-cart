@@ -1,13 +1,19 @@
-// main.jsx or index.jsx
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client"; // ✅ New import for React 18
 import App from "./App";
+import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter } from "react-router-dom";
-import "./index.css";
+import "./index.css"; // optional if you use one
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const container = document.getElementById("root");
+const root = createRoot(container); // ✅ createRoot for React 18
+
 root.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <React.StrictMode>
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
+  </React.StrictMode>
 );

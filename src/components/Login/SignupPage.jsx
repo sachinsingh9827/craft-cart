@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -21,6 +22,7 @@ const SignupSchema = Yup.object().shape({
 });
 
 const SignupPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
@@ -51,9 +53,10 @@ const SignupPage = () => {
               // Expecting `success` from backend
               if (response.data.success) {
                 toast.success(
-                  response.data.message || "Registration successful!"
+                  response?.data?.message || "Registration successful!"
                 );
                 resetForm();
+                navigate("/login");
               } else {
                 toast.error(response.data.message || "Registration failed.");
               }
@@ -71,6 +74,7 @@ const SignupPage = () => {
           {({ errors, touched, isSubmitting }) => (
             <Form noValidate className="space-y-8">
               {/* Name Field */}
+              <ToastContainer position="bottom-right" autoClose={3000} />
               <div className="relative">
                 <Field
                   id="name"

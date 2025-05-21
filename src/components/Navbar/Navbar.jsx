@@ -1,17 +1,32 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
+import { useAuth } from "../../context/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
+import { FaShoppingCart, FaHeart } from "react-icons/fa";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate(); // ✅ Correct hook usage
+  const navigate = useNavigate();
+
+  const auth = useAuth();
+  const user = auth?.user;
+  const logout = auth?.logout;
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const handleLinkClick = () => setMenuOpen(false);
 
   const handleLoginClick = () => {
     setMenuOpen(false);
-    navigate("/login"); // ✅ This is how to navigate in React Router
+    navigate("/login");
+  };
+
+  const handleLogout = () => {
+    toast.success("You have been logged out successfully.");
+    logout?.();
+    setMenuOpen(false);
+    navigate("/");
+    window.location.reload();
   };
 
   return (
@@ -20,7 +35,7 @@ const Navbar = () => {
         <div className="navbar-logo" onClick={() => navigate("/")}>
           Craft-Cart
         </div>
-
+        <ToastContainer position="bottom-right" autoClose={3000} />
         <div className={`navbar-links ${menuOpen ? "active" : ""}`}>
           <a href="/" onClick={handleLinkClick}>
             Home
@@ -31,15 +46,38 @@ const Navbar = () => {
           <a href="/about" onClick={handleLinkClick}>
             About
           </a>
-          <a href="/contact-us" onClick={handleLinkClick}>
-            Contact
-          </a>
-          {/* <button className="profile-link" onClick={handleLinkClick}>
+          <a href="/profile" onClick={handleLinkClick}>
             Profile
-          </button> */}
-          <button className="logout-btn" onClick={handleLoginClick}>
-            Login
-          </button>
+          </a>
+
+          {!user ? (
+            <button className="login-btn" onClick={handleLoginClick}>
+              Login
+            </button>
+          ) : (
+            <>
+              <a
+                href="/product"
+                onClick={handleLinkClick}
+                className="icon-link"
+              >
+                <FaShoppingCart /> Cart
+              </a>
+              <a
+                href="/wishlist"
+                onClick={handleLinkClick}
+                className="icon-link"
+              >
+                <FaHeart /> Wishlist
+              </a>
+              <a href="/contact-us" onClick={handleLinkClick}>
+                Contact
+              </a>
+              <button className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          )}
         </div>
 
         <div

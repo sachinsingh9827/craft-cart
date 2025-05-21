@@ -61,8 +61,22 @@
     background-color: #0059b3;
     color: #ffffff;
   }
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* space between icon and text */
+    color: inherit;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .icon-link:hover {
+    color: #007bff; /* optional hover color */
+  }
   
   /* Special buttons: profile and logout */
+  .login-btn,
   .profile-link,
   .logout-btn {
     padding: 8px 18px;
@@ -83,13 +97,13 @@
     background-color: #0073e6;
     color: white;
   }
-  
+  .login-btn,
   .logout-btn {
     background-color: #e74c3c;
     color: white;
     border: none;
   }
-  
+  .login-btn,
   .logout-btn:hover {
     background-color: #c0392b;
   }
@@ -160,6 +174,22 @@
   
     .menu-toggle {
       display: flex;
+    }
+  
+    /* 👇 Add this section for icon + text layout */
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      width: 100%;
+    }
+  
+    .icon-link svg {
+      font-size: 18px;
     }
   }
   

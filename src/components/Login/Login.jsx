@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -15,6 +16,7 @@ const LoginSchema = Yup.object().shape({
 });
 
 const LoginPage = () => {
+  const auth = useAuth();
   const navigate = useNavigate(); // ✅ Correct hook usage
   // Simple toast substitute with alert; you can replace with a toast library like react-toastify
   const showToast = (message, type = "info") => {
@@ -43,7 +45,7 @@ const LoginPage = () => {
 
         // Optional: save user info
         localStorage.setItem("user", JSON.stringify(response.data.data));
-
+        auth.login(response.data.data);
         // Reset form or navigate to dashboard
         resetForm();
         navigate("/shop");
