@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios"; // Import Axios
+import { toast, ToastContainer } from "react-toastify";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,8 @@ export default function ProfilePage() {
     country: "",
   });
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user"));
@@ -25,29 +28,6 @@ export default function ProfilePage() {
 
     fetchUserDetails(userData);
   }, []);
-  const handleDeleteAddress = async (addressId) => {
-    const userData = JSON.parse(localStorage.getItem("user"));
-
-    try {
-      const response = await axios.delete(
-        `https://craft-cart-backend.vercel.app/api/user/auth/address/${addressId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        setSuccess("Address deleted successfully!");
-        fetchUserDetails(); // Refresh user data to update UI
-      } else {
-        setError(response.data.message || "Failed to delete address");
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || "Server error");
-    }
-  };
 
   const fetchUserDetails = async (userData) => {
     try {
@@ -91,6 +71,10 @@ export default function ProfilePage() {
 
       if (response.data.success) {
         setSuccess("Address added successfully!");
+        setTimeout(() => {
+          setSuccess("");
+        }, 2000);
+
         setNewAddress({
           street: "",
           city: "",
@@ -98,14 +82,53 @@ export default function ProfilePage() {
           postalCode: "",
           country: "",
         });
+        toast.success(response.data.success);
         setShowAddressForm(false);
         fetchUserDetails(userData); // Refresh user data
       } else {
         setError(response.data.message || "Failed to add address");
+        setTimeout(() => {
+          setError("");
+        }, 2000);
       }
     } catch (err) {
       setError(err.message);
+      setTimeout(() => {
+        setError("");
+      }, 2000);
     }
+  };
+
+  const handleDeleteAddress = async () => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    try {
+      const response = await axios.delete(
+        `https://craft-cart-backend.vercel.app/api/user/auth/address/${addressToDelete}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setSuccess("Address deleted successfully!");
+        fetchUserDetails(userData); // Refresh user data
+      } else {
+        setError(response.data.message || "Failed to delete address");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setShowConfirmDelete(false); // Close confirmation modal
+      setAddressToDelete(null); // Reset address to delete
+    }
+  };
+
+  const confirmDeleteAddress = (addressId) => {
+    setAddressToDelete(addressId);
+    setShowConfirmDelete(true);
   };
 
   if (loading) {
@@ -127,10 +150,10 @@ export default function ProfilePage() {
   return (
     <div className="relative min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-8xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#004080]">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#004080] uppercase">
           User Profile
         </h1>
-
+        <ToastContainer position="bottom-right" autoClose={3000} />
         <div className="space-y-4">
           <div>
             <label className="block text-gray-700 font-semibold">Name:</label>
@@ -179,7 +202,7 @@ export default function ProfilePage() {
                       {addr.country}
                     </p>
                     <button
-                      onClick={() => handleDeleteAddress(addr._id)}
+                      onClick={() => confirmDeleteAddress(addr._id)}
                       className="mt-2 text-red-500 hover:underline"
                     >
                       Delete Address
@@ -257,6 +280,32 @@ export default function ProfilePage() {
             </form>
           </div>
         </>
+      )}
+
+      {/* Confirmation Modal for Deleting Address */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold text-[#004080] mb-4">
+              Confirm Deletion
+            </h2>
+            <p>Are you sure you want to delete this address?</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowConfirmDelete(false)}
+                className="mr-2 text-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAddress}
+                className="bg-red-500 text-white py-2 px-4 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
