@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function OfferBanner() {
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef();
+  const navigate = useNavigate(); // ✅ Correct hook usage
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -18,6 +20,9 @@ export default function OfferBanner() {
       if (contentRef.current) observer.unobserve(contentRef.current);
     };
   }, []);
+  const handleLoginClick = () => {
+    navigate("/shop");
+  };
 
   return (
     <div className="w-full bg-primary text-white py-10 px-5 md:px-16 rounded-xl shadow-2xl relative overflow-hidden">
@@ -47,7 +52,10 @@ export default function OfferBanner() {
             launch your tech career today.
           </p>
 
-          <button className="bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-yellow-300 transition transform hover:scale-105 animate-bounce-slow">
+          <button
+            className="bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-yellow-300 transition transform hover:scale-105 animate-bounce-slow"
+            onClick={handleLoginClick}
+          >
             Shop Now
           </button>
         </div>

@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -14,6 +15,7 @@ const LoginSchema = Yup.object().shape({
 });
 
 const LoginPage = () => {
+  const navigate = useNavigate(); // ✅ Correct hook usage
   // Simple toast substitute with alert; you can replace with a toast library like react-toastify
   const showToast = (message, type = "info") => {
     // type can be 'success', 'error', etc.
@@ -23,28 +25,35 @@ const LoginPage = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const response = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/admin/auth/login",
+        "https://craft-cart-backend.vercel.app/api/user/auth/login",
         {
           email: values.email,
           password: values.password,
         }
       );
 
-      if (response.data.success) {
-        toast.success("Login successful!", "success");
+      // Log full response for debugging
+      console.log("Login response:", response.data);
 
-        // Store token in localStorage or cookie as needed
+      if (response.data.success) {
+        toast.success(response.data.message || "Login successful");
+
+        // Save token to localStorage
         localStorage.setItem("token", response.data.data.token);
 
-        // Reset form or redirect user to dashboard, etc.
+        // Optional: save user info
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+
+        // Reset form or navigate to dashboard
         resetForm();
+        navigate("/shop");
       } else {
-        showToast(response.data.message || "Login failed", "error");
+        toast.error(response.data.message || "Login failed");
       }
     } catch (error) {
-      showToast(
-        error.response?.data?.message || "An error occurred during login",
-        "error"
+      console.error("Login error:", error);
+      toast.error(
+        error.response?.data?.message || "An error occurred during login"
       );
     } finally {
       setSubmitting(false);

@@ -40,7 +40,7 @@ const SignupPage = () => {
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             try {
               const response = await axios.post(
-                "https://craft-cart-backend.vercel.app/api/admin/auth/register",
+                "https://craft-cart-backend.vercel.app/api/user/auth/register",
                 {
                   name: values.name,
                   email: values.email,
@@ -48,6 +48,7 @@ const SignupPage = () => {
                 }
               );
 
+              // Expecting `success` from backend
               if (response.data.success) {
                 toast.success(
                   response.data.message || "Registration successful!"

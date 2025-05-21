@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -9,6 +11,9 @@ const ContactUs = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [responseMessage, setResponseMessage] = useState("");
+  const [responseType, setResponseType] = useState(""); // "success" or "error"
+  const navigate = useNavigate();
 
   const validate = () => {
     const errs = {};
@@ -27,15 +32,93 @@ const ContactUs = () => {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const valErrors = validate();
     setErrors(valErrors);
+
     if (Object.keys(valErrors).length === 0) {
-      setSubmitted(true);
-      console.log("Message Sent:", formData);
-      setFormData({ name: "", email: "", message: "" });
-      setTimeout(() => setSubmitted(false), 4000);
+      try {
+        setSubmitted(true);
+        setResponseMessage("");
+        setResponseType("");
+
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user"));
+        const userId = user?._id;
+
+        if (!userId) {
+          toast.error("User not authenticated. Please login.", {
+            autoClose: 2000,
+          });
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.post(
+          "http://localhost:5000/api/user/auth/contact",
+          {
+            userId,
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          toast.success(response.data.message || "Message sent successfully!", {
+            autoClose: 2000,
+          });
+          setResponseMessage(response.data.message);
+          setResponseType("success");
+          setFormData({ name: "", email: "", message: "" });
+          setTimeout(() => {
+            setResponseMessage("");
+            setResponseType("");
+          }, 2000);
+          // navigate("/shop");
+        } else {
+          toast.error(response.data.message || "Failed to send message.", {
+            autoClose: 2000,
+          });
+          setResponseMessage(response.data.message);
+          setResponseType("error");
+          setTimeout(() => {
+            setResponseMessage("");
+            setResponseType("");
+          }, 4000);
+        }
+      } catch (error) {
+        const status = error.response?.status;
+        const message = error.response?.data?.message || "An error occurred.";
+
+        toast.error(message, { autoClose: 2000 });
+        setResponseMessage(message);
+        setResponseType("error");
+        setTimeout(() => {
+          setResponseMessage("");
+          setResponseType("");
+        }, 4000);
+
+        if (status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        } else if (status === 404 && message.includes("User not found")) {
+          setTimeout(() => {
+            navigate("/signup");
+          }, 4000);
+        }
+      } finally {
+        setSubmitted(false);
+      }
     } else {
       setSubmitted(false);
     }
@@ -55,16 +138,22 @@ const ContactUs = () => {
 
         {/* Right - Form */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          <h2 className="text-3xl font-bold text-[#004080] mb-4">
             Get in Touch
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-[#004080] mb-6">
             Have a question or want to work with us? Fill out the form below!
           </p>
 
-          {submitted && (
-            <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
-              Your message has been sent. We’ll be in touch soon.
+          {responseMessage && (
+            <div
+              className={`mb-4 border-l-4 p-4 rounded ${
+                responseType === "success"
+                  ? "bg-green-100 border-green-500 text-green-700"
+                  : "bg-red-100 border-red-500 text-red-700"
+              }`}
+            >
+              {responseMessage}
             </div>
           )}
 
@@ -76,7 +165,7 @@ const ContactUs = () => {
                 placeholder="Your Name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border ${
+                className={`w-full px-4 py-3 border text-[#004080] ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />
@@ -92,7 +181,7 @@ const ContactUs = () => {
                 placeholder="Your Email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border ${
+                className={`w-full px-4 py-3 border text-[#004080] ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />
@@ -108,7 +197,7 @@ const ContactUs = () => {
                 rows="4"
                 value={formData.message}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border resize-none ${
+                className={`w-full px-4 py-3 border resize-none text-[#004080] ${
                   errors.message ? "border-red-500" : "border-gray-300"
                 } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
               />

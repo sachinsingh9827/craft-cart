@@ -8,20 +8,34 @@ html, body {
 .App {
   text-align: center;
   background-color: #282c34;
-  /* Remove background image */
-  background-image: url('https://image.shutterstock.com/image-photo/painted-wooden-wheel-traditional-costa-260nw-1344973241.jpg');
+  background-image: url('https://cdn.stocksnap.io/img-thumbs/280h/rainbow-sky_IZ8N7DMHGX.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: white;
   min-height: 100vh;
-  font-family: "montserrat";
-
-  /* remove top margin */
-  /* If you want to pull it up, uncomment below */
+  font-family: "Montserrat", sans-serif;
   margin-top: -20px;
+
+
 }
+
+@keyframes bgMove {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) scale(1);
+    background-position: center;
+  }
+  50% {
+    transform: rotateX(5deg) rotateY(10deg) scale(1.03);
+    background-position: 55% 45%;
+  }
+  100% {
+    transform: rotateX(-5deg) rotateY(-10deg) scale(1);
+    background-position: center;
+  }
+}
+
 
 /* Existing styles below */
 
