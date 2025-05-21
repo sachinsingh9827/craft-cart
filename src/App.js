@@ -4,35 +4,35 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import Banner from "./components/Banner/Banner";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
-import ProductPage from "./components/ProductPage/ProductPage";
+
 import ContactUs from "./components/ContactUs/ContactUs";
 import Login from "./components/Login/Login";
 import SignupPage from "./components/Login/SignupPage";
 import ForgetPasswordPage from "./components/Login/ForgotPasswordPage";
 import ShopPage from "./Pages/ShopPage";
-import ProductDetailPage from "./Pages/ProductDetailPage";
+
 import BuyNowPage from "./Pages/BuyNowPage";
 import AboutUs from "./components/AboutUs/AboutUs";
 import ProtectedRoute from "./context/ProtectedRoute";
 import ProductsPage from "./Pages/ProductsPage";
 import WishlistPage from "./Pages/WishlistPage";
 import ProfilePage from "./Pages/ProfilePage";
+import { decrypt } from "./utils/cryptoHelper"; // <-- Import decrypt function
 
 function App() {
-  // Example authentication flag
-  const isAuthenticated = Boolean(localStorage.getItem("token")); // or from context/state
+  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
   return (
     <div className="App">
       <Navbar />
       <Routes>
+        {/* Public Routes */}
         <Route
           path="/"
           element={
             <div className="image">
               <WelcomePage />
               <Banner />
-              <ProductPage />
               <ContactUs />
             </div>
           }
@@ -42,19 +42,42 @@ function App() {
         <Route path="/forget-password" element={<ForgetPasswordPage />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/about" element={<AboutUs />} />
+
+        {/* Encrypted Protected Routes */}
         <Route
-          path="/product"
+          path="/buynow/:extra"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <BuyNowPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist/:extra"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <WishlistPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:extra"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/product/:encryptedId"
           element={
             <ProtectedRoute isAuth={isAuthenticated}>
               <ProductsPage />
             </ProtectedRoute>
           }
         />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
-        <Route path="/buynow" element={<BuyNowPage />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
       <Footer />
     </div>

@@ -4,6 +4,7 @@ import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import { FaShoppingCart, FaHeart } from "react-icons/fa";
+import { encrypt } from "../../utils/cryptoHelper";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,22 +58,41 @@ const Navbar = () => {
           ) : (
             <>
               <a
-                href="/product"
-                onClick={handleLinkClick}
+                onClick={() => {
+                  const encrypted = encrypt("product");
+                  handleLinkClick();
+                  navigate(`/product/${encrypted}`);
+                }}
                 className="icon-link"
               >
                 <FaShoppingCart /> Cart
               </a>
+
               <a
-                href="/wishlist"
-                onClick={handleLinkClick}
+                onClick={() => {
+                  const encrypted = encrypt("wishlist");
+                  handleLinkClick();
+                  navigate(`/wishlist/${encrypted}`);
+                }}
                 className="icon-link"
               >
                 <FaHeart /> Wishlist
               </a>
+
+              <a
+                onClick={() => {
+                  const encrypted = encrypt("profile");
+                  handleLinkClick();
+                  navigate(`/profile/${encrypted}`);
+                }}
+              >
+                Profile
+              </a>
+
               <a href="/contact-us" onClick={handleLinkClick}>
                 Contact
               </a>
+
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
