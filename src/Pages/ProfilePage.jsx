@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios"; // Import Axios
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -17,62 +18,78 @@ export default function ProfilePage() {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user"));
     if (!userData) {
-      setError("User not logged in");
+      setError("User  not logged in");
       setLoading(false);
       return;
     }
 
-    const fetchUserDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `https://craft-cart-backend.vercel.app/api/user/auth/${userData._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${userData.token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user details");
-        }
-
-        const data = await response.json();
-        if (data.success) {
-          setUser(data.data);
-        } else {
-          setError(data.message || "Failed to get user data");
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserDetails();
+    fetchUserDetails(userData);
   }, []);
+  const handleDeleteAddress = async (addressId) => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    try {
+      const response = await axios.delete(
+        `https://craft-cart-backend.vercel.app/api/user/auth/address/${addressId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setSuccess("Address deleted successfully!");
+        fetchUserDetails(); // Refresh user data to update UI
+      } else {
+        setError(response.data.message || "Failed to delete address");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Server error");
+    }
+  };
+
+  const fetchUserDetails = async (userData) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `https://craft-cart-backend.vercel.app/api/user/auth/${userData._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setUser(response.data.data);
+      } else {
+        setError(response.data.message || "Failed to get user data");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
     const userData = JSON.parse(localStorage.getItem("user"));
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `https://craft-cart-backend.vercel.app/api/user/auth/address`,
+        newAddress,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${userData.token}`,
           },
-          body: JSON.stringify(newAddress),
         }
       );
 
-      const data = await response.json();
-      if (data.success) {
+      if (response.data.success) {
         setSuccess("Address added successfully!");
         setNewAddress({
           street: "",
@@ -82,8 +99,9 @@ export default function ProfilePage() {
           country: "",
         });
         setShowAddressForm(false);
+        fetchUserDetails(userData); // Refresh user data
       } else {
-        setError(data.message || "Failed to add address");
+        setError(response.data.message || "Failed to add address");
       }
     } catch (err) {
       setError(err.message);
@@ -136,14 +154,12 @@ export default function ProfilePage() {
 
             {user.addresses && user.addresses.length > 0 ? (
               <ul className="space-y-3">
-                {user.addresses.map((addr, idx) => (
+                {user.addresses.map((addr) => (
                   <li
-                    key={idx}
+                    key={addr._id}
                     className="bg-gray-50 p-3 rounded shadow-sm border-l-4 border-[#004080]"
                   >
-                    <h3 className="text-[#004080] font-bold mb-2">
-                      Address {idx + 1}
-                    </h3>
+                    <h3 className="text-[#004080] font-bold mb-2">Address</h3>
                     <p>
                       <span className="font-semibold">Street:</span>{" "}
                       {addr.street}
@@ -162,6 +178,12 @@ export default function ProfilePage() {
                       <span className="font-semibold">Country:</span>{" "}
                       {addr.country}
                     </p>
+                    <button
+                      onClick={() => handleDeleteAddress(addr._id)}
+                      className="mt-2 text-red-500 hover:underline"
+                    >
+                      Delete Address
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -199,34 +221,32 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {success && <p className="text-green-500 mb-2">{success}</p>}
-            {error && <p className="text-red-500 mb-2">{error}</p>}
+            {success && <p className="text-green-600 mb-2">{success}</p>}
+            {error && <p className="text-red-600 mb-2">{error}</p>}
 
             <form onSubmit={handleAddAddress} className="space-y-4">
-              {["Street", "City", "State", "Postal Code", "Country"].map(
-                (field, i) => {
-                  const key = field.toLowerCase().replace(" ", "");
-                  return (
-                    <div key={i}>
-                      <label className="block text-gray-700 font-semibold mb-1">
-                        {field}:
-                      </label>
-                      <input
-                        type="text"
-                        value={newAddress[key]}
-                        onChange={(e) =>
-                          setNewAddress({
-                            ...newAddress,
-                            [key]: e.target.value,
-                          })
-                        }
-                        required
-                        className="w-full border border-gray-300 rounded-md p-2"
-                      />
-                    </div>
-                  );
-                }
-              )}
+              {[
+                { label: "Street", key: "street" },
+                { label: "City", key: "city" },
+                { label: "State", key: "state" },
+                { label: "Postal Code", key: "postalCode" },
+                { label: "Country", key: "country" },
+              ].map(({ label, key }, i) => (
+                <div key={i}>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    {label}:
+                  </label>
+                  <input
+                    type="text"
+                    value={newAddress[key]}
+                    onChange={(e) =>
+                      setNewAddress({ ...newAddress, [key]: e.target.value })
+                    }
+                    required
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  />
+                </div>
+              ))}
 
               <button
                 type="submit"
