@@ -1,31 +1,40 @@
-// AuthContext.js
 import { createContext, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+const AuthContext = createContext(); // ✅ REQUIRED
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const storedToken = localStorage.getItem("token");
+
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setToken(storedToken);
     }
+
+    setLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, token) => {
     localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData); // ✅ this updates the context
+    localStorage.setItem("token", token);
+    setUser(userData);
+    setToken(token);
   };
 
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

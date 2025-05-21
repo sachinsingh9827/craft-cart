@@ -34,19 +34,14 @@ const LoginPage = () => {
         }
       );
 
-      // Log full response for debugging
       console.log("Login response:", response.data);
 
       if (response.data.success) {
         toast.success(response.data.message || "Login successful");
 
-        // Save token to localStorage
-        localStorage.setItem("token", response.data.data.token);
+        // Use login context function to store data and token
+        auth.login(response.data.data, response.data.data.token);
 
-        // Optional: save user info
-        localStorage.setItem("user", JSON.stringify(response.data.data));
-        auth.login(response.data.data);
-        // Reset form or navigate to dashboard
         resetForm();
         navigate("/shop");
       } else {

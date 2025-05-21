@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios"; // Import Axios
 import { toast, ToastContainer } from "react-toastify";
+import { decrypt } from "../utils/cryptoHelper";
+import { useParams } from "react-router-dom";
 
 export default function ProfilePage() {
+  const { extra } = useParams();
+  let decrypted;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -147,6 +151,16 @@ export default function ProfilePage() {
     );
   }
 
+  try {
+    decrypted = decrypt(extra);
+  } catch (err) {
+    console.error("Decryption failed:", err);
+    return <div>Failed to decrypt URL parameter.</div>;
+  }
+
+  if (decrypted !== "profile") {
+    return <div>Invalid Access: {decrypted}</div>;
+  }
   return (
     <div className="relative min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-8xl mx-auto bg-white rounded-lg shadow-md p-6">

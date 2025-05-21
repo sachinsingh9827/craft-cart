@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
@@ -9,13 +10,37 @@ import { encrypt } from "../../utils/cryptoHelper";
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-
   const auth = useAuth();
   const user = auth?.user;
   const logout = auth?.logout;
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const handleLinkClick = () => setMenuOpen(false);
+
+  // Check token validity on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+
+        // Check if token is expired (decoded.exp is in seconds, Date.now() is ms)
+        if (decoded.exp * 1000 < Date.now()) {
+          toast.error("Session expired, please login again.");
+          logout?.();
+          navigate("/login");
+        }
+      } catch (error) {
+        // Invalid token (cannot decode)
+        toast.error("Invalid session, please login again.");
+        logout?.();
+        navigate("/login");
+      }
+    } else {
+      // No token — user is not logged in
+      logout?.();
+    }
+  }, [logout, navigate]);
 
   const handleLoginClick = () => {
     setMenuOpen(false);
@@ -47,10 +72,9 @@ const Navbar = () => {
           <a href="/about" onClick={handleLinkClick}>
             About
           </a>
-          <a href="/profile" onClick={handleLinkClick}>
-            Profile
+          <a href="/contact-us" onClick={handleLinkClick} className="icon-link">
+            Contact
           </a>
-
           {!user ? (
             <button className="login-btn" onClick={handleLoginClick}>
               Login
@@ -85,12 +109,9 @@ const Navbar = () => {
                   handleLinkClick();
                   navigate(`/profile/${encrypted}`);
                 }}
+                className="icon-link"
               >
                 Profile
-              </a>
-
-              <a href="/contact-us" onClick={handleLinkClick}>
-                Contact
               </a>
 
               <button className="logout-btn" onClick={handleLogout}>
