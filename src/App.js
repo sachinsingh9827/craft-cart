@@ -32,7 +32,8 @@ function App() {
           element={
             <div className="image">
               <WelcomePage />
-              <Banner />
+              {/* <Banner /> */}
+              <ShopPage />
               <ContactUs />
             </div>
           }

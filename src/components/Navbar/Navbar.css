@@ -1,195 +1,226 @@
+/* Navbar container */
+.navbar {
+  display: flex;
+  justify-content: center;
+  background-color: #fff;
+  padding: 0 30px;
+  height: 60px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 10px;
+  z-index: 100;
+  border-radius: 12px;
+  margin: 10px auto;
+  color: #03045E;
+}
 
-  
-  /* Navbar container */
-  .navbar {
-    display: flex;
-    justify-content: center;
-    background-color: #004080; /* updated background */
-    padding: 0 30px;
-    height: 60px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 10px;
-    z-index: 100;
-    border-radius: 12px;
-    margin: 10px auto;
-  
-  }
-  
-  /* Inner container */
-  .navbar-container {
-    width: 95%;
-    max-width: 1200px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  
-  /* Logo */
+/* Inner container */
+.navbar-container {
+  width: 95%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Default desktop style */
+.navbar-logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  color: #03045E;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.navbar-logo:hover {
+  color: #0073e6;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
   .navbar-logo {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #ffffff;
-    cursor: pointer;
-    user-select: none;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #03045E;
+    letter-spacing: 1px;
+    text-transform: none;
   }
-  
-  /* Navigation links container */
-  .navbar-links {
+}
+
+/* Navigation links container */
+.navbar-links {
+  display: flex;
+  gap: 25px;
+  align-items: center;
+}
+
+/* Links style */
+.navbar-links a {
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  user-select: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.navbar-links a:hover {
+  background-color: #03045E;
+  color: #ffffff;
+}
+
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.icon-link:hover {
+  color: #03045E;
+}
+
+/* Buttons */
+.login-btn,
+.logout-btn,
+.profile-link {
+  padding: 8px 18px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.profile-link {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.profile-link:hover {
+  background-color: #0073e6;
+  color: white;
+}
+
+.login-btn,
+.logout-btn {
+  background-color: #03045E;
+  color: white;
+  border: none;
+}
+
+.login-btn:hover,
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Hamburger Menu - HIDDEN on desktop, shown on mobile */
+.menu-toggle {
+  display: none; /* hide by default */
+  flex-direction: column;
+  justify-content: space-around;
+  width: 26px;
+  height: 22px;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: #03045E;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Toggle hamburger animation */
+.menu-toggle.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.menu-toggle.open span:nth-child(2) {
+  opacity: 0;
+}
+.menu-toggle.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* MOBILE ONLY */
+@media (max-width: 768px) {
+  /* Show hamburger on mobile */
+  .menu-toggle {
     display: flex;
-    gap: 25px;
-    align-items: center;
   }
-  
-  /* Links style */
+
+  .navbar-links {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) scaleY(0);
+    transform-origin: top;
+    width: 90%;
+    max-width: 350px;
+    background-color: #fff;
+    flex-direction: column;
+    padding: 20px 15px;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    z-index: 99;
+  }
+
+  .navbar-links.active {
+    transform: translateX(-50%) scaleY(1);
+  }
+
   .navbar-links a {
-    text-decoration: none;
-    color: #ffffff;
-    font-weight: 500;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: background-color 0.25s ease, color 0.25s ease;
-    user-select: none;
-  }.navbar-links a {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 500;
+    width: 100%;
+    text-align: center;
   }
-  
-  .navbar-links a:hover {
-    background-color: #0059b3;
-    color: #ffffff;
-  }
+
+  /* Icon + text layout */
   .icon-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px; /* space between icon and text */
-    color: inherit;
-    text-decoration: none;
+    justify-content: center;
+    gap: 6px;
+    color: #03045E;
     font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .icon-link:hover {
-    color: #007bff; /* optional hover color */
-  }
-  
-  /* Special buttons: profile and logout */
-  .login-btn,
-  .profile-link,
-  .logout-btn {
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  
-  .profile-link {
-    color: #ffffff;
-    background-color: transparent;
-  }
-  
-  .profile-link:hover {
-    background-color: #0073e6;
-    color: white;
-  }
-  .login-btn,
-  .logout-btn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-  }
-  .login-btn,
-  .logout-btn:hover {
-    background-color: #c0392b;
-  }
-  
-  /* Hamburger Menu */
-  .menu-toggle {
-    display: none;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 26px;
-    height: 22px;
-    cursor: pointer;
-  }
-  
-  .menu-toggle span {
-    display: block;
+    text-decoration: none;
     width: 100%;
-    height: 3px;
-    background-color: #ffffff;
-    border-radius: 2px;
-    transition: all 0.3s ease;
   }
-  
-  /* Toggle hamburger animation */
-  .menu-toggle.open span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+
+  .icon-link svg {
+    font-size: 18px;
   }
-  .menu-toggle.open span:nth-child(2) {
-    opacity: 0;
+}
+
+/* DESKTOP ONLY */
+@media (min-width: 769px) {
+  /* Show nav links horizontally */
+  .navbar-links {
+    display: flex !important;
+    position: static;
+    transform: none !important;
+    flex-direction: row;
+    width: auto;
+    max-width: none;
+    background-color: transparent;
+    padding: 0;
+    box-shadow: none;
+    max-height: none !important;
+    overflow: visible !important;
   }
-  .menu-toggle.open span:nth-child(3) {
-    transform: rotate(-45deg) translate(5px, -5px);
-  }
-  
-  /* Mobile Styles */
-  @media (max-width: 768px) {
-    .navbar-container {
-      width: 100%;
-    }
-  
-    .navbar-links {
-      position: absolute;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%) scaleY(0);
-      transform-origin: top;
-      width: 90%;
-      max-width: 350px;
-      background-color: #004080;
-      flex-direction: column;
-      padding: 20px 15px;
-      gap: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      border-radius: 12px;
-      transition: transform 0.3s ease;
-      overflow: hidden;
-      z-index: 99;
-    }
-  
-    .navbar-links a {
-      width: 100%;
-      text-align: center;
-    }
-  
-    .navbar-links.active {
-      transform: translateX(-50%) scaleY(1);
-    }
-  
-    .menu-toggle {
-      display: flex;
-    }
-  
-    /* 👇 Add this section for icon + text layout */
-    .icon-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      color: #fff;
-      font-size: 16px;
-      text-decoration: none;
-      width: 100%;
-    }
-  
-    .icon-link svg {
-      font-size: 18px;
-    }
-  }
-  
+}

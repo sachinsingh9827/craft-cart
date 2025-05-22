@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import OfferBanner from "../Banner/Banner";
+import contactusbanner from "../../assets/4862931.webp";
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -125,105 +127,112 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 to-white p-6">
-      <div className="w-full max-w-5xl bg-white shadow-xl rounded-xl overflow-hidden md:flex">
-        {/* Left - Image */}
-        <div className="hidden md:block md:w-1/2">
-          <img
-            src="https://images.unsplash.com/photo-1581291518857-4e27b48ff24e"
-            alt="Contact Us"
-            className="h-full w-full object-cover"
-          />
-        </div>
+    <>
+      <OfferBanner
+        imageUrl={contactusbanner}
+        heading="Have Questions? We're Here to Help!"
+        description="Reach out to us and we'll get back to you as soon as possible."
+        buttonText="Explore More"
+        navigateTo="/shop"
+      />
+      <div className=" flex items-center justify-center p-4 md:p-6">
+        <div className="w-full max-w-full bg-white shadow-2xl rounded-2xl overflow-hidden md:flex">
+          {/* Left - Image */}
+          <div className="hidden md:block md:w-1/2">
+            <img
+              src={""}
+              alt="Contact Us"
+              className="h-full w-full object-cover rounded-l-2xl"
+            />
+          </div>
 
-        {/* Right - Form */}
-        <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-bold text-[#004080] mb-4 uppercase text-center">
-            Get in Touch
-          </h2>
-          <p className="text-[#004080] mb-6">
-            Have a question or want to work with us? Fill out the form below!
-          </p>
+          {/* Right - Form */}
+          <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+            <h2 className="text-4xl font-extrabold text-[#004080] mb-6 uppercase tracking-wide text-center">
+              Get in Touch
+            </h2>
+            <p className="text-[#004080] mb-8 text-center text-lg font-medium">
+              Have a question or want to work with us? Fill out the form below!
+            </p>
 
-          {responseMessage && (
-            <div
-              className={`mb-4 border-l-4 p-4 rounded ${
-                responseType === "success"
-                  ? "bg-green-100 border-green-500 text-green-700"
-                  : "bg-red-100 border-red-500 text-red-700"
-              }`}
-            >
-              {responseMessage}
-            </div>
-          )}
+            {responseMessage && (
+              <div
+                className={`mb-6 border-l-6 p-5 rounded-xl shadow-md ${
+                  responseType === "success"
+                    ? "bg-green-100 border-green-500 text-green-800"
+                    : "bg-red-100 border-red-500 text-red-800"
+                }`}
+              >
+                {responseMessage}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="mb-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="Your Name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border text-[#004080] ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1 text-left">
-                  {errors.name} *
-                </p>
-              )}
-            </div>
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Your Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full px-5 py-3 border text-[#004080] text-lg placeholder:text-[#7a8bb1] rounded-3xl shadow-sm transition focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:border-yellow-400 ${
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1 ml-3 text-left">
+                    {errors.name} *
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <input
-                type="email"
-                name="email"
-                placeholder="Your Email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border text-[#004080] ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1 text-left">
-                  {errors.email} *
-                </p>
-              )}
-            </div>
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Your Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full px-5 py-3 border text-[#004080] text-lg placeholder:text-[#7a8bb1] rounded-3xl shadow-sm transition focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:border-yellow-400 ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1 ml-3 text-left">
+                    {errors.email} *
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-6">
-              <textarea
-                name="message"
-                placeholder="Your Message"
-                rows="4"
-                value={formData.message}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border resize-none text-[#004080] ${
-                  errors.message
-                    ? "border-red-500 text-left"
-                    : "border-gray-300"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400`}
-              />
-              {errors.message && (
-                <p className="text-red-500 text-sm  text-left">
-                  {errors.message} *
-                </p>
-              )}
-            </div>
+              <div>
+                <textarea
+                  name="message"
+                  placeholder="Your Message"
+                  rows="5"
+                  value={formData.message}
+                  onChange={handleChange}
+                  className={`w-full px-5 py-3 border resize-none text-[#004080] text-lg placeholder:text-[#7a8bb1] rounded-3xl shadow-sm transition focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:border-yellow-400 ${
+                    errors.message ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {errors.message && (
+                  <p className="text-red-500 text-sm mt-1 ml-3 text-left">
+                    {errors.message} *
+                  </p>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              className="w-full bg-yellow-400 hover:bg-yellow-300 text-[#004080] font-semibold py-3 rounded-lg transition duration-200"
-            >
-              Send Message
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="w-full bg-yellow-400 hover:bg-yellow-350 active:bg-yellow-300 text-[#004080] font-extrabold py-3 rounded-3xl shadow-md transition duration-300"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

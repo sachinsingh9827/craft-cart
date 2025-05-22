@@ -1,16 +1,17 @@
 // ShopPage.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import OfferBanner from "../components/Banner/Banner";
+import shop from "../../src/assets/4862931.webp";
 const products = [
   {
     id: 1,
-    name: "Handmade Ceramic Vase",
-    price: 45.0,
+    name: "Handmade Chitra artworks Mud ",
+    price: 450.0,
     image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+      "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSXm9H4Wex8X_3b4IdTMN7CYdO49FLXChy_n7pytWbKGqeGLpPn7yPulIle2O9YqPdkfufqepvv-W9Am2tpQ65_xtXTFKTild2JN827_IouCPwd6fFJnGNb",
     description:
-      "Beautifully crafted ceramic vase, perfect for home decoration.",
+      "Chitra artworks Mud & Mirror Work Lippan Art Wall Decor| Traditional Handcrafted Rajasthani/Gujarati Design | Ethnic Wall Hanging for Living Room,",
     material: "Ceramic",
     dimensions: "10 x 10 x 20 cm",
     weight: "500 grams",
@@ -22,11 +23,11 @@ const products = [
   },
   {
     id: 2,
-    name: "Woven Basket",
-    price: 30.0,
+    name: "Wall Hanging",
+    price: 300.0,
     image:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=400&q=80",
-    description: "Handwoven basket made from natural fibers.",
+      "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSJ-JZjbiBrnChc7-AW3VOZAUj6Z8fv2trZMitIF17SxxwNxHN94fGAvSzUroajIJsVVdBgay5RBgU1syb4P1xZvZVb13ZGRcKc6q1MZW4",
+    description: "Colorful Lippan Art Wall Hanging with Tassles",
     material: "Natural fibers",
     dimensions: "25 x 20 x 15 cm",
     weight: "700 grams",
@@ -38,11 +39,11 @@ const products = [
   },
   {
     id: 3,
-    name: "Wooden Jewelry Box",
-    price: 60.0,
-    image:
-      "https://images.unsplash.com/photo-1494256997604-768d1f608cac?auto=format&fit=crop&w=400&q=80",
-    description: "Elegant wooden box to store your precious jewelry.",
+    name: "MANDALA LIPPAN ART",
+    price: 600.0,
+    image: "https://m.media-amazon.com/images/I/71m5tZ1gwgL.jpg",
+    description:
+      "wall decor/Wall hanging/Comes with attached hook/handmade craft/base is of mdf board/mud work/UNIQUE LIPPAN art wall hanging home",
     material: "Solid wood",
     dimensions: "30 x 15 x 10 cm",
     weight: "1.2 kg",
@@ -54,11 +55,12 @@ const products = [
   },
   {
     id: 4,
-    name: "Hand-painted Canvas",
-    price: 80.0,
+    name: "Rema Fabtex Art",
+    price: 800.0,
     image:
-      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80",
-    description: "Original hand-painted canvas for your living room.",
+      "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRa0cg-mtedorJLt9JjZsD1vm-0a-P4KcpipahLxs9tyztkRMWl8oc6l-DFJP55ptxPtMtkk7mNiCaASzqDZqWcXZlVx72P8FJ41HTRCEGq",
+    description:
+      "Beautiful Home Decor Lippan Art Mud Mirror Wall Decor Handmade Wall Art",
     material: "Canvas and acrylic paint",
     dimensions: "50 x 70 cm",
     weight: "800 grams",
@@ -70,11 +72,12 @@ const products = [
   },
   {
     id: 5,
-    name: "Knitted Scarf",
-    price: 25.0,
+    name: "Indian clay painting",
+    price: 250.0,
     image:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=400&q=80",
-    description: "Warm knitted scarf made with love.",
+      "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTAjkwxxIX9z2Ui0oe4Nf4tsPZXTcOb5Vvl1GQZc7onpPpnYpyhDA_Fg2NTE6EciKaaTMHAqYc5l_IIIZ7y8AHfNMU8y1t0ZjvvndrrT0eB",
+    description:
+      "Indian tribal art, lippan wall art, Ganesha wall art,ethnic Lippan wall art Ganesh, clay art.",
     material: "Wool blend",
     dimensions: "180 x 25 cm",
     weight: "400 grams",
@@ -86,11 +89,12 @@ const products = [
   },
   {
     id: 6,
-    name: "Leather Wallet",
-    price: 55.0,
+    name: "Mud and mirror art",
+    price: 550.0,
     image:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=400&q=80",
-    description: "Durable leather wallet with multiple compartments.",
+      "https://i.pinimg.com/originals/83/ea/67/83ea67e9791cf295759bb72e6d85f846.jpg",
+    description:
+      "Krishna lippan art, wall decor, good gift,good vibes,Indian folk art,handmade, home decor.",
     material: "Genuine leather",
     dimensions: "12 x 9 x 2 cm",
     weight: "150 grams",
@@ -157,42 +161,16 @@ const ShopPage = () => {
     return () => clearInterval(timerId);
   }, []);
   return (
-    <div className="min-h-screen p-4 bg-gray-50">
-      <>
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#004080] mb-6 text-center">
-          Shop All Products
-        </h1>
+    <>
+      <OfferBanner
+        imageUrl={shop}
+        heading="Have Questions? We're Here to Help!"
+        description="Reach out to us and we'll get back to you as soon as possible."
+        buttonText="Explore More"
+        navigateTo="/shop"
+      />
 
-        {/* Animated Advertisement Banner */}
-        <div className="max-full mx-auto mb-12 p-6 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between animate-bounceIn">
-          <div className="text-[#004080] text-center sm:text-left sm:max-w-xl">
-            <h2 className="text-2xl font-extrabold mb-2 animate-wiggle">
-              🎉 Special Offer Alert!
-            </h2>
-            <p className="text-lg font-semibold">
-              Get <span className="underline">20% OFF</span> on all handmade
-              crafts! Use code <span className="font-bold">CRAFT20</span> at
-              checkout.
-            </p>
-            <p className="text-sm mt-1 italic">
-              Limited time only. Don't miss out!
-            </p>
-          </div>
-
-          {/* Countdown Timer */}
-          <div className="mt-4 sm:mt-0 text-[#004080] font-extrabold text-xl sm:text-2xl flex space-x-4 justify-center sm:justify-end">
-            <span>{timeLeft.days}d</span>
-            <span>{timeLeft.hours}h</span>
-            <span>{timeLeft.minutes}m</span>
-            <span>{timeLeft.seconds}s</span>
-          </div>
-        </div>
-      </>
-
-      {/* Filter/Search and sorting UI as you have */}
-
-      {/* Product Grid */}
-      <div className="max-full mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
         {filteredProducts.length > 0 ? (
           filteredProducts.map(({ id, name, price, image }) => (
             <div
@@ -203,27 +181,27 @@ const ShopPage = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") goToProduct(id);
               }}
-              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col max-w-[260px] w-full mx-auto"
             >
               <img
                 src={image}
                 alt={name}
-                className="w-full h-56 object-cover"
+                className="w-full object-cover aspect-square"
                 loading="lazy"
               />
-              <div className="p-4">
-                <h2 className="text-xl font-semibold text-[#004080] mb-2">
+              <div className="p-4 flex flex-col flex-grow">
+                <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
                   {name}
                 </h2>
-                <p className="text-yellow-500 font-bold text-lg mb-4">
-                  ${price.toFixed(2)}
+                <p className="text-yellow-500 font-bold text-md mb-3">
+                  {price.toFixed(2)}
                 </p>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     goToProduct(id);
                   }}
-                  className="w-full bg-[#004080] text-yellow-400 py-2 rounded-lg font-bold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300"
+                  className="mt-auto w-full bg-[#004080] text-yellow-400 py-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
                 >
                   View Details
                 </button>
@@ -236,7 +214,7 @@ const ShopPage = () => {
           </p>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
