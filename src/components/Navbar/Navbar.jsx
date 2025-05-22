@@ -54,19 +54,22 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/">
+        <Link to="/" className="flex items-center space-x-1">
           <h1
-            className="text-5xl font-semibold text-transparent bg-clip-text cursor-pointer"
+            className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text leading-none"
             style={{
               backgroundImage:
-                "linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4)",
-              backgroundSize: "300% 300%",
-              animation: "moveGradient 4s ease infinite",
+                "linear-gradient(270deg, #004080, #0066cc, #3399ff, #004080)",
+              backgroundSize: "200% auto",
+              animation: "brandGradient 4s linear infinite",
               WebkitBackgroundClip: "text",
             }}
           >
             C
           </h1>
+          <span className="text-lg md:text-xl font-semibold text-[#004080] tracking-wide uppercase">
+            raft-Cart
+          </span>
         </Link>
 
         <ToastContainer position="bottom-right" autoClose={3000} />
