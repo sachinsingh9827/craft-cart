@@ -28,8 +28,8 @@ export default function Footer() {
         {/* Quick Links Section */}
         <div className="md:flex-1 max-w-xs">
           <h3 className="text-2xl font-semibold mb-6 text-left">Quick Links</h3>
-          <ul className="grid grid-cols-2 gap-y-4 gap-x-8 text-lg text-left">
-            {["Home", "Shop", "About", "Contact-us", "FAQ"].map((item) => (
+          <ul className="grid grid-cols-3 gap-y-4 gap-x-8 text-lg text-left">
+            {["Shop", "About", "Contact-us"].map((item) => (
               <li key={item}>
                 <a
                   href={`${item.toLowerCase().replace(/\s/g, "")}`}

@@ -7,9 +7,9 @@
   height: 60px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   position: sticky;
-  top: 10px;
+  top: 0px;
   z-index: 100;
-  border-radius: 12px;
+  border-radius: 0 0 12px 12px;
   margin: 10px auto;
   color: #004080;
 }

@@ -2,11 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 
 const TeamSection = () => {
   const teamMembers = [
-    { name: "Rohan Mehta", role: "Creative Director" },
-    { name: "Sneha Kapoor", role: "Lead Developer" },
-    { name: "Vikas Yadav", role: "Marketing Manager" },
-    { name: "Rohan Mehta", role: "Creative Director" },
-    { name: "Sneha Kapoor", role: "Lead Developer" },
+    { name: "Mannu Tomar", role: "Creative Director" },
+    { name: "Rahul Sharma", role: "Lead Developer" },
+    { name: "Subham Sharma", role: "Marketing Manager" },
   ];
 
   const containerRef = useRef(null);
@@ -32,7 +30,7 @@ const TeamSection = () => {
 
   return (
     <section className="py-14 px-6 max-w-full mx-auto font-montserrat">
-      <h2 className="text-3xl font-bold text-[#004080] text-center mb-8">
+      <h2 className="text-3xl font-bold text-[#004080] text-center mb-8 uppercase">
         Meet Our Team
       </h2>
 
