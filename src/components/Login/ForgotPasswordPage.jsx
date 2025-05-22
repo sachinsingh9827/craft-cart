@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
+import axios from "axios";
+import { showToast } from "../Toast/Toast";
+import { useNavigate } from "react-router-dom";
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 // Validation schemas
 const EmailSchema = Yup.object().shape({
   email: Yup.string()
@@ -28,7 +31,7 @@ const ForgetPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: email, 2: otp, 3: reset password
   const [email, setEmail] = useState("");
   const inputRefs = useRef([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (step === 2) {
       inputRefs.current[0]?.focus();
@@ -63,13 +66,22 @@ const ForgetPasswordPage = () => {
             validationSchema={EmailSchema}
             onSubmit={async (values, { setSubmitting }) => {
               try {
-                await sendOtpToEmail(values.email);
-                setEmail(values.email);
-                alert(`OTP sent to: ${values.email}`);
-                setStep(2);
-              } catch {
+                const response = await axios.post(
+                  `${BASE_URL}/api/user/auth/forgot-password`,
+                  { email: values.email }
+                );
+
+                if (response.status === 200) {
+                  setEmail(values.email);
+                  setStep(2);
+                } else {
+                  showToast("Failed to send OTP. Try again.", "error");
+                }
+              } catch (error) {
+                console.error("Error sending OTP:", error);
                 alert("Failed to send OTP. Try again.");
               }
+
               setSubmitting(false);
             }}
           >
@@ -118,13 +130,34 @@ const ForgetPasswordPage = () => {
             initialValues={{ otp: "" }}
             validationSchema={OtpSchema}
             onSubmit={async (values, { setSubmitting }) => {
-              const success = await verifyOtpWithBackend(email, values.otp);
-              setSubmitting(false);
-              if (success) {
-                alert("OTP verified! Please reset your password.");
-                setStep(3);
-              } else {
-                alert("Invalid OTP. Please try again.");
+              try {
+                const response = await axios.post(
+                  `${BASE_URL}/user/auth/verify-otp`,
+                  {
+                    email,
+                    otp: values.otp,
+                  }
+                );
+
+                setSubmitting(false);
+
+                if (response.data.success) {
+                  showToast("OTP verified successfully!", "success");
+                  setStep(3);
+                } else {
+                  showToast(
+                    response.data.message || "Invalid OTP. Please try again.",
+                    "error"
+                  );
+                }
+              } catch (error) {
+                setSubmitting(false);
+
+                const message =
+                  error.response?.data?.message ||
+                  "OTP verification failed. Please try again.";
+                showToast(message, "error");
+                console.error("OTP verification error:", error);
               }
             }}
           >
@@ -203,19 +236,32 @@ const ForgetPasswordPage = () => {
             validationSchema={PasswordSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
               try {
-                const success = await updatePasswordBackend(
-                  email,
-                  values.password
+                // Call your password update API
+                const response = await axios.post(
+                  `${BASE_URL}/api/user/auth/update-password`,
+                  {
+                    email,
+                    password: values.password,
+                  }
                 );
-                if (success) {
-                  alert("Password updated successfully! You can now login.");
+
+                if (response.data.success) {
+                  showToast(
+                    "Password updated successfully! You can now login.",
+                    "success"
+                  );
                   resetForm();
-                  setStep(1);
+                  navigate("/login");
                 } else {
-                  alert("Failed to update password. Try again.");
+                  showToast(
+                    response.data.message ||
+                      "Failed to update password. Try again.",
+                    "error"
+                  );
                 }
-              } catch {
-                alert("Error updating password. Try again.");
+              } catch (error) {
+                showToast("Error updating password. Try again.", "error");
+                console.error(error);
               }
               setSubmitting(false);
             }}

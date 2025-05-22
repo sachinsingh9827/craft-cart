@@ -6,7 +6,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Toast, { showToast } from "../Toast/Toast";
-
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
     .min(3, "Name must be at least 3 characters")
@@ -42,7 +42,7 @@ const SignupPage = () => {
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             try {
               const response = await axios.post(
-                "https://craft-cart-backend.vercel.app/api/user/auth/register",
+                `${BASE_URL}/api/user/auth/register`,
                 {
                   name: values.name,
                   email: values.email,

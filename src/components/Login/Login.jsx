@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Please enter a valid email")
@@ -26,13 +26,10 @@ const LoginPage = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/user/auth/login",
-        {
-          email: values.email,
-          password: values.password,
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/api/user/auth/login`, {
+        email: values.email,
+        password: values.password,
+      });
 
       console.log("Login response:", response.data);
 
