@@ -1,6 +1,6 @@
 import React from "react";
 import OfferBanner from "../Banner/Banner";
-
+import TeamSection from "../TeamSection/TeamSection";
 const AboutUs = () => {
   return (
     <>
@@ -12,16 +12,7 @@ const AboutUs = () => {
         navigateTo="/about-offer"
       />
 
-      <div className="bg-white text-gray-800">
-        {/* Hero */}
-        {/* <section className="bg-[#004080] text-white py-16 px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Craft-Cart</h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto">
-            Empowering artisans. Delivering tradition. Connecting creativity.
-          </p>
-        </section> */}
-
-        {/* Who We Are */}
+      <div className="bg-white text-gray-800 font-montserrat">
         <section className="py-14 px-6 max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-[#004080] mb-4">Who We Are</h2>
           <p className="text-gray-700 leading-relaxed">
@@ -146,31 +137,7 @@ const AboutUs = () => {
         </section>
 
         {/* Meet the Team */}
-        <section className="py-14 px-6 max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-[#004080] text-center mb-8">
-            Meet Our Team
-          </h2>
-          <div className="flex flex-wrap justify-center gap-8">
-            {[
-              { name: "Rohan Mehta", role: "Creative Director" },
-              { name: "Sneha Kapoor", role: "Lead Developer" },
-              { name: "Vikas Yadav", role: "Marketing Manager" },
-            ].map((member, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 p-6 w-64 rounded-xl shadow hover:shadow-lg transition-all text-center"
-              >
-                <div className="w-20 h-20 mx-auto rounded-full bg-[#004080] text-white flex items-center justify-center text-2xl font-bold mb-4">
-                  {member.name[0]}
-                </div>
-                <h3 className="text-xl font-semibold text-[#004080]">
-                  {member.name}
-                </h3>
-                <p className="text-gray-600">{member.role}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <TeamSection />
 
         {/* Final Quote */}
         <section className="text-center py-10 bg-[#f9f9f9] text-gray-600 px-4">

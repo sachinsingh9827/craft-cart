@@ -18,6 +18,7 @@ import ProductsPage from "./Pages/ProductsPage";
 import WishlistPage from "./Pages/WishlistPage";
 import ProfilePage from "./Pages/ProfilePage";
 import { decrypt } from "./utils/cryptoHelper"; // <-- Import decrypt function
+import TeamSection from "./components/TeamSection/TeamSection";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -34,6 +35,7 @@ function App() {
               <WelcomePage />
               {/* <Banner /> */}
               <ShopPage />
+              <TeamSection />
               <ContactUs />
             </div>
           }

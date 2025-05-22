@@ -11,7 +11,7 @@
   z-index: 100;
   border-radius: 12px;
   margin: 10px auto;
-  color: #03045E;
+  color: #004080;
 }
 
 /* Inner container */
@@ -31,7 +31,7 @@
   font-weight: 700;
   cursor: pointer;
   user-select: none;
-  color: #03045E;
+  color: #004080;
   letter-spacing: 2px;
   text-transform: uppercase;
   transition: color 0.3s ease;
@@ -46,7 +46,7 @@
   .navbar-logo {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #03045E;
+    color: #004080;
     letter-spacing: 1px;
     text-transform: none;
   }
@@ -114,14 +114,14 @@
 
 .login-btn,
 .logout-btn {
-  background-color: #03045E;
+  background-color: #004080;
   color: white;
   border: none;
 }
 
 .login-btn:hover,
 .logout-btn:hover {
-  background-color: #c0392b;
+  background-color: #03045E;
 }
 
 /* Hamburger Menu - HIDDEN on desktop, shown on mobile */

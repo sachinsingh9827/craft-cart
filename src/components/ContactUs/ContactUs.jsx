@@ -140,7 +140,7 @@ const ContactUs = () => {
           {/* Left - Image */}
           <div className="hidden md:block md:w-1/2">
             <img
-              src={""}
+              src="https://images.unsplash.com/photo-1581291518857-4e27b48ff24e"
               alt="Contact Us"
               className="h-full w-full object-cover rounded-l-2xl"
             />
