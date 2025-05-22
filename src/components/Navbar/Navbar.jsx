@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
@@ -54,9 +54,21 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="navbar-logo uppercase" onClick={() => navigate("/")}>
-          Craft-Cart
-        </div>
+        <Link to="/">
+          <h1
+            className="text-5xl font-semibold text-transparent bg-clip-text cursor-pointer"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4)",
+              backgroundSize: "300% 300%",
+              animation: "moveGradient 4s ease infinite",
+              WebkitBackgroundClip: "text",
+            }}
+          >
+            C
+          </h1>
+        </Link>
+
         <ToastContainer position="bottom-right" autoClose={3000} />
         <div className={`navbar-links ${menuOpen ? "active" : ""}`}>
           <NavLink
