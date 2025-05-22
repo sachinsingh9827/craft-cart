@@ -133,16 +133,16 @@ const Navbar = () => {
                 <FaHeart /> Wishlist
               </a>
 
-              <a
+              <button
                 onClick={() => {
                   const encrypted = encrypt("profile");
                   handleLinkClick();
                   navigate(`/profile/${encrypted}`);
                 }}
-                className="icon-link"
+                className="logout-btn "
               >
                 Profile
-              </a>
+              </button>
 
               <button className="logout-btn" onClick={handleLogout}>
                 Logout

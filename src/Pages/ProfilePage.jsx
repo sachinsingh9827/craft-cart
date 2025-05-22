@@ -200,7 +200,7 @@ export default function ProfilePage() {
               <label className="block text-gray-700 font-semibold">
                 Addresses:
               </label>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 font-bold">
                 Total: {user.addresses.length}
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function ProfilePage() {
                     </p>
                     <button
                       onClick={() => confirmDeleteAddress(addr._id)}
-                      className="mt-2 text-red-500 hover:underline"
+                      className="mt-2 font-bold text-red-500 hover:text-red-700  transition-all duration-200"
                     >
                       Delete Address
                     </button>
@@ -248,7 +248,7 @@ export default function ProfilePage() {
 
         <button
           onClick={() => setShowAddressForm(true)}
-          className="mt-6 w-full bg-[#004080] text-yellow-400 font-semibold py-2 rounded-lg hover:bg-yellow-400 hover:text-[#004080] transition duration-300"
+          className="mt-6 w-small p-3 bg-[#004080] text-yellow-400 font-semibold py-2 rounded-lg hover:bg-yellow-400 hover:text-[#004080] transition duration-300"
         >
           Add New Address
         </button>
@@ -258,7 +258,7 @@ export default function ProfilePage() {
       {showAddressForm && (
         <>
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 font-montserrat"
             onClick={() => setShowAddressForm(false)}
           ></div>
           <div className="fixed right-0 top-12 h-full w-full sm:w-96 bg-white p-6 z-50 shadow-lg overflow-auto">

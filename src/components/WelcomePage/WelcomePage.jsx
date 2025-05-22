@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import wellcome from "../../assets/wellcome.svg";
-import { useNavigate } from "react-router-dom";
 import ProductShowcase from "./ProductShowcase";
 const WelcomePage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const contentRef = useRef();
-  const navigate = useNavigate(); // ✅ Correct hook usage
 
   useEffect(() => {
     const observer = new IntersectionObserver(
