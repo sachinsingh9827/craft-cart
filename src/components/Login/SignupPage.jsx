@@ -2,9 +2,10 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import Toast, { showToast } from "../Toast/Toast";
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -29,7 +30,6 @@ const SignupPage = () => {
         <h1 className="text-center text-4xl font-extrabold text-[#004080] mb-10 tracking-widest uppercase drop-shadow-lg">
           Craft-Cart Signup
         </h1>
-        <ToastContainer position="bottom-right" autoClose={3000} />
 
         <Formik
           initialValues={{
@@ -50,21 +50,36 @@ const SignupPage = () => {
                 }
               );
 
-              // Expecting `success` from backend
-              if (response.data.success) {
-                toast.success(
-                  response?.data?.message || "Registration successful!"
+              if (response.data.status) {
+                // Show green success toast
+                showToast(
+                  response.data.message || "Registration successful!",
+                  "success"
                 );
+
+                // Then show red warning toast about sharing credentials
+                showToast(
+                  "⚠️ Please do NOT share your username and password with anyone.",
+                  "error"
+                );
+
                 resetForm();
                 navigate("/login");
               } else {
-                toast.error(response.data.message || "Registration failed.");
+                // Show red error toast if registration failed
+                showToast(
+                  response.data.message || "Registration failed.",
+                  "error"
+                );
               }
             } catch (error) {
               console.error("Registration error:", error);
-              toast.error(
+
+              // Show error toast
+              showToast(
                 error.response?.data?.message ||
-                  "An error occurred during registration."
+                  "An error occurred during registration.",
+                "error"
               );
             } finally {
               setSubmitting(false);
@@ -74,7 +89,7 @@ const SignupPage = () => {
           {({ errors, touched, isSubmitting }) => (
             <Form noValidate className="space-y-8">
               {/* Name Field */}
-              <ToastContainer position="bottom-right" autoClose={3000} />
+              <Toast />
               <div className="relative">
                 <Field
                   id="name"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
@@ -23,21 +23,17 @@ const Navbar = () => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-
-        // Check if token is expired (decoded.exp is in seconds, Date.now() is ms)
         if (decoded.exp * 1000 < Date.now()) {
           toast.error("Session expired, please login again.");
           logout?.();
           navigate("/login");
         }
       } catch (error) {
-        // Invalid token (cannot decode)
         toast.error("Invalid session, please login again.");
         logout?.();
         navigate("/login");
       }
     } else {
-      // No token — user is not logged in
       logout?.();
     }
   }, [logout, navigate]);
@@ -63,18 +59,37 @@ const Navbar = () => {
         </div>
         <ToastContainer position="bottom-right" autoClose={3000} />
         <div className={`navbar-links ${menuOpen ? "active" : ""}`}>
-          <a href="/" onClick={handleLinkClick}>
+          <NavLink
+            to="/"
+            onClick={handleLinkClick}
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+          >
             Home
-          </a>
-          <a href="/shop" onClick={handleLinkClick}>
+          </NavLink>
+          <NavLink
+            to="/shop"
+            onClick={handleLinkClick}
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+          >
             Shop
-          </a>
-          <a href="/about" onClick={handleLinkClick}>
+          </NavLink>
+          <NavLink
+            to="/about"
+            onClick={handleLinkClick}
+            className={({ isActive }) => (isActive ? "active-link" : "")}
+          >
             About
-          </a>
-          <a href="/contact-us" onClick={handleLinkClick} className="icon-link">
+          </NavLink>
+          <NavLink
+            to="/contact-us"
+            onClick={handleLinkClick}
+            className={({ isActive }) =>
+              isActive ? "active-link icon-link" : "icon-link"
+            }
+          >
             Contact
-          </a>
+          </NavLink>
+
           {!user ? (
             <button className="login-btn" onClick={handleLoginClick}>
               Login

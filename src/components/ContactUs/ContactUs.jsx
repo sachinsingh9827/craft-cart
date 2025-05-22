@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import OfferBanner from "../Banner/Banner";
 import contactusbanner from "../../assets/4862931.webp";
+
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -17,6 +18,7 @@ const ContactUs = () => {
   const [responseType, setResponseType] = useState(""); // "success" or "error"
   const navigate = useNavigate();
 
+  // Full form validation for submit
   const validate = () => {
     const errs = {};
     if (!formData.name.trim()) errs.name = "Name is required";
@@ -31,8 +33,39 @@ const ContactUs = () => {
     return errs;
   };
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Validate a single field on change
+  const validateField = (name, value) => {
+    switch (name) {
+      case "name":
+        if (!value.trim()) return "Name is required";
+        break;
+      case "email":
+        if (!value.trim()) return "Email is required";
+        else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value))
+          return "Invalid email address";
+        break;
+      case "message":
+        if (!value.trim()) return "Message is required";
+        break;
+      default:
+        break;
+    }
+    return "";
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Update form data
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate this specific field and update errors
+    const errorMsg = validateField(name, value);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMsg || undefined,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,11 +114,11 @@ const ContactUs = () => {
           setResponseMessage(response.data.message);
           setResponseType("success");
           setFormData({ name: "", email: "", message: "" });
+          setErrors({});
           setTimeout(() => {
             setResponseMessage("");
             setResponseType("");
           }, 2000);
-          // navigate("/shop");
         } else {
           toast.error(response.data.message || "Failed to send message.", {
             autoClose: 2000,
@@ -135,7 +168,7 @@ const ContactUs = () => {
         buttonText="Explore More"
         navigateTo="/shop"
       />
-      <div className=" flex items-center justify-center p-4 md:p-6">
+      <div className="flex items-center justify-center p-4 md:p-6 font-montserrat">
         <div className="w-full max-w-full bg-white shadow-2xl rounded-2xl overflow-hidden md:flex">
           {/* Left - Image */}
           <div className="hidden md:block md:w-1/2">
@@ -224,9 +257,10 @@ const ContactUs = () => {
 
               <button
                 type="submit"
-                className="w-full bg-yellow-400 hover:bg-yellow-350 active:bg-yellow-300 text-[#004080] font-extrabold py-3 rounded-3xl shadow-md transition duration-300"
+                disabled={submitted}
+                className="w-full bg-yellow-400 hover:bg-yellow-350 active:bg-yellow-300 text-[#004080] font-extrabold py-3 rounded-3xl shadow-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Message
+                {submitted ? "Sending..." : "Send Message"}
               </button>
             </form>
           </div>

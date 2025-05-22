@@ -135,10 +135,26 @@ export default function ProfilePage() {
     setShowConfirmDelete(true);
   };
 
+  const Loader = () => (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
+      <style>{`
+        .loader {
+          border-top-color: #004080;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg);}
+          100% { transform: rotate(360deg);}
+        }
+      `}</style>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg font-semibold">Loading user details...</p>
+        <Loader />
       </div>
     );
   }
@@ -162,7 +178,7 @@ export default function ProfilePage() {
     return <div>Invalid Access: {decrypted}</div>;
   }
   return (
-    <div className="relative min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="relative min-h-screen bg-gray-100 p-4 sm:p-6 font-montserrat">
       <div className="max-w-8xl mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#004080] uppercase">
           User Profile

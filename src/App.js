@@ -19,6 +19,8 @@ import WishlistPage from "./Pages/WishlistPage";
 import ProfilePage from "./Pages/ProfilePage";
 import { decrypt } from "./utils/cryptoHelper"; // <-- Import decrypt function
 import TeamSection from "./components/TeamSection/TeamSection";
+import AboutOffer from "./components/AboutUs/AboutOffer";
+import Toast from "./components/Toast/Toast";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -26,6 +28,7 @@ function App() {
   return (
     <div className="App">
       <Navbar />
+      <Toast />
       <Routes>
         {/* Public Routes */}
         <Route
@@ -46,6 +49,7 @@ function App() {
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/about-offer" element={<AboutOffer />} />
 
         {/* Encrypted Protected Routes */}
         <Route

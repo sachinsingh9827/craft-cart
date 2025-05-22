@@ -24,7 +24,7 @@ const WelcomePage = () => {
   return (
     <>
       <ProductShowcase />
-      <div className="min-h-[620px]  min-w-full flex items-center justify-center px-4 font-montserrat bg-white ">
+      <div className="min-h-[620px]  min-w-full flex items-center justify-center px-4 font-montserrat bg-transparent">
         <div className="max-w-6xl w-full flex flex-col md:flex-row items-center rounded-3xl shadow-lg overflow-hidden">
           {/* Text Section */}{" "}
           <div className="md:w-1/2 w-full">
