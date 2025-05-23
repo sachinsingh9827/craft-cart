@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import Banner from "./components/Banner/Banner";
@@ -10,7 +10,6 @@ import Login from "./components/Login/Login";
 import SignupPage from "./components/Login/SignupPage";
 import ForgetPasswordPage from "./components/Login/ForgotPasswordPage";
 import ShopPage from "./Pages/ShopPage";
-
 import BuyNowPage from "./Pages/BuyNowPage";
 import AboutUs from "./components/AboutUs/AboutUs";
 import ProtectedRoute from "./context/ProtectedRoute";
@@ -26,12 +25,31 @@ import NotFound from "./utils/NotFound";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
+  const location = useLocation();
+
+  // If the current path does not match any defined routes, show NotFound without layout
+  const isNotFound =
+    location.pathname !== "/" &&
+    ![
+      "/login",
+      "/signup",
+      "/forget-password",
+      "/contact-us",
+      "/shop",
+      "/about",
+      "/about-offer",
+    ].some((path) => location.pathname.startsWith(path)) &&
+    !/^\/(buynow|wishlist|profile|product)\/[^/]+$/.test(location.pathname);
+
+  if (isNotFound) {
+    return <NotFound />;
+  }
 
   return (
     <div className="App">
       <Navbar />
       <Toast />
-      <ScrollToTop /> {/* Scrolls to top on route change */}
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route
@@ -39,7 +57,6 @@ function App() {
           element={
             <div className="image">
               <WelcomePage />
-              {/* <Banner /> */}
               <ShopPage />
               <ScrollAutoPlayVideo />
               <TeamSection />
@@ -55,7 +72,7 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/about-offer" element={<AboutOffer />} />
 
-        {/* Encrypted Protected Routes */}
+        {/* Protected Routes */}
         <Route
           path="/buynow/:extra"
           element={
@@ -80,7 +97,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/product/:encryptedId"
           element={
@@ -89,8 +105,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Catch All */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-      <Route path="*" element={<NotFound />} />
       <Footer />
     </div>
   );
