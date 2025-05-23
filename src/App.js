@@ -20,6 +20,7 @@ import Toast from "./components/Toast/Toast";
 import ScrollAutoPlayVideo from "./components/TeamSection/ScrollAutoPlayVideo";
 import ScrollToTop from "./ScrollToTop";
 import NotFound from "./utils/NotFound";
+import VerifyEmailPage from "./components/Login/VerifyEmailPage";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -62,14 +63,14 @@ function App() {
             </div>
           }
         />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />{" "}
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forget-password" element={<ForgetPasswordPage />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/about-offer" element={<AboutOffer />} />
-
         {/* Protected Routes */}
         <Route
           path="/buynow/:extra"
