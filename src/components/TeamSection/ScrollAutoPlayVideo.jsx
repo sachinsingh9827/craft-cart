@@ -62,69 +62,61 @@ export default function AdminVideoUpload() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 font-poppins min-h-screen flex flex-col lg:flex-row gap-8">
+    <div className="max-w-full text-[#004080] mx-auto p-4 sm:p-6 md:p-8 font-poppins min-h-[50vh] flex flex-col lg:flex-row gap-6 mt-4">
       {/* Left Panel: Product Info */}
-      <div className="lg:w-1/2 max-h-screen overflow-y-auto space-y-2">
-        <h3 className="text-2xl font-semibold">Featured Product</h3>
-        <h4 className="text-xl font-semibold">Mud and mirror art</h4>
-        <p className="text-lg font-medium">$55.00</p>
-        <p className="mb-4 leading-relaxed">
+      <div className="lg:w-1/2 max-h-[70vh] overflow-y-auto space-y-3">
+        <h3 className="text-xl md:text-2xl text-[#004080] font-semibold">
+          Featured Product
+        </h3>
+        <h4 className="text-sm md:text-xl text-[#004080] font-semibold">
+          Mud and mirror art
+        </h4>
+        <p className="text-base md:text-lg text-[#004080] font-medium">
+          550.00
+        </p>
+        <p className="mb-4 leading-relaxed text-sm md:text-base text-[#004080]">
           Krishna lippan art, wall decor, good gift, good vibes, Indian folk
           art, handmade, home decor.
         </p>
-        <ul className="text-gray-600 text-base space-y-1">
+        <ul className="text-gray-600 text-sm md:text-base space-y-1 text-[#004080]">
           <li>
-            <strong>Material:</strong> Genuine leather
+            <strong className="text-[#004080]">Material:</strong> Genuine
+            leather
           </li>
           <li>
-            <strong>Dimensions:</strong> 12 x 9 x 2 cm
+            <strong className="text-[#004080]">Dimensions:</strong> 12 x 9 x 2
+            cm
           </li>
           <li>
-            <strong>Weight:</strong> 150 grams
+            <strong className="text-[#004080]">Weight:</strong> 150 grams
           </li>
+
           <li>
-            <strong>Color:</strong> Dark brown
+            <strong className="text-[#004080]">Stock:</strong> 18
           </li>
+
           <li>
-            <strong>Stock:</strong> 18
-          </li>
-          <li>
-            <strong>Brand:</strong> Urban Style
-          </li>
-          <li>
-            <strong>Warranty:</strong> 1 year
-          </li>
-          <li>
-            <strong>Care:</strong> Avoid water, clean with leather conditioner.
+            <strong className="text-[#004080]">Care:</strong> Avoid water, clean
+            with leather conditioner.
           </li>
         </ul>
-
-        <div className="mt-6">
-          <label className="block mb-2 font-semibold text-gray-700">
-            Upload Video:
-          </label>
-          <input
-            type="file"
-            accept="video/*"
-            multiple
-            onChange={handleUpload}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-        </div>
       </div>
 
       {/* Right Panel: Videos */}
-      <div className="lg:w-1/2 max-h-screen overflow-y-auto space-y-6">
+      <div className="lg:w-1/2 max-h-[70vh] overflow-y-auto space-y-4">
         {videos.map(({ id, url, title }) => {
           const isYouTube =
             url.includes("youtube.com") || url.includes("youtu.be");
           const youtubeId = extractYouTubeId(url);
 
           return (
-            <div key={id} className="rounded-lg overflow-hidden shadow-lg">
+            <div
+              key={id}
+              className="w-full max-w-[480px] h-[270px] rounded-lg overflow-hidden shadow-md bg-black"
+            >
               {isYouTube && youtubeId ? (
                 <iframe
-                  className="w-full aspect-video"
+                  className="w-full h-full"
                   src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1&rel=0`}
                   title={title}
                   frameBorder="0"
@@ -140,11 +132,11 @@ export default function AdminVideoUpload() {
                   playsInline
                   autoPlay
                   loop
-                  className="w-full h-auto block rounded-lg"
+                  className="w-full h-full object-cover"
                   aria-label={`Creative video: ${title}`}
                 />
               )}
-              <div className="p-2 bg-gray-100 text-gray-700 font-medium text-center text-base">
+              <div className="p-2 bg-gray-100 text-center text-[#004080] text-sm font-medium">
                 {title}
               </div>
             </div>
