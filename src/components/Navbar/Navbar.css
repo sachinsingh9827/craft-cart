@@ -151,6 +151,7 @@
 /* Login button */
 .login-btn {
   background-color: #004080;
+  border-radius: 5px;
   color: white;
 }
 

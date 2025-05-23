@@ -57,7 +57,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden ">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-montserrat">
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
         <h1 className="text-center text-4xl font-extrabold text-[#004080] mb-10 tracking-widest uppercase drop-shadow-lg">
           Craft-Cart Login

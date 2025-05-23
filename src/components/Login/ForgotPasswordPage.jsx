@@ -38,22 +38,8 @@ const ForgetPasswordPage = () => {
     }
   }, [step]);
 
-  // Simulated backend calls — replace these with real API calls!
-  const sendOtpToEmail = async (email) => {
-    return new Promise((res) => setTimeout(res, 1000));
-  };
-
-  const verifyOtpWithBackend = async (email, otp) => {
-    return new Promise((res) => setTimeout(() => res(otp === "123456"), 1000));
-  };
-
-  const updatePasswordBackend = async (email, password) => {
-    // Backend call to update password here
-    return new Promise((res) => setTimeout(() => res(true), 1000));
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50 font-montserrat">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
         <h1 className="text-center text-3xl font-bold text-[#004080] mb-6 uppercase">
           {step === 3 ? "Update Password" : "Forgot Password"}
@@ -132,7 +118,7 @@ const ForgetPasswordPage = () => {
             onSubmit={async (values, { setSubmitting }) => {
               try {
                 const response = await axios.post(
-                  `${BASE_URL}/user/auth/verify-otp`,
+                  `${BASE_URL}/api/user/auth/verify-otp`,
                   {
                     email,
                     otp: values.otp,
