@@ -26,23 +26,25 @@ const LoginPage = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await axios.post(`${BASE_URL}/api/user/auth/login`, {
+      const { data } = await axios.post(`${BASE_URL}/api/user/auth/login`, {
         email: values.email,
         password: values.password,
       });
 
-      console.log("Login response:", response.data);
+      const { success, message, data: userData } = data;
 
-      if (response.data.success) {
-        toast.success(response.data.message || "Login successful");
+      console.log("Login response:", data);
 
-        // Use login context function to store data and token
-        auth.login(response.data.data, response.data.data.token);
+      if (success) {
+        toast.success(message || "Login successful");
+
+        // login() expects userData and token
+        auth.login(userData, userData.token);
 
         resetForm();
         navigate("/shop");
       } else {
-        toast.error(response.data.message || "Login failed");
+        toast.error(message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);

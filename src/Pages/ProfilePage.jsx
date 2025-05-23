@@ -5,6 +5,34 @@ import { decrypt } from "../utils/cryptoHelper";
 import { useParams } from "react-router-dom";
 
 export default function ProfilePage() {
+  const encodeId = (id) => btoa(id);
+  const decodeId = (encoded) => atob(encoded);
+
+  // Recursively decrypt _id fields for debugging or usage
+  function decryptFieldsInObject(obj) {
+    if (Array.isArray(obj)) {
+      return obj.map(decryptFieldsInObject);
+    } else if (obj && typeof obj === "object") {
+      const newObj = {};
+      for (const key in obj) {
+        const val = obj[key];
+        if (typeof val === "string") {
+          try {
+            newObj[key] = decodeId(val);
+          } catch {
+            newObj[key] = val; // if decoding fails, keep original
+          }
+        } else if (typeof val === "object") {
+          newObj[key] = decryptFieldsInObject(val);
+        } else {
+          newObj[key] = val;
+        }
+      }
+      return newObj;
+    }
+    return obj;
+  }
+
   const { extra } = useParams();
   let decrypted;
   const [user, setUser] = useState(null);
@@ -36,17 +64,22 @@ export default function ProfilePage() {
   const fetchUserDetails = async (userData) => {
     try {
       setLoading(true);
+
+      // Encode ID before request
+      const encryptedId = encodeId(userData._id);
+
       const response = await axios.get(
-        `https://craft-cart-backend.vercel.app/api/user/auth/${userData._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-          },
-        }
+        `https://craft-cart-backend.vercel.app/api/user/auth/${encryptedId}`,
+        { headers: { Authorization: `Bearer ${userData.token}` } }
       );
 
       if (response.data.success) {
-        setUser(response.data.data);
+        // Decrypt to get original data for UI
+        const originalData = decryptFieldsInObject(response.data.data);
+        console.log("Original decrypted data:", originalData);
+
+        // Save decrypted data in state (so UI works with real values)
+        setUser(originalData);
       } else {
         setError(response.data.message || "Failed to get user data");
       }
@@ -153,8 +186,53 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader />
+      <div className="max-w-8xl mx-auto bg-white rounded-lg shadow-md p-6 animate-pulse">
+        <h1 className="h-10 bg-gray-300 rounded w-48 mx-auto mb-6"></h1>
+
+        <div className="space-y-4">
+          {/* Name */}
+          <div>
+            <div className="h-5 bg-gray-300 rounded w-24 mb-1"></div>
+            <div className="h-6 bg-gray-200 rounded w-40"></div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <div className="h-5 bg-gray-300 rounded w-24 mb-1"></div>
+            <div className="h-6 bg-gray-200 rounded w-56"></div>
+          </div>
+
+          {/* Addresses Header */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <div className="h-5 bg-gray-300 rounded w-32"></div>
+              <div className="h-5 bg-gray-300 rounded w-12 font-bold"></div>
+            </div>
+
+            {/* Address list skeleton */}
+            <ul className="space-y-3">
+              {[1, 2].map((_, idx) => (
+                <li
+                  key={idx}
+                  className="bg-gray-50 p-3 rounded shadow-sm border-l-4 border-gray-300"
+                >
+                  <div className="h-6 bg-gray-300 rounded w-24 mb-2"></div>
+                  <div className="space-y-1">
+                    <div className="h-4 bg-gray-200 rounded w-40"></div>
+                    <div className="h-4 bg-gray-200 rounded w-36"></div>
+                    <div className="h-4 bg-gray-200 rounded w-44"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 rounded w-48"></div>
+                  </div>
+                  <div className="mt-2 h-6 bg-gray-300 rounded w-24"></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Add new address button skeleton */}
+        <div className="mt-6 h-12 bg-gray-300 rounded w-40 mx-auto"></div>
       </div>
     );
   }

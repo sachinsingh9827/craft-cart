@@ -17,10 +17,11 @@ import ProtectedRoute from "./context/ProtectedRoute";
 import ProductsPage from "./Pages/ProductsPage";
 import WishlistPage from "./Pages/WishlistPage";
 import ProfilePage from "./Pages/ProfilePage";
-import { decrypt } from "./utils/cryptoHelper"; // <-- Import decrypt function
 import TeamSection from "./components/TeamSection/TeamSection";
 import AboutOffer from "./components/AboutUs/AboutOffer";
 import Toast from "./components/Toast/Toast";
+import ScrollAutoPlayVideo from "./components/TeamSection/ScrollAutoPlayVideo";
+import ScrollToTop from "./ScrollToTop";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -29,6 +30,7 @@ function App() {
     <div className="App">
       <Navbar />
       <Toast />
+      <ScrollToTop /> {/* Scrolls to top on route change */}
       <Routes>
         {/* Public Routes */}
         <Route
@@ -38,6 +40,7 @@ function App() {
               <WelcomePage />
               {/* <Banner /> */}
               <ShopPage />
+              <ScrollAutoPlayVideo />
               <TeamSection />
               <ContactUs />
             </div>

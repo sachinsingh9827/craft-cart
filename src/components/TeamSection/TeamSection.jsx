@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 const TeamSection = () => {
   const teamMembers = [
-    { name: "Mannu Tomar", role: "Creative Director" },
+    { name: "Manali Tomar", role: "Creative Director" },
     { name: "Rahul Sharma", role: "Lead Developer" },
     { name: "Subham Sharma", role: "Marketing Manager" },
   ];

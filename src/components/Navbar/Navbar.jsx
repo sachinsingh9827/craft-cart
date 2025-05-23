@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // fixed import (jwtDecode is default export)
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
@@ -14,10 +14,9 @@ const Navbar = () => {
   const user = auth?.user;
   const logout = auth?.logout;
 
-  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
   const handleLinkClick = () => setMenuOpen(false);
 
-  // Check token validity on component mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -54,112 +53,127 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="flex items-center space-x-1">
-          <h1
-            className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text leading-none"
-            style={{
-              backgroundImage:
-                "linear-gradient(270deg, #004080, #0066cc, #3399ff, #004080)",
-              backgroundSize: "200% auto",
-              animation: "brandGradient 4s linear infinite",
-              WebkitBackgroundClip: "text",
-            }}
-          >
-            C
-          </h1>
-          <span className="text-lg md:text-xl font-semibold text-[#004080] tracking-wide uppercase">
-            raft-Cart
-          </span>
+        <Link to="/" className="logo-link">
+          <h1 className="logo-text">C</h1>
+          <span className="logo-subtext">raft-Cart</span>
         </Link>
 
         <ToastContainer position="bottom-right" autoClose={3000} />
+
         <div className={`navbar-links ${menuOpen ? "active" : ""}`}>
-          <NavLink
-            to="/"
-            onClick={handleLinkClick}
-            className={({ isActive }) => (isActive ? "active-link" : "")}
-          >
-            Home
+          <NavLink to="/" onClick={handleLinkClick} className="nav-3d-link">
+            <span className="link-text primary">Home</span>
+            <span className="link-text secondary">Home</span>
           </NavLink>
-          <NavLink
-            to="/shop"
-            onClick={handleLinkClick}
-            className={({ isActive }) => (isActive ? "active-link" : "")}
-          >
-            Shop
+
+          <NavLink to="/shop" onClick={handleLinkClick} className="nav-3d-link">
+            <span className="link-text primary">Shop</span>
+            <span className="link-text secondary">Shop</span>
           </NavLink>
+
           <NavLink
             to="/about"
             onClick={handleLinkClick}
-            className={({ isActive }) => (isActive ? "active-link" : "")}
+            className="nav-3d-link"
           >
-            About
+            <span className="link-text primary">About</span>
+            <span className="link-text secondary">About</span>
           </NavLink>
+
           <NavLink
             to="/contact-us"
             onClick={handleLinkClick}
-            className={({ isActive }) =>
-              isActive ? "active-link icon-link" : "icon-link"
-            }
+            className="nav-3d-link"
           >
-            Contact
+            <span className="link-text primary">Contact</span>
+            <span className="link-text secondary">Contact</span>
           </NavLink>
 
           {!user ? (
-            <button className="login-btn" onClick={handleLoginClick}>
-              Login
+            <button
+              type="button"
+              className="nav-3d-link login-btn"
+              onClick={handleLoginClick}
+            >
+              <span className="link-text primary">Login</span>
+              <span className="link-text secondary">Login</span>
             </button>
           ) : (
             <>
-              <a
+              <button
+                type="button"
                 onClick={() => {
                   const encrypted = encrypt("product");
                   handleLinkClick();
                   navigate(`/product/${encrypted}`);
                 }}
-                className="icon-link"
+                className="nav-3d-link"
+                aria-label="Go to Cart"
               >
-                <FaShoppingCart /> Cart
-              </a>
+                <span className="link-text primary">
+                  <FaShoppingCart size={20} />
+                </span>
+                <span className="link-text secondary">
+                  <FaShoppingCart size={20} />
+                </span>
+              </button>
 
-              <a
+              <button
+                type="button"
                 onClick={() => {
                   const encrypted = encrypt("wishlist");
                   handleLinkClick();
                   navigate(`/wishlist/${encrypted}`);
                 }}
-                className="icon-link"
+                className="nav-3d-link"
+                aria-label="Go to Wishlist"
               >
-                <FaHeart /> Wishlist
-              </a>
+                <span className="link-text primary">
+                  <FaHeart size={20} />
+                </span>
+                <span className="link-text secondary">
+                  <FaHeart size={20} />
+                </span>
+              </button>
 
               <button
+                type="button"
+                className="btn profile-3d-btn"
                 onClick={() => {
                   const encrypted = encrypt("profile");
                   handleLinkClick();
                   navigate(`/profile/${encrypted}`);
                 }}
-                className="logout-btn "
+                aria-label="Profile Settings"
               >
-                Profile
+                <span className="btn-text primary">Profile</span>
+                <span className="btn-text secondary">Profile</span>
               </button>
 
-              <button className="logout-btn" onClick={handleLogout}>
-                Logout
+              <button
+                type="button"
+                className="btn logout-3d-btn"
+                onClick={handleLogout}
+                aria-label="Logout"
+              >
+                <span className="btn-text primary">Logout</span>
+                <span className="btn-text secondary">Logout</span>
               </button>
             </>
           )}
         </div>
 
-        <div
+        {/* Menu toggle for mobile */}
+        <button
           className={`menu-toggle ${menuOpen ? "open" : ""}`}
           onClick={toggleMenu}
-          aria-label="Toggle menu"
+          aria-label="Toggle navigation menu"
+          aria-expanded={menuOpen}
         >
-          <span />
-          <span />
-          <span />
-        </div>
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </nav>
   );
