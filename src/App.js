@@ -22,6 +22,7 @@ import AboutOffer from "./components/AboutUs/AboutOffer";
 import Toast from "./components/Toast/Toast";
 import ScrollAutoPlayVideo from "./components/TeamSection/ScrollAutoPlayVideo";
 import ScrollToTop from "./ScrollToTop";
+import NotFound from "./utils/NotFound";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -88,6 +89,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </div>
