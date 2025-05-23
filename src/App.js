@@ -2,9 +2,7 @@ import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
-import Banner from "./components/Banner/Banner";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
-
 import ContactUs from "./components/ContactUs/ContactUs";
 import Login from "./components/Login/Login";
 import SignupPage from "./components/Login/SignupPage";

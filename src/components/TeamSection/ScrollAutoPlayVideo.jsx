@@ -49,18 +49,6 @@ export default function AdminVideoUpload() {
     };
   }, [videos]);
 
-  const handleUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newVideos = files.map((file, index) => ({
-      id: Date.now() + index,
-      url: URL.createObjectURL(file),
-      title: file.name,
-    }));
-
-    setVideos((prev) => [...prev, ...newVideos]);
-    e.target.value = null;
-  };
-
   return (
     <div className="max-w-full text-[#004080] mx-auto p-4 sm:p-6 md:p-8 font-poppins min-h-[50vh] flex flex-col lg:flex-row gap-6 mt-4">
       {/* Left Panel: Product Info */}
