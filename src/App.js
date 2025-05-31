@@ -1,5 +1,7 @@
+// App.js
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux"; // ✅ useSelector for theme
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
@@ -25,8 +27,8 @@ import VerifyEmailPage from "./components/Login/VerifyEmailPage";
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
   const location = useLocation();
+  const theme = useSelector((state) => state.theme.theme); // ✅ Get theme
 
-  // If the current path does not match any defined routes, show NotFound without layout
   const isNotFound =
     location.pathname !== "/" &&
     ![
@@ -45,7 +47,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className={`App ${theme === "dark" ? "dark-theme" : "light-theme"}`}>
       <Navbar />
       <Toast />
       <ScrollToTop />
@@ -63,7 +65,7 @@ function App() {
             </div>
           }
         />
-        <Route path="/login" element={<Login />} />{" "}
+        <Route path="/login" element={<Login />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forget-password" element={<ForgetPasswordPage />} />
@@ -71,6 +73,7 @@ function App() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/about-offer" element={<AboutOffer />} />
+
         {/* Protected Routes */}
         <Route
           path="/buynow/:extra"
@@ -104,6 +107,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         {/* Catch All */}
         <Route path="*" element={<NotFound />} />
       </Routes>

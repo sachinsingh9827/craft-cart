@@ -1,19 +1,23 @@
 import React from "react";
-import { createRoot } from "react-dom/client"; // ✅ New import for React 18
+import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter } from "react-router-dom";
-import "./index.css"; // optional if you use one
+import { Provider } from "react-redux"; // ✅ Redux provider
+import { store } from "./redux/store"; // ✅ Redux store
+import "./index.css";
 
 const container = document.getElementById("root");
-const root = createRoot(container); // ✅ createRoot for React 18
+const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AuthProvider>
+    </Provider>
   </React.StrictMode>
 );
