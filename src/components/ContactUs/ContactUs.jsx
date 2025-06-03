@@ -92,7 +92,7 @@ const ContactUs = () => {
         }
 
         const response = await axios.post(
-          "http://localhost:5000/api/user/auth/contact",
+          `${BASE_URL}/api/user/auth/contact`,
           {
             userId,
             name: formData.name,
