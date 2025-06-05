@@ -1,65 +1,151 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
 
-export default function OfferBanner({
-  imageUrl = "https://media.istockphoto.com/id/1294925648/photo/cake.webp",
-  heading = "Special Offer Just for You!",
-  description = "Get in touch with us and unlock exclusive deals tailored for you.",
-  buttonText = "Contact Now",
-  navigateTo = "/contactus",
-}) {
-  const [isVisible, setIsVisible] = useState(false);
-  const contentRef = useRef();
-  const navigate = useNavigate();
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.3 }
-    );
+const BannerPage = () => {
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const scrollRef = useRef(null);
+  const currentIndex = useRef(0);
 
-    if (contentRef.current) observer.observe(contentRef.current);
-    return () => {
-      if (contentRef.current) observer.unobserve(contentRef.current);
-    };
-  }, []);
-
-  const handleClick = () => {
-    navigate(navigateTo);
+  // Fetch banners
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/api/banners`);
+      if (res.data?.banners) {
+        setBanners(res.data.banners);
+      }
+    } catch (err) {
+      console.error("Error fetching banners:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="w-full bg-primary text-white py-10 px-5 md:px-16 rounded-xl font-montserrat shadow-2xl relative overflow-hidden">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
-        <div
-          className="w-full md:w-1/2 flex justify-center items-center"
-          style={{ height: "150px" }}
-        >
-          <img
-            src={imageUrl}
-            alt="Offer"
-            className="max-h-full max-w-full object-contain"
-          />
-        </div>
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
-        <div
-          className={`w-full md:w-1/2 text-center md:text-left transition-all duration-700 ease-out ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-          ref={contentRef}
-        >
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-yellow-400 mb-4 animate-fade-in-up">
-            {heading}
-          </h2>
-          <p className="text-lg mb-6 animate-fade-in-delay">{description}</p>
-          <button
-            className="bg-yellow-400 text-blue-900 px-6 py-3 rounded-full font-semibold shadow-lg hover:bg-yellow-300 transition transform hover:scale-105 animate-bounce-slow"
-            onClick={handleClick}
-          >
-            {buttonText}
-          </button>
-        </div>
+  // Auto scroll every 2 seconds
+  useEffect(() => {
+    if (!banners.length) return;
+
+    const interval = setInterval(() => {
+      currentIndex.current = (currentIndex.current + 1) % banners.length;
+      const scrollContainer = scrollRef.current;
+      if (scrollContainer) {
+        const bannerWidth = scrollContainer.children[0]?.offsetWidth || 0;
+        scrollContainer.scrollTo({
+          left: bannerWidth * currentIndex.current,
+          behavior: "smooth",
+        });
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [banners]);
+
+  if (loading) {
+    return <div className="text-center mt-10">Loading banners...</div>;
+  }
+
+  if (!banners.length) {
+    return <div className="text-center mt-10">No banners available</div>;
+  }
+
+  return (
+    <div className="w-full max-w-screen-xl mx-auto px-4 py-6">
+      <div
+        ref={scrollRef}
+        className="flex overflow-x-auto scroll-smooth no-scrollbar"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {banners.map((banner) => {
+          const layout = banner.templateId.layout || {};
+          const {
+            imagePosition = "left",
+            textPosition = "right",
+            backgroundColor = "#fff",
+            textColor = "#000",
+            fontSize = "16px",
+            borderRadius = "0px",
+            boxShadow = "none",
+            padding = "0",
+            borderStyle = "none",
+            borderWidth = "0",
+            borderColor = "transparent",
+            shape = "rectangle",
+            animation = "",
+          } = layout;
+
+          return (
+            <div
+              key={banner._id}
+              className="flex-shrink-0 w-full sm:w-3/4 md:w-1/2 lg:w-1/3"
+              style={{
+                backgroundColor,
+                color: textColor,
+                fontSize,
+                borderRadius,
+                boxShadow,
+                padding,
+                borderStyle,
+                borderWidth,
+                borderColor,
+                scrollSnapAlign: "start",
+                display: "flex",
+                flexDirection: imagePosition === "left" ? "row" : "row-reverse",
+                alignItems: "center",
+                gap: "1rem",
+                animation: animation ? animation : "none",
+                minHeight: "180px",
+              }}
+            >
+              <img
+                src={banner.imageUrl}
+                alt={banner.offerText || "Banner image"}
+                className="object-contain max-h-40 rounded"
+                style={{ flex: "1 1 50%" }}
+              />
+              <div
+                className="flex flex-col justify-center flex-1"
+                style={{ textAlign: textPosition }}
+              >
+                <h2 className="font-bold" style={{ fontSize }}>
+                  {banner.offerText}
+                </h2>
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      <style>{`
+        /* Hide scrollbar for all browsers */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+        /* Basic animation example (bounceIn) */
+        @keyframes bounceIn {
+          0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+          }
+          40% {
+            transform: translateY(-20px);
+          }
+          60% {
+            transform: translateY(-10px);
+          }
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+export default BannerPage;
