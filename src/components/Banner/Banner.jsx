@@ -12,7 +12,7 @@ const BannerPage = () => {
   const fetchBanners = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/api/banners`);
+      const res = await axios.get(`${BASE_URL}/api/banners/active`);
       if (res.data?.banners && Array.isArray(res.data.banners)) {
         setBanners(res.data.banners);
       } else {
