@@ -54,7 +54,7 @@ const BannerPage = () => {
     return <div className="text-center mt-10">No banners available</div>;
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-4 py-6">
+    <div className="w-full max-w-full mx-auto px-4 py-6">
       <div
         ref={scrollRef}
         className="flex overflow-x-auto scroll-smooth no-scrollbar"
