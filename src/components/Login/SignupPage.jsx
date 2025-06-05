@@ -1,21 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-
-import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
 import Toast, { showToast } from "../Toast/Toast";
+import { useNavigate } from "react-router-dom";
+
 const BASE_URL = "https://craft-cart-backend.vercel.app";
-const SignupSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(3, "Name must be at least 3 characters")
-    .required("Name is required"),
-  email: Yup.string()
-    .email("Please enter a valid email")
-    .required("Email is required"),
+
+// Validation Schemas
+const EmailSchema = Yup.object().shape({
+  email: Yup.string().email("Invalid email").required("Email is required"),
+});
+
+const OtpSchema = Yup.object().shape({
+  otp: Yup.string()
+    .length(6, "OTP must be 6 digits")
+    .required("OTP is required"),
+});
+
+const RegistrationSchema = Yup.object().shape({
+  name: Yup.string().min(3, "Min 3 characters").required("Name is required"),
   password: Yup.string()
-    .min(6, "Minimum 6 characters")
+    .min(6, "Min 6 characters")
     .required("Password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match")
@@ -24,234 +30,216 @@ const SignupSchema = Yup.object().shape({
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const [step, setStep] = useState("email"); // 'email', 'otp', 'register'
+  const [email, setEmail] = useState("");
+
+  // STEP 1: Send OTP
+  const handleSendEmail = async (values, { setSubmitting }) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/user/auth/send-verification-email`,
+        {
+          email: values.email,
+        }
+      );
+
+      showToast("OTP sent to your email", "info");
+      setEmail(values.email);
+      setStep("otp");
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to send OTP", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // STEP 2: Verify OTP
+  const handleVerifyOtp = async (values, { setSubmitting }) => {
+    try {
+      const res = await axios.post(`${BASE_URL}/api/user/auth/verify-email`, {
+        email,
+        otp: values.otp,
+      });
+
+      showToast("Email verified! Continue registration.", "success");
+      setStep("register");
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Invalid or expired OTP",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // STEP 3: Register user
+  const handleRegister = async (values, { setSubmitting }) => {
+    try {
+      const res = await axios.post(`${BASE_URL}/api/user/auth/register`, {
+        name: values.name,
+        email,
+        password: values.password,
+      });
+
+      showToast("Registration successful!", "success");
+      navigate("/login");
+    } catch (err) {
+      showToast(err.response?.data?.message || "Registration failed", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-montserrat">
-      <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-10">
-        <h1 className="text-center text-4xl font-extrabold text-[#004080] mb-10 tracking-widest uppercase drop-shadow-lg">
-          Craft-Cart Signup
-        </h1>
+    <div className="min-h-screen flex items-center justify-center p-6 font-montserrat">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10">
+        {step === "email" && (
+          <>
+            <h1 className="text-3xl font-bold text-center text-[#004080] mb-6">
+              Enter Your Email
+            </h1>
+            <Formik
+              initialValues={{ email: "" }}
+              validationSchema={EmailSchema}
+              onSubmit={handleSendEmail}
+            >
+              {({ isSubmitting }) => (
+                <Form>
+                  <Toast />
+                  <div className="mb-6">
+                    <Field
+                      type="email"
+                      name="email"
+                      placeholder="Email Address"
+                      className="w-full border-b-2 py-3 focus:outline-none"
+                    />
+                    <ErrorMessage
+                      name="email"
+                      component="div"
+                      className="text-red-600 mt-1"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-[#004080] text-yellow-400 font-semibold rounded-xl"
+                  >
+                    {isSubmitting ? "Sending..." : "Send OTP"}
+                  </button>
+                </Form>
+              )}
+            </Formik>
+          </>
+        )}
 
-        <Formik
-          initialValues={{
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-          }}
-          validationSchema={SignupSchema}
-          onSubmit={async (values, { setSubmitting, resetForm }) => {
-            try {
-              const response = await axios.post(
-                `${BASE_URL}/api/user/auth/register`,
-                {
-                  name: values.name,
-                  email: values.email,
-                  password: values.password,
-                }
-              );
+        {step === "otp" && (
+          <>
+            <h1 className="text-3xl font-bold text-center text-[#004080] mb-6">
+              Verify OTP
+            </h1>
+            <Formik
+              initialValues={{ otp: "" }}
+              validationSchema={OtpSchema}
+              onSubmit={handleVerifyOtp}
+            >
+              {({ isSubmitting }) => (
+                <Form>
+                  <Toast />
+                  <div className="mb-6">
+                    <Field
+                      type="text"
+                      name="otp"
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full border-b-2 py-3 focus:outline-none"
+                    />
+                    <ErrorMessage
+                      name="otp"
+                      component="div"
+                      className="text-red-600 mt-1"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-[#004080] text-yellow-400 font-semibold rounded-xl"
+                  >
+                    {isSubmitting ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </Form>
+              )}
+            </Formik>
+          </>
+        )}
 
-              if (response.data.status) {
-                // Show green success toast
-                showToast(
-                  response.data.message || "Registration successful!",
-                  "success"
-                );
+        {step === "register" && (
+          <>
+            <h1 className="text-3xl font-bold text-center text-[#004080] mb-6">
+              Complete Registration
+            </h1>
+            <Formik
+              initialValues={{ name: "", password: "", confirmPassword: "" }}
+              validationSchema={RegistrationSchema}
+              onSubmit={handleRegister}
+            >
+              {({ isSubmitting }) => (
+                <Form>
+                  <Toast />
+                  <div className="mb-4">
+                    <Field
+                      type="text"
+                      name="name"
+                      placeholder="Full Name"
+                      className="w-full border-b-2 py-3 focus:outline-none"
+                    />
+                    <ErrorMessage
+                      name="name"
+                      component="div"
+                      className="text-red-600 mt-1"
+                    />
+                  </div>
 
-                // Then show red warning toast about sharing credentials
-                showToast(
-                  "⚠️ Please do NOT share your username and password with anyone.",
-                  "error"
-                );
+                  <div className="mb-4">
+                    <Field
+                      type="password"
+                      name="password"
+                      placeholder="Password"
+                      className="w-full border-b-2 py-3 focus:outline-none"
+                    />
+                    <ErrorMessage
+                      name="password"
+                      component="div"
+                      className="text-red-600 mt-1"
+                    />
+                  </div>
 
-                resetForm();
-                navigate("/login");
-              } else {
-                // Show red error toast if registration failed
-                showToast(
-                  response.data.message || "Registration failed.",
-                  "error"
-                );
-              }
-            } catch (error) {
-              console.error("Registration error:", error);
+                  <div className="mb-6">
+                    <Field
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm Password"
+                      className="w-full border-b-2 py-3 focus:outline-none"
+                    />
+                    <ErrorMessage
+                      name="confirmPassword"
+                      component="div"
+                      className="text-red-600 mt-1"
+                    />
+                  </div>
 
-              // Show error toast
-              showToast(
-                error.response?.data?.message ||
-                  "An error occurred during registration.",
-                "error"
-              );
-            } finally {
-              setSubmitting(false);
-            }
-          }}
-        >
-          {({ errors, touched, isSubmitting }) => (
-            <Form noValidate className="space-y-8">
-              {/* Name Field */}
-              <Toast />
-              <div className="relative">
-                <Field
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder=" "
-                  className={`peer w-full border-b-2 bg-transparent py-3 text-[#004080] placeholder-transparent focus:outline-none focus:border-yellow-400 transition-colors ${
-                    errors.name && touched.name
-                      ? "border-yellow-400"
-                      : "border-gray-300"
-                  }`}
-                />
-                <label
-                  htmlFor="name"
-                  className="absolute left-0 -top-3 text-[#004080] text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#004080] peer-focus:-top-3 peer-focus:text-yellow-400 transition-all origin-left cursor-text select-none"
-                >
-                  Full Name
-                </label>
-                <ErrorMessage
-                  name="name"
-                  component="div"
-                  className="text-red-600 mt-1 text-sm font-semibold animate-error text-left"
-                />
-              </div>
-
-              {/* Email Field */}
-              <div className="relative">
-                <Field
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder=" "
-                  className={`peer w-full border-b-2 bg-transparent py-3 text-[#004080] placeholder-transparent focus:outline-none focus:border-yellow-400 transition-colors ${
-                    errors.email && touched.email
-                      ? "border-yellow-400"
-                      : "border-gray-300"
-                  }`}
-                />
-                <label
-                  htmlFor="email"
-                  className="absolute left-0 -top-3 text-[#004080] text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#004080] peer-focus:-top-3 peer-focus:text-yellow-400 transition-all origin-left cursor-text select-none"
-                >
-                  Email Address
-                </label>
-                <ErrorMessage
-                  name="email"
-                  component="div"
-                  className="text-red-600 mt-1 text-sm font-semibold animate-error text-left"
-                />
-              </div>
-
-              {/* Password Field */}
-              <div className="relative">
-                <Field
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder=" "
-                  className={`peer w-full border-b-2 bg-transparent py-3 text-[#004080] placeholder-transparent focus:outline-none focus:border-yellow-400 transition-colors ${
-                    errors.password && touched.password
-                      ? "border-yellow-400"
-                      : "border-gray-300"
-                  }`}
-                />
-                <label
-                  htmlFor="password"
-                  className="absolute left-0 -top-3 text-[#004080] text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#004080] peer-focus:-top-3 peer-focus:text-yellow-400 transition-all origin-left cursor-text select-none"
-                >
-                  Password
-                </label>
-                <ErrorMessage
-                  name="password"
-                  component="div"
-                  className="text-red-600 mt-1 text-sm font-semibold animate-error text-left"
-                />
-              </div>
-
-              {/* Confirm Password Field */}
-              <div className="relative">
-                <Field
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder=" "
-                  className={`peer w-full border-b-2 bg-transparent py-3 text-[#004080] placeholder-transparent focus:outline-none focus:border-yellow-400 transition-colors ${
-                    errors.confirmPassword && touched.confirmPassword
-                      ? "border-yellow-400"
-                      : "border-gray-300"
-                  }`}
-                />
-                <label
-                  htmlFor="confirmPassword"
-                  className="absolute left-0 -top-3 text-[#004080] text-sm peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-placeholder-shown:text-[#004080] peer-focus:-top-3 peer-focus:text-yellow-400 transition-all origin-left cursor-text select-none"
-                >
-                  Confirm Password
-                </label>
-                <ErrorMessage
-                  name="confirmPassword"
-                  component="div"
-                  className="text-red-600 mt-1 text-sm font-semibold animate-error text-left"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="relative w-full max-w-md mx-auto">
-                {/* Gradient glow outside button */}
-                <span className="absolute -inset-1 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-300 opacity-40 blur-lg animate-gradient-x"></span>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="relative w-full py-4 bg-[#004080] text-yellow-400 font-bold rounded-xl shadow-lg overflow-visible hover:scale-105 transition-transform focus:outline-none focus:ring-4 focus:ring-yellow-300 z-10"
-                >
-                  <span className="relative z-10">
-                    {isSubmitting ? "Creating Account..." : "Sign Up"}
-                  </span>
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-
-        <p className="mt-8 text-center text-[#004080] select-none">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-yellow-400 font-semibold hover:underline cursor-pointer"
-          >
-            Login
-          </a>
-        </p>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-[#004080] text-yellow-400 font-semibold rounded-xl"
+                  >
+                    {isSubmitting ? "Registering..." : "Register"}
+                  </button>
+                </Form>
+              )}
+            </Formik>
+          </>
+        )}
       </div>
-
-      {/* Animations */}
-      <style>{`
-        @keyframes fadeSlideIn {
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          from {
-            opacity: 0;
-            transform: translateX(-15px);
-          }
-        }
-        .animate-error {
-          animation: fadeSlideIn 0.5s ease forwards;
-          opacity: 0;
-        }
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% center;
-          }
-          50% {
-            background-position: 100% center;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 5s ease infinite;
-        }
-      `}</style>
     </div>
   );
 };
