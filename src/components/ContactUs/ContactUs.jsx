@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import OfferBanner from "../Banner/Banner";
 import contactusbanner from "../../assets/4862931.webp";
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
