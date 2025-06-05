@@ -58,7 +58,7 @@ const ShopPage = () => {
     });
 
   return (
-    <div className="font-montserrat">
+    <div className="font-montserrat min-h-screen">
       <OfferBanner />
 
       {/* Search and Sort */}
