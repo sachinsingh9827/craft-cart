@@ -36,7 +36,7 @@ const BannerPage = () => {
       currentIndex.current = (currentIndex.current + 1) % banners.length;
       const scrollContainer = scrollRef.current;
       if (scrollContainer) {
-        const bannerWidth = scrollContainer.children[0]?.offsetWidth || 0;
+        const bannerWidth = scrollContainer.clientWidth; // full container width
         scrollContainer.scrollTo({
           left: bannerWidth * currentIndex.current,
           behavior: "smooth",
@@ -60,10 +60,10 @@ const BannerPage = () => {
       <div
         ref={scrollRef}
         className="flex overflow-x-auto scroll-smooth no-scrollbar"
-        style={{ scrollSnapType: "x mandatory" }}
+        style={{ scrollSnapType: "x mandatory", scrollBehavior: "smooth" }}
       >
         {banners.map((banner) => {
-          const layout = banner.templateId.layout || {};
+          const layout = banner.templateId?.layout || {};
           const {
             imagePosition = "left",
             textPosition = "right",
@@ -76,14 +76,13 @@ const BannerPage = () => {
             borderStyle = "none",
             borderWidth = "0",
             borderColor = "transparent",
-            shape = "rectangle",
             animation = "",
           } = layout;
 
           return (
             <div
               key={banner._id}
-              className="flex-shrink-0 w-full sm:w-3/4 md:w-1/2 lg:w-1/3"
+              className="flex-shrink-0 w-full"
               style={{
                 backgroundColor,
                 color: textColor,
@@ -100,18 +99,19 @@ const BannerPage = () => {
                 alignItems: "center",
                 gap: "1rem",
                 animation: animation ? animation : "none",
-                minHeight: "180px",
+                minHeight: "250px",
+                boxSizing: "border-box",
               }}
             >
               <img
                 src={banner.imageUrl}
                 alt={banner.offerText || "Banner image"}
-                className="object-contain max-h-40 rounded"
+                className="object-contain max-h-48 rounded"
                 style={{ flex: "1 1 50%" }}
               />
               <div
                 className="flex flex-col justify-center flex-1"
-                style={{ textAlign: textPosition }}
+                style={{ textAlign: textPosition, padding: "0 1rem" }}
               >
                 <h2 className="font-bold" style={{ fontSize }}>
                   {banner.offerText}
@@ -130,18 +130,6 @@ const BannerPage = () => {
         .no-scrollbar {
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
-        }
-        /* Basic animation example (bounceIn) */
-        @keyframes bounceIn {
-          0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-20px);
-          }
-          60% {
-            transform: translateY(-10px);
-          }
         }
       `}</style>
     </div>
