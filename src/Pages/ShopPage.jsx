@@ -58,7 +58,7 @@ const ShopPage = () => {
     });
 
   return (
-    <div>
+    <div className="font-montserrat">
       <OfferBanner />
 
       {/* Search and Sort */}
@@ -89,7 +89,7 @@ const ShopPage = () => {
       )}
 
       {/* Product Grid */}
-      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 font-montserrat">
+      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 ">
         {filteredProducts.length > 0 ? (
           filteredProducts.map(({ _id, name, price, images }) => {
             const imageUrl =
