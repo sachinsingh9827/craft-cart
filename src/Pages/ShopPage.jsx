@@ -23,7 +23,15 @@ const ShopPage = () => {
   const fetchProducts = async (pageNumber) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/api/admin/protect/active`);
+      const res = await axios.get(`${BASE_URL}/api/admin/protect/active`, {
+        params: {
+          page: pageNumber,
+          limit: PAGE_SIZE,
+          search, // you can add these if you want to filter from backend
+          // category,
+          // brand,
+        },
+      });
       const newProducts = Array.isArray(res.data?.data) ? res.data.data : [];
 
       setProducts((prev) => [...prev, ...newProducts]);
