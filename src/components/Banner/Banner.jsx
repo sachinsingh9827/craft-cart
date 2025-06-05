@@ -9,16 +9,18 @@ const BannerPage = () => {
   const scrollRef = useRef(null);
   const currentIndex = useRef(0);
 
-  // Fetch banners
   const fetchBanners = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${BASE_URL}/api/banners`);
-      if (res.data?.banners) {
+      if (res.data?.banners && Array.isArray(res.data.banners)) {
         setBanners(res.data.banners);
+      } else {
+        setBanners([]);
       }
     } catch (err) {
       console.error("Error fetching banners:", err);
+      setBanners([]);
     } finally {
       setLoading(false);
     }
@@ -28,7 +30,6 @@ const BannerPage = () => {
     fetchBanners();
   }, []);
 
-  // Auto scroll every 2 seconds
   useEffect(() => {
     if (!banners.length) return;
 
@@ -36,31 +37,28 @@ const BannerPage = () => {
       currentIndex.current = (currentIndex.current + 1) % banners.length;
       const scrollContainer = scrollRef.current;
       if (scrollContainer) {
-        const bannerWidth = scrollContainer.clientWidth; // full container width
+        const bannerWidth = scrollContainer.clientWidth;
         scrollContainer.scrollTo({
           left: bannerWidth * currentIndex.current,
           behavior: "smooth",
         });
       }
-    }, 2000);
+    }, 3000); // Changed to 3 seconds for better UX
 
     return () => clearInterval(interval);
   }, [banners]);
 
-  if (loading) {
+  if (loading)
     return <div className="text-center mt-10">Loading banners...</div>;
-  }
-
-  if (!banners.length) {
+  if (!banners.length)
     return <div className="text-center mt-10">No banners available</div>;
-  }
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-4 py-6">
       <div
         ref={scrollRef}
         className="flex overflow-x-auto scroll-smooth no-scrollbar"
-        style={{ scrollSnapType: "x mandatory", scrollBehavior: "smooth" }}
+        style={{ scrollSnapType: "x mandatory" }}
       >
         {banners.map((banner) => {
           const layout = banner.templateId?.layout || {};
@@ -76,12 +74,12 @@ const BannerPage = () => {
             borderStyle = "none",
             borderWidth = "0",
             borderColor = "transparent",
-            animation = "",
+            animation = "none",
           } = layout;
 
           return (
             <div
-              key={banner._id}
+              key={banner._id || Math.random()} // fallback key if _id missing
               className="flex-shrink-0 w-full"
               style={{
                 backgroundColor,
@@ -98,17 +96,30 @@ const BannerPage = () => {
                 flexDirection: imagePosition === "left" ? "row" : "row-reverse",
                 alignItems: "center",
                 gap: "1rem",
-                animation: animation ? animation : "none",
+                animation,
                 minHeight: "250px",
                 boxSizing: "border-box",
               }}
             >
-              <img
-                src={banner.imageUrl}
-                alt={banner.offerText || "Banner image"}
-                className="object-contain max-h-48 rounded"
-                style={{ flex: "1 1 50%" }}
-              />
+              {banner.imageUrl ? (
+                <img
+                  src={banner.imageUrl}
+                  alt={banner.offerText || "Banner image"}
+                  className="object-contain max-h-48 rounded"
+                  style={{ flex: "1 1 50%" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    flex: "1 1 50%",
+                    height: "192px",
+                    backgroundColor: "#eee",
+                    borderRadius: "8px",
+                  }}
+                  aria-label="No banner image"
+                />
+              )}
+
               <div
                 className="flex flex-col justify-center flex-1"
                 style={{ textAlign: textPosition, padding: "0 1rem" }}

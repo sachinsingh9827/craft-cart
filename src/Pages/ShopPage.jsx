@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import OfferBanner from "../components/Banner/Banner";
-import shop from "../../src/assets/4862931.webp";
 import LoadingPage from "../components/LoadingPage";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
@@ -27,14 +26,14 @@ const ShopPage = () => {
       const res = await axios.get(
         `${BASE_URL}/api/admin/protect?page=${pageNumber}&limit=${PAGE_SIZE}`
       );
-      const newProducts = res.data?.data || [];
+      const newProducts = Array.isArray(res.data?.data) ? res.data.data : [];
 
-      // Append instead of overwrite
       setProducts((prev) => [...prev, ...newProducts]);
       setTotalPages(res.data?.totalPages || 1);
       setError("");
     } catch (err) {
       setError("Failed to load products.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -45,12 +44,12 @@ const ShopPage = () => {
   }, [page]);
 
   const handleLoadMore = () => {
-    setPage((prev) => prev + 1);
+    if (page < totalPages) setPage((prev) => prev + 1);
   };
 
   const filteredProducts = products
     .filter((product) =>
-      product.name.toLowerCase().includes(search.toLowerCase())
+      product.name?.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
       if (sortOption === "lowToHigh") return a.price - b.price;
@@ -81,6 +80,13 @@ const ShopPage = () => {
           <option value="highToLow">High to Low</option>
         </select>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <p className="max-w-6xl mx-auto px-4 mt-4 text-red-600 text-center">
+          {error}
+        </p>
+      )}
 
       {/* Product Grid */}
       <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 font-montserrat">
@@ -113,7 +119,7 @@ const ShopPage = () => {
                     {name}
                   </h2>
                   <p className="text-yellow-500 font-bold text-md mb-3">
-                    ₹{price.toFixed(2)}
+                    ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
                   <button
                     onClick={(e) => {
@@ -129,9 +135,9 @@ const ShopPage = () => {
             );
           })
         ) : loading ? (
-          <p className="col-span-full text-center">
+          <div className="col-span-full text-center">
             <LoadingPage />
-          </p>
+          </div>
         ) : (
           <p className="col-span-full text-center text-gray-500">
             No products found.
