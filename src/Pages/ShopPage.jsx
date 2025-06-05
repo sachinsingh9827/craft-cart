@@ -60,13 +60,7 @@ const ShopPage = () => {
 
   return (
     <div>
-      <OfferBanner
-        imageUrl={shop}
-        heading="Have Questions? We're Here to Help!"
-        description="Reach out to us and we'll get back to you as soon as possible."
-        buttonText="Explore More"
-        navigateTo="/shop"
-      />
+      <OfferBanner />
 
       {/* Search and Sort */}
       <div className="max-w-6xl mx-auto px-4 mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
