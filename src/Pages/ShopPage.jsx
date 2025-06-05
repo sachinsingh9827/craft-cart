@@ -23,9 +23,7 @@ const ShopPage = () => {
   const fetchProducts = async (pageNumber) => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${BASE_URL}/api/admin/protect?page=${pageNumber}&limit=${PAGE_SIZE}`
-      );
+      const res = await axios.get(`${BASE_URL}/api/admin/protect/active`);
       const newProducts = Array.isArray(res.data?.data) ? res.data.data : [];
 
       setProducts((prev) => [...prev, ...newProducts]);
