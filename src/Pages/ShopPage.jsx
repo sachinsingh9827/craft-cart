@@ -57,6 +57,15 @@ const ShopPage = () => {
 
   const handleAddToWishlist = async (productId, e) => {
     e.stopPropagation();
+
+    // Check if user is authenticated (token presence check)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login to add to wishlist.");
+      navigate("/login");
+      return;
+    }
+
     try {
       const res = await axios.post(
         `${BASE_URL}/api/user/auth/wishlist/add`,
@@ -64,23 +73,32 @@ const ShopPage = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            ...getAuthHeader(),
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (res.data.success) {
-        alert("Added to wishlist!");
+        alert("Product added to wishlist!");
+        // Optionally update UI state here (e.g. show filled heart)
       } else {
         alert(res.data.message || "Something went wrong.");
       }
     } catch (err) {
       console.error("Add to Wishlist Error:", err);
-      if (err?.response?.status === 401) {
-        alert("Please login to add to wishlist.");
+
+      // Unauthorized (token expired or invalid)
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("token"); // clear invalid token
         navigate("/login");
+      } else if (err.response?.status === 409) {
+        // Conflict: Product already in wishlist
+        alert(err.response.data.message || "Product is already in wishlist.");
+      } else if (err.response?.status === 400) {
+        alert(err.response.data.message || "Invalid product ID.");
       } else {
-        alert(err?.response?.data?.message || "Wishlist failed.");
+        alert("Failed to add product to wishlist. Please try again.");
       }
     }
   };
