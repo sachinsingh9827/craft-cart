@@ -12,13 +12,17 @@ const ShopPage = () => {
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [page, setPage] = useState(1);
-
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalPages, setTotalPages] = useState(1);
 
   const goToProduct = (id) => navigate(`/product/${id}`);
+
+  const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   const fetchProducts = async (pageNumber) => {
     try {
@@ -27,19 +31,17 @@ const ShopPage = () => {
         params: {
           page: pageNumber,
           limit: PAGE_SIZE,
-          search, // you can add these if you want to filter from backend
-          // category,
-          // brand,
+          search,
         },
       });
-      const newProducts = Array.isArray(res.data?.data) ? res.data.data : [];
 
+      const newProducts = Array.isArray(res.data?.data) ? res.data.data : [];
       setProducts((prev) => [...prev, ...newProducts]);
       setTotalPages(res.data?.totalPages || 1);
       setError("");
     } catch (err) {
-      setError("Failed to load products.");
       console.error(err);
+      setError("Failed to load products.");
     } finally {
       setLoading(false);
     }
@@ -51,6 +53,36 @@ const ShopPage = () => {
 
   const handleLoadMore = () => {
     if (page < totalPages) setPage((prev) => prev + 1);
+  };
+
+  const handleAddToWishlist = async (productId, e) => {
+    e.stopPropagation();
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/user/wishlist/add`,
+        { productId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeader(),
+          },
+        }
+      );
+
+      if (res.data.success) {
+        alert("Added to wishlist!");
+      } else {
+        alert(res.data.message || "Something went wrong.");
+      }
+    } catch (err) {
+      console.error("Add to Wishlist Error:", err);
+      if (err?.response?.status === 401) {
+        alert("Please login to add to wishlist.");
+        navigate("/login");
+      } else {
+        alert(err?.response?.data?.message || "Wishlist failed.");
+      }
+    }
   };
 
   const filteredProducts = products
@@ -95,7 +127,7 @@ const ShopPage = () => {
       )}
 
       {/* Product Grid */}
-      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8 ">
+      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
         {filteredProducts.length > 0 ? (
           filteredProducts.map(({ _id, name, price, images }) => {
             const imageUrl =
@@ -127,15 +159,24 @@ const ShopPage = () => {
                   <p className="text-yellow-500 font-bold text-md mb-3">
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      goToProduct(_id);
-                    }}
-                    className="mt-auto w-full bg-[#004080] text-yellow-400 py-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
-                  >
-                    Buy Now
-                  </button>
+
+                  <div className="flex gap-2 mt-auto">
+                    <button
+                      onClick={(e) => handleAddToWishlist(_id, e)}
+                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
+                    >
+                      ❤️ Wishlist
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToProduct(_id);
+                      }}
+                      className="w-1/2 bg-[#004080] text-yellow-400 py-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
+                    >
+                      Buy Now
+                    </button>
+                  </div>
                 </div>
               </div>
             );
