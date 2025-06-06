@@ -59,7 +59,7 @@ const ShopPage = () => {
     e.stopPropagation();
     try {
       const res = await axios.post(
-        `${BASE_URL}/api/user/wishlist/add`,
+        `${BASE_URL}/api/user/auth/wishlist/add`,
         { productId },
         {
           headers: {
