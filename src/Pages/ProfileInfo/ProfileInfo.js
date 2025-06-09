@@ -90,7 +90,7 @@ export default function ProfilePage() {
       const userData = JSON.parse(localStorage.getItem("user"));
 
       const res = await axios.post(
-        `https://craft-cart-backend.vercel.app/api/user/auth/address`,
+        `https://craft-cart-backend.vercel.app/api/user/auth/address`, // ✅ Correct endpoint
         {
           userId: userData._id,
           addressId: addressToDelete,
@@ -107,7 +107,7 @@ export default function ProfilePage() {
         toast.error(res.data.message || "Failed to delete address");
       }
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     } finally {
       setShowConfirmDelete(false);
       setAddressToDelete(null);
