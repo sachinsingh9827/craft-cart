@@ -181,7 +181,7 @@ export default function OrdersPage() {
 
     try {
       const res = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/order",
+        "https://craft-cart-backend.vercel.app/api/order/create",
         order,
         {
           headers: {
