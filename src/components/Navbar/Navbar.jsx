@@ -102,42 +102,6 @@ const Navbar = () => {
             <>
               <button
                 type="button"
-                onClick={() => {
-                  const encrypted = encrypt("product");
-                  handleLinkClick();
-                  navigate(`/product/${encrypted}`);
-                }}
-                className="nav-3d-link"
-                aria-label="Go to Cart"
-              >
-                <span className="link-text primary">
-                  <FaShoppingCart size={20} />
-                </span>
-                <span className="link-text secondary">
-                  <FaShoppingCart size={20} />
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const encrypted = encrypt("wishlist");
-                  handleLinkClick();
-                  navigate(`/wishlist/${encrypted}`);
-                }}
-                className="nav-3d-link"
-                aria-label="Go to Wishlist"
-              >
-                <span className="link-text primary">
-                  <FaHeart size={20} />
-                </span>
-                <span className="link-text secondary">
-                  <FaHeart size={20} />
-                </span>
-              </button>
-
-              <button
-                type="button"
                 className="btn profile-3d-btn"
                 onClick={() => {
                   const encrypted = encrypt("profile");

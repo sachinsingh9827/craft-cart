@@ -15,7 +15,7 @@ import AboutUs from "./components/AboutUs/AboutUs";
 import ProtectedRoute from "./context/ProtectedRoute";
 import ProductsPage from "./Pages/ProductsPage";
 import WishlistPage from "./Pages/WishlistPage";
-import ProfilePage from "./Pages/ProfilePage";
+
 import TeamSection from "./components/TeamSection/TeamSection";
 import AboutOffer from "./components/AboutUs/AboutOffer";
 import Toast from "./components/Toast/Toast";
@@ -23,6 +23,7 @@ import ScrollAutoPlayVideo from "./components/TeamSection/ScrollAutoPlayVideo";
 import ScrollToTop from "./ScrollToTop";
 import NotFound from "./utils/NotFound";
 import VerifyEmailPage from "./components/Login/VerifyEmailPage";
+import ProfilePage from "./Pages/ProfileInfo/ProfilePage";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
