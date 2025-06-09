@@ -274,11 +274,12 @@ export default function OrdersPage() {
           <div className="flex gap-2 flex-wrap">
             <input
               value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())} // <-- convert to uppercase here
               className="border p-2 flex-grow rounded min-w-[180px]"
               placeholder="Coupon code"
               disabled={loadingCoupon}
             />
+
             <button
               onClick={handleApplyCoupon}
               className="btn-primary min-w-[100px]"
