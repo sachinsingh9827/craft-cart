@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Button from "../../components/Reusable/Button";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -84,19 +85,18 @@ export default function ProfilePage() {
   };
 
   // Delete selected address
-  // Delete selected address
   const handleDeleteAddress = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
 
-      const res = await axios.post(
-        `https://craft-cart-backend.vercel.app/api/user/auth/address`, // ✅ Correct endpoint
-        {
-          userId: userData._id,
-          addressId: addressToDelete,
-        },
+      const res = await axios.delete(
+        `https://craft-cart-backend.vercel.app/api/user/auth/address`,
         {
           headers: { Authorization: `Bearer ${userData.token}` },
+          data: {
+            userId: userData._id,
+            addressId: addressToDelete,
+          },
         }
       );
 
@@ -129,10 +129,12 @@ export default function ProfilePage() {
     );
 
   return (
-    <div className="min-h-screen p-4 bg-gray-100 font-montserrat">
+    <div className="min-h-screen p-2 font-montserrat">
       <ToastContainer position="bottom-right" autoClose={3000} />
       <div className="max-w-full mx-auto p-1">
-        <h1 className="text-2xl font-bold mb-6">User Profile</h1>
+        <h1 className="text-sm uppercase text-[#004080] font-bold mb-6">
+          User Profile
+        </h1>
 
         <div className="mb-6">
           <p>
@@ -182,12 +184,9 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        <button
-          onClick={() => setShowAddressForm(true)}
-          className="mt-6 w-full bg-blue-900 text-yellow-300 py-2 rounded"
-        >
-          Add New Address
-        </button>
+        <Button onClick={() => setShowAddressForm(true)} className="mt-4">
+          Add New
+        </Button>
       </div>
 
       {/* Address Form Modal */}
