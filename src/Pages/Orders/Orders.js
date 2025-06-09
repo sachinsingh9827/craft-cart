@@ -248,7 +248,9 @@ export default function OrdersPage() {
               ))}
             </div>
           ) : (
-            <p className="text-red-600">No address found—please add one.</p>
+            <p className="text-sm text-[#004080] uppercase">
+              No address found—please add one.
+            </p>
           )}
 
           {user.addresses?.length === 1 && (
