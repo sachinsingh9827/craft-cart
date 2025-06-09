@@ -169,7 +169,7 @@ export default function OrdersPage() {
       userId,
       deliveryAddress: user.addresses.find((a) => a._id === selectedAddressId),
       items: selectedProducts,
-      coupon: couponData || null, // if no coupon applied, send null
+      coupon: couponData || null,
       subtotal: totals.subtotal,
       discount: discount || 0,
       totalAmount: totals.total,
@@ -181,7 +181,7 @@ export default function OrdersPage() {
 
     try {
       const res = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/orders/create",
+        "https://craft-cart-backend.vercel.app/api/orders", // <-- fixed
         order,
         {
           headers: {
@@ -191,9 +191,8 @@ export default function OrdersPage() {
         }
       );
 
-      if (res.data.success) {
+      if (res.data.status === "success") {
         toast.success(res.data.message || "Order placed successfully!");
-        // Optional: reset states or navigate user after order
         // navigate("/ordersuccess");
       } else {
         toast.error(res.data.message || "Order placement failed");
