@@ -251,6 +251,12 @@ export default function OrdersPage() {
             <p className="text-red-600">No address found—please add one.</p>
           )}
 
+          {user.addresses?.length === 1 && (
+            <p className="text-red-500 mt-2">
+              You need to add more than one address to continue.
+            </p>
+          )}
+
           <div className="flex gap-2 mt-4">
             <Button onClick={() => setStep(1)} className="btn-secondary">
               Back
@@ -258,7 +264,7 @@ export default function OrdersPage() {
             <Button
               onClick={() => setStep(3)}
               className="btn-primary"
-              disabled={!selectedAddressId}
+              disabled={!selectedAddressId || user.addresses?.length <= 1}
             >
               Next: Coupon
             </Button>
