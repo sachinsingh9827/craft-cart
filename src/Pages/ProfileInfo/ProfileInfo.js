@@ -90,7 +90,7 @@ export default function ProfilePage() {
       const userData = JSON.parse(localStorage.getItem("user"));
 
       const res = await axios.post(
-        `https://craft-cart-backend.vercel.app/api/user/auth/delete-address`,
+        `https://craft-cart-backend.vercel.app/api/user/auth/address`,
         {
           userId: userData._id,
           addressId: addressToDelete,
