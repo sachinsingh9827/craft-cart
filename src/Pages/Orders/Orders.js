@@ -135,7 +135,9 @@ export default function OrdersPage() {
 
   return (
     <div className="p-4 max-w-xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center mb-4">Place Your Order</h1>
+      <h1 className="text-2xl font-bold text-center mb-4 text-[#004080]">
+        Place Your Order
+      </h1>
 
       <div className="text-right text-lg font-bold text-green-600 mb-4">
         Total: ₹{totals.total}
