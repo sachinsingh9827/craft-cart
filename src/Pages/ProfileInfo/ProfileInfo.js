@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
 
+  // Fetch user data
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
@@ -51,6 +52,7 @@ export default function ProfilePage() {
     fetchUserDetails();
   }, []);
 
+  // Add new address
   const handleAddAddress = async (e) => {
     e.preventDefault();
     try {
@@ -81,6 +83,7 @@ export default function ProfilePage() {
     }
   };
 
+  // Delete selected address
   const handleDeleteAddress = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
