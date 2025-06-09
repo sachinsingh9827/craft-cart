@@ -18,10 +18,12 @@ export default function OrdersPage() {
 
   const navigate = useNavigate();
 
+  // Get user info from localStorage
   const userData = JSON.parse(localStorage.getItem("user"));
   const token = userData?.token;
   const userId = userData?._id;
 
+  // Fetch user data
   useEffect(() => {
     if (!token || !userId) return;
 
@@ -34,10 +36,9 @@ export default function OrdersPage() {
           }
         );
         if (res.data.success) {
-          const user = res.data.data.user;
-          setUser(user);
-          if (user?.wishlist?.length) {
-            setSelectedProducts(user.wishlist);
+          setUser(res.data.data.user);
+          if (res.data.data.user?.wishlist?.length) {
+            setSelectedProducts(res.data.data.user.wishlist);
           }
         } else {
           toast.error("Failed to fetch user data");
@@ -50,6 +51,7 @@ export default function OrdersPage() {
     fetchUserData();
   }, [token, userId]);
 
+  // Calculate subtotal and total based on selected products and discount
   useEffect(() => {
     if (selectedProducts.length) {
       const subtotal = selectedProducts.reduce(
@@ -66,17 +68,28 @@ export default function OrdersPage() {
     }
   }, [selectedProducts, discount]);
 
+  // Apply coupon with loading and error handling
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
+    if (!selectedProducts.length) {
+      toast.error("Please select at least one product first");
+      return;
+    }
 
     setLoadingCoupon(true);
     setCouponError("");
+    setCouponData(null);
+    setDiscount(0);
 
     try {
+      // Using first selected product's ID for coupon verification
+      const productId = selectedProducts[0]._id;
+
       const res = await axios.post(
-        `https://craft-cart-backend.vercel.app/api/user/auth/verify`,
+        `https://craft-cart-backend.vercel.app/api/coupons/verify`,
         {
-          code: couponCode,
+          code: couponCode.trim(),
+          productId,
           subtotal: totals.subtotal,
         },
         {
@@ -90,23 +103,20 @@ export default function OrdersPage() {
         setDiscount(discountAmt);
         toast.success("Coupon applied!");
       } else {
-        setCouponData(null);
-        setDiscount(0);
         setCouponError(res.data.message || "Coupon invalid");
-        setCouponCode("");
         setTimeout(() => setCouponError(""), 3000);
       }
     } catch (err) {
-      setCouponData(null);
-      setDiscount(0);
-      setCouponError(err.message || "Error applying coupon");
-      setCouponCode("");
+      setCouponError(
+        err.response?.data?.message || err.message || "Error applying coupon"
+      );
       setTimeout(() => setCouponError(""), 3000);
     } finally {
       setLoadingCoupon(false);
     }
   };
 
+  // Confirm and go to payment
   const handleConfirm = () => {
     if (!selectedAddressId || !selectedProducts.length) {
       toast.error("Please select address and products");
@@ -135,14 +145,16 @@ export default function OrdersPage() {
 
   return (
     <div className="p-4 max-w-xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center mb-4 text-[#004080]">
+      <h1 className="text-xl font-bold text-center mb-4 text-[#004080] uppercase">
         Place Your Order
       </h1>
 
+      {/* Show total on top */}
       <div className="text-right text-lg font-bold text-green-600 mb-4">
         Total: ₹{totals.total}
       </div>
 
+      {/* Step 1: Review & Select Wishlist Products */}
       {step === 1 && (
         <div>
           <div className="flex justify-between items-center mb-2 flex-wrap">
@@ -202,6 +214,7 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {/* Step 2: Choose Address */}
       {step === 2 && (
         <div>
           <div className="mb-2 text-right font-bold text-blue-600">
@@ -253,6 +266,7 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {/* Step 3: Apply Coupon */}
       {step === 3 && (
         <div>
           <div className="mb-2 text-right font-bold text-blue-600">
@@ -263,7 +277,7 @@ export default function OrdersPage() {
           <div className="flex gap-2 flex-wrap">
             <input
               value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())} // <-- convert to uppercase here
               className="border p-2 flex-grow rounded min-w-[180px]"
               placeholder="Coupon code"
               disabled={loadingCoupon}
@@ -299,6 +313,7 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {/* Step 4: Summary */}
       {step === 4 && (
         <div>
           <h2 className="font-semibold mb-2">4. Order Summary</h2>
