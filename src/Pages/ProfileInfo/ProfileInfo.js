@@ -84,15 +84,22 @@ export default function ProfilePage() {
   };
 
   // Delete selected address
+  // Delete selected address
   const handleDeleteAddress = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
-      const res = await axios.delete(
-        `https://craft-cart-backend.vercel.app/api/user/auth/address/${addressToDelete}`,
+
+      const res = await axios.post(
+        `https://craft-cart-backend.vercel.app/api/user/auth/delete-address`,
+        {
+          userId: userData._id,
+          addressId: addressToDelete,
+        },
         {
           headers: { Authorization: `Bearer ${userData.token}` },
         }
       );
+
       if (res.data.success) {
         toast.success("Address deleted!");
         fetchUserDetails();
