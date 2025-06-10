@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
 
-const BASE_URL = "https://craft-cart-backend.vercel.app/api";
+const BASE_URL = "https://craft-cart-backend.vercel.app/";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -218,20 +218,34 @@ export default function Orders() {
   // On modal close: remove wishlist, navigate
   const closeModal = async () => {
     setShowThankYouModal(false);
+
     try {
       const token = localStorage.getItem("token");
 
-      for (const product of selectedProducts) {
-        await axios.post(
+      const removeWishlistItem = (productId) =>
+        axios.post(
           `${BASE_URL}/api/user/auth/wishlist/remove`,
-          { productId: product._id },
+          { productId },
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
+      for (const product of selectedProducts) {
+        await removeWishlistItem(product._id);
       }
-    } catch {
-      toast.error("Failed to remove items from wishlist");
+
+      // Optional: update user state after removal (like you do in `handleDeleteFromWishlist`)
+      setUser((prevUser) => ({
+        ...prevUser,
+        wishlist: prevUser.wishlist.filter(
+          (item) => !selectedProducts.some((p) => p._id === item._id)
+        ),
+      }));
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to remove items from wishlist"
+      );
     }
 
     navigate("/shop");
