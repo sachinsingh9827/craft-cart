@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
 
-const BASE_URL = "https://craft-cart-backend.vercel.app/";
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 export default function Orders() {
   const navigate = useNavigate();
