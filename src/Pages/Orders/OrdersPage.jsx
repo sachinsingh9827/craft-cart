@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
 
-const BASE_URL = "https://craft-cart-backend.vercel.app";
+const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -224,7 +224,7 @@ export default function Orders() {
 
       const removeWishlistItem = (productId) =>
         axios.post(
-          `${BASE_URL}/api/user/auth/wishlist/remove`,
+          `${BASE_URL}/user/auth/wishlist/remove`,
           { productId },
           {
             headers: { Authorization: `Bearer ${token}` },
