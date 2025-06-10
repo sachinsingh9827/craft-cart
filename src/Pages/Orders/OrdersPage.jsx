@@ -219,14 +219,21 @@ export default function Orders() {
   const closeModal = async () => {
     setShowThankYouModal(false);
     try {
-      await axios.post(
-        `${BASE_URL}/user/auth/remove-from-wishlist`,
-        { userId, productIds: selectedProducts.map((p) => p._id) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const token = localStorage.getItem("token");
+
+      for (const product of selectedProducts) {
+        await axios.post(
+          `${BASE_URL}/api/user/auth/wishlist/remove`,
+          { productId: product._id },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
     } catch {
       toast.error("Failed to remove items from wishlist");
     }
+
     navigate("/shop");
   };
 
@@ -234,7 +241,7 @@ export default function Orders() {
   const addr = user.addresses.find((a) => a._id === selectedAddressId);
 
   return (
-    <div className="p-4 max-w-full mx-auto space-y-6">
+    <div className="p-2 font-montserrat max-w-full mx-auto space-y-6 min-h-screen">
       <h1 className="text-xl font-bold text-center mb-4 text-[#004080] uppercase">
         Place Your Order
       </h1>
@@ -248,7 +255,7 @@ export default function Orders() {
           <h2 className="font-semibold mb-2">
             1. Review &amp; Select Products
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
             {user.wishlist.map((p) => {
               const sel = selectedProducts.some((sp) => sp._id === p._id);
               return (
@@ -283,13 +290,14 @@ export default function Orders() {
               );
             })}
           </div>
-          <Button
-            onClick={() => setStep(2)}
-            className="mt-4 w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
-            disabled={!selectedProducts.length}
-          >
-            Next: Address
-          </Button>
+          <div className="flex justify-end mt-6">
+            <Button
+              onClick={() => setStep(2)}
+              disabled={!selectedProducts.length}
+            >
+              Select Address
+            </Button>
+          </div>
         </>
       )}
 
@@ -332,7 +340,7 @@ export default function Orders() {
           {addressValidationError && (
             <p className="text-red-600 mt-2">{addressValidationError}</p>
           )}
-          <div className="flex gap-2 mt-4">
+          <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(1)} className="btn-secondary">
               Back
             </Button>
@@ -341,7 +349,7 @@ export default function Orders() {
               className="btn-primary"
               disabled={!addressValid || addressValidationLoading}
             >
-              Next: Coupon
+              Proceed to Coupon
             </Button>
           </div>
         </>
@@ -351,6 +359,16 @@ export default function Orders() {
       {step === 3 && (
         <>
           <h2 className="font-semibold mb-2">3. Apply Coupon</h2>
+
+          {/* Show instructional text if no coupon is applied */}
+          {!couponData && (
+            <p className="text-sm text-gray-600 mb-2">
+              If you have a coupon code, please enter it below to get a
+              discount. If you don't have one, you can skip this step and
+              continue.
+            </p>
+          )}
+
           <div className="flex gap-2 flex-wrap">
             <input
               value={couponCode}
@@ -362,11 +380,13 @@ export default function Orders() {
             <Button
               onClick={handleApplyCoupon}
               className="btn-primary min-w-[100px]"
-              disabled={loadingCoupon}
+              disabled={loadingCoupon || couponCode.trim() === ""}
             >
               {loadingCoupon ? "Applying..." : "Apply"}
             </Button>
           </div>
+
+          {/* Show success or error messages */}
           {couponData && (
             <div className="mt-2 text-green-600">
               {couponData.code} applied! Discount: ₹{discount.toFixed(2)}
@@ -375,12 +395,14 @@ export default function Orders() {
           {couponError && (
             <div className="mt-2 text-red-600">{couponError}</div>
           )}
-          <div className="flex gap-2 mt-4">
+
+          {/* Navigation buttons */}
+          <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(2)} className="btn-secondary">
               Back
             </Button>
             <Button onClick={() => setStep(4)} className="btn-primary">
-              Next: Payment
+              Proceed to Payment
             </Button>
           </div>
         </>
@@ -422,7 +444,7 @@ export default function Orders() {
             </label>
           </div>
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
-          <div className="flex gap-2 mt-6">
+          <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(3)} className="btn-secondary">
               Back
             </Button>
@@ -513,33 +535,31 @@ export default function Orders() {
             </div>
           </section>
 
-          <button
-            onClick={handleSubmitOrder}
-            disabled={submittingOrder}
-            className="mt-6 w-full bg-[#004080] text-white font-bold py-3 rounded hover:bg-[#003366] disabled:opacity-50"
-          >
-            {submittingOrder ? "Placing Order..." : "Place Order"}
-          </button>
+          <div className="mt-6 flex flex-row justify-between md:justify-end md:space-x-4">
+            <Button onClick={handleSubmitOrder} disabled={submittingOrder}>
+              {submittingOrder ? "Placing Order..." : "Place Order"}
+            </Button>
 
-          <button
-            onClick={() => setStep(4)}
-            disabled={submittingOrder}
-            className="mt-3 w-full border border-[#004080] text-[#004080] font-bold py-3 rounded hover:bg-[#004080] hover:text-white disabled:opacity-50"
-          >
-            Back to Payment
-          </button>
+            <Button onClick={() => setStep(4)} disabled={submittingOrder}>
+              Back to Payment
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Thank You Modal */}
       {showThankYouModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg text-center">
-            <h2 className="text-xl font-bold text-green-600">Thank You!</h2>
-            <p className="mt-2">Your order has been placed successfully.</p>
-            <Button onClick={closeModal} className="mt-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md text-center">
+            <h2 className="text-2xl font-semibold mb-4">Thank You!</h2>
+            <p className="mb-4">Your order was placed successfully.</p>
+
+            <button
+              onClick={closeModal}
+              className="bg-[#004080] text-white px-4 py-2 rounded hover:bg-[#003366]"
+            >
               Continue Shopping
-            </Button>
+            </button>
           </div>
         </div>
       )}
