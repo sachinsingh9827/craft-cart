@@ -1,56 +1,68 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
+
+const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
 export default function Orders() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const productIdFromQuery = new URLSearchParams(location.search).get(
+    "product"
+  );
 
-  // Auth
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
   const token = parsedUser?.token;
   const userId = parsedUser?._id;
 
-  // States
   const [user, setUser] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [step, setStep] = useState(1);
-
-  // Coupon/payments
   const [couponCode, setCouponCode] = useState("");
   const [couponData, setCouponData] = useState(null);
   const [discount, setDiscount] = useState(0);
   const [totals, setTotals] = useState({ subtotal: 0, total: 0 });
   const [loadingCoupon, setLoadingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
-
   const [addressValid, setAddressValid] = useState(false);
   const [addressValidationLoading, setAddressValidationLoading] =
     useState(false);
   const [addressValidationError, setAddressValidationError] = useState("");
-
   const [paymentOption, setPaymentOption] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [onlineBlocked, setOnlineBlocked] = useState(false);
-
   const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [showThankYouModal, setShowThankYouModal] = useState(false);
 
-  // Fetch user + wishlist
+  // Fetch user and wishlist / initial product
   useEffect(() => {
     if (!token || !userId) return;
+
     (async () => {
       try {
-        const res = await axios.get(
-          `https://craft-cart-backend.vercel.app/api/user/auth/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await axios.get(`${BASE_URL}/user/auth/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (res.data.success) {
           const userData = res.data.data.user;
           setUser(userData);
-          setSelectedProducts(userData.wishlist || []);
+
+          if (userData.wishlist?.length) {
+            setSelectedProducts(userData.wishlist);
+          } else if (productIdFromQuery) {
+            const pr = await axios.get(
+              `${BASE_URL}/products/${productIdFromQuery}`
+            );
+            if (pr.data.success) {
+              setSelectedProducts([pr.data.data]);
+            } else {
+              toast.error("Product not found");
+            }
+          }
         } else {
           toast.error("Failed to fetch user data");
         }
@@ -58,19 +70,18 @@ export default function Orders() {
         toast.error("Error: " + err.message);
       }
     })();
-  }, [token, userId]);
+  }, [token, userId, productIdFromQuery]);
 
   // Calculate totals
   useEffect(() => {
     const subtotal = selectedProducts.reduce(
-      (acc, p) => acc + (p.price || 0),
+      (sum, p) => sum + (p.price || 0),
       0
     );
-    const total = Math.max(subtotal - discount, 0);
-    setTotals({ subtotal, total });
+    setTotals({ subtotal, total: Math.max(subtotal - discount, 0) });
   }, [selectedProducts, discount]);
 
-  // Validate address
+  // Validate address via API
   useEffect(() => {
     if (!selectedAddressId) {
       setAddressValid(false);
@@ -83,12 +94,13 @@ export default function Orders() {
       setAddressValidationError("Selected address not found");
       return;
     }
+
     (async () => {
       setAddressValidationLoading(true);
       setAddressValidationError("");
       try {
         const res = await axios.post(
-          "https://craft-cart-backend.vercel.app/api/user/auth/order",
+          `${BASE_URL}/user/auth/order`,
           { deliveryAddress: addr },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -99,10 +111,7 @@ export default function Orders() {
           throw new Error(res.data.message || "Invalid address");
         }
       } catch (err) {
-        const msg =
-          err.response?.data?.message ||
-          err.message ||
-          "Address validation failed";
+        const msg = err.response?.data?.message || err.message;
         setAddressValid(false);
         setAddressValidationError(msg);
         toast.error(msg);
@@ -114,9 +123,9 @@ export default function Orders() {
 
   // Apply coupon
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    if (!selectedProducts.length) return toast.error("Please select a product");
-
+    if (!couponCode.trim() || !selectedProducts.length) {
+      return toast.error("Please enter a coupon and select a product");
+    }
     setLoadingCoupon(true);
     setCouponError("");
     setCouponData(null);
@@ -124,7 +133,7 @@ export default function Orders() {
 
     try {
       const res = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/user/auth/verify",
+        `${BASE_URL}/user/auth/verify`,
         {
           code: couponCode.trim(),
           productId: selectedProducts[0]._id,
@@ -137,7 +146,7 @@ export default function Orders() {
         setDiscount(res.data.data.discountAmt);
         toast.success("Coupon applied!");
       } else {
-        throw new Error(res.data.message || "Invalid coupon");
+        throw new Error(res.data.message);
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
@@ -148,74 +157,80 @@ export default function Orders() {
     }
   };
 
-  // Confirm payment option
+  // Confirm payment step
   const handleConfirmStep4 = () => {
     if (!selectedAddressId || !selectedProducts.length) {
-      toast.error("Please select address and products");
-      return;
+      return toast.error("Please select address and products");
     }
     if (!paymentOption) {
-      setPaymentError("Please select a payment option");
-      return;
+      return setPaymentError("Please select a payment option");
     }
     if (paymentOption === "online") {
       toast.warn("Online payment is not available");
-      setOnlineBlocked(true);
-      return;
+      return setOnlineBlocked(true);
     }
     setOnlineBlocked(false);
     setPaymentError("");
     setStep(5);
   };
 
-  // Final order submission
+  // Submit order, then show modal
   const handleSubmitOrder = async () => {
     if (!selectedAddressId || !selectedProducts.length || !paymentOption) {
-      toast.error("Complete all steps before placing order");
-      return;
+      return toast.error("Complete all steps before placing order");
     }
-    const deliveryAddress = user.addresses.find(
-      (a) => a._id === selectedAddressId
-    );
-    const order = {
-      userId,
-      deliveryAddress,
-      items: selectedProducts,
-      coupon: couponData || null,
-      subtotal: totals.subtotal,
-      discount,
-      totalAmount: totals.total,
-      paymentMethod: paymentOption,
-    };
-
     setSubmittingOrder(true);
+
     try {
-      const res = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/orders",
-        order,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const deliveryAddress = user.addresses.find(
+        (a) => a._id === selectedAddressId
       );
+      const order = {
+        userId,
+        deliveryAddress,
+        items: selectedProducts,
+        coupon: couponData || null,
+        subtotal: totals.subtotal,
+        discount,
+        totalAmount: totals.total,
+        paymentMethod: paymentOption,
+      };
+      const res = await axios.post(`${BASE_URL}/orders`, order, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (res.data.status === "success") {
         toast.success("Order placed successfully!");
-        navigate("/ordersuccess");
+        setShowThankYouModal(true);
       } else {
         toast.error(res.data.message || "Order failed");
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || "Order failed";
+      const msg = err.response?.data?.message || err.message;
       toast.error(msg);
     } finally {
       setSubmittingOrder(false);
     }
   };
 
-  if (!user) return <div className="text-center p-6">Loading user...</div>;
+  // On modal close: remove wishlist, navigate
+  const closeModal = async () => {
+    setShowThankYouModal(false);
+    try {
+      await axios.post(
+        `${BASE_URL}/user/auth/remove-from-wishlist`,
+        { userId, productIds: selectedProducts.map((p) => p._id) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch {
+      toast.error("Failed to remove items from wishlist");
+    }
+    navigate("/shop");
+  };
 
+  if (!user) return <div className="text-center p-6">Loading user...</div>;
   const addr = user.addresses.find((a) => a._id === selectedAddressId);
 
   return (
@@ -227,7 +242,7 @@ export default function Orders() {
         Total: ₹{totals.total.toFixed(2)}
       </div>
 
-      {/* Step 1: Products */}
+      {/* Step 1 */}
       {step === 1 && (
         <>
           <h2 className="font-semibold mb-2">
@@ -278,7 +293,7 @@ export default function Orders() {
         </>
       )}
 
-      {/* Step 2: Address */}
+      {/* Step 2 */}
       {step === 2 && (
         <>
           <h2 className="font-semibold mb-2">2. Choose Address</h2>
@@ -332,7 +347,7 @@ export default function Orders() {
         </>
       )}
 
-      {/* Step 3: Coupon */}
+      {/* Step 3 */}
       {step === 3 && (
         <>
           <h2 className="font-semibold mb-2">3. Apply Coupon</h2>
@@ -371,7 +386,7 @@ export default function Orders() {
         </>
       )}
 
-      {/* Step 4: Payment */}
+      {/* Step 4 */}
       {step === 4 && (
         <>
           <h2 className="font-semibold mb-4">4. Choose Payment Option</h2>
@@ -422,13 +437,12 @@ export default function Orders() {
         </>
       )}
 
-      {/* Step 5: Summary & Submit */}
+      {/* Step 5 */}
       {step === 5 && (
         <div className="max-w-full mx-auto p-6 bg-white border rounded shadow-md">
           <h2 className="text-2xl font-bold mb-6 text-[#004080] uppercase text-center">
             Order Summary &amp; Invoice
           </h2>
-
           <table className="w-full table-auto border-collapse mb-6">
             <thead>
               <tr className="bg-[#004080] text-white">
@@ -489,13 +503,13 @@ export default function Orders() {
               <span>Subtotal:</span>
               <span>₹{totals.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between mb-2 text-red-600">
-              <span>Discount:</span>
-              <span>-₹{discount.toFixed(2)}</span>
-            </div>
+            {discount > 0 && (
+              <div className="flex justify-between mb-2 text-red-600">
+                <span>Discount:</span> <span>-₹{discount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total:</span>
-              <span>₹{totals.total.toFixed(2)}</span>
+              <span>Total:</span> <span>₹{totals.total.toFixed(2)}</span>
             </div>
           </section>
 
@@ -514,6 +528,19 @@ export default function Orders() {
           >
             Back to Payment
           </button>
+        </div>
+      )}
+
+      {/* Thank You Modal */}
+      {showThankYouModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg text-center">
+            <h2 className="text-xl font-bold text-green-600">Thank You!</h2>
+            <p className="mt-2">Your order has been placed successfully.</p>
+            <Button onClick={closeModal} className="mt-4">
+              Continue Shopping
+            </Button>
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,8 @@
 // App.js
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux"; // ✅ useSelector for theme
+import { useSelector } from "react-redux";
+
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import WelcomePage from "./components/WelcomePage/WelcomePage";
@@ -15,7 +16,6 @@ import AboutUs from "./components/AboutUs/AboutUs";
 import ProtectedRoute from "./context/ProtectedRoute";
 import ProductsPage from "./Pages/ProductsPage";
 import WishlistPage from "./Pages/WishlistPage";
-
 import TeamSection from "./components/TeamSection/TeamSection";
 import AboutOffer from "./components/AboutUs/AboutOffer";
 import Toast from "./components/Toast/Toast";
@@ -24,11 +24,12 @@ import ScrollToTop from "./ScrollToTop";
 import NotFound from "./utils/NotFound";
 import VerifyEmailPage from "./components/Login/VerifyEmailPage";
 import ProfilePage from "./Pages/ProfileInfo/ProfilePage";
+import OrdersPage from "./Pages/Orders/OrdersPage";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
   const location = useLocation();
-  const theme = useSelector((state) => state.theme.theme); // ✅ Get theme
+  const theme = useSelector((state) => state.theme.theme);
 
   const isNotFound =
     location.pathname !== "/" &&
@@ -41,7 +42,9 @@ function App() {
       "/about",
       "/about-offer",
     ].some((path) => location.pathname.startsWith(path)) &&
-    !/^\/(buynow|wishlist|profile|product)\/[^/]+$/.test(location.pathname);
+    !/^\/(buynow|wishlist|profile|product|order)\/[^/]+$/.test(
+      location.pathname
+    );
 
   if (isNotFound) {
     return <NotFound />;
@@ -105,6 +108,14 @@ function App() {
           element={
             <ProtectedRoute isAuth={isAuthenticated}>
               <ProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order/:id"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <OrdersPage />
             </ProtectedRoute>
           }
         />
