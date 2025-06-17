@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import OfferBanner from "../components/Banner/Banner";
 import LoadingPage from "../components/LoadingPage";
 import Toast, { showToast } from "../components/Toast/Toast";
-import Button from "../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 const PAGE_SIZE = 10;
@@ -208,19 +207,19 @@ const ShopPage = () => {
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
 
-                  <div className="mt-4 flex flex-col sm:flex-col gap-2">
-                    <Button
+                  <div className="flex gap-2 mt-auto">
+                    <button
                       onClick={(e) => handleAddToWishlist(_id, e)}
-                      className="w-full sm:w-1/2 rounded-lg text-sm py-2"
+                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
                     >
                       Wishlist
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={(e) => handleBuyNow(_id, e)}
-                      className="w-full sm:w-1/2 rounded-lg text-sm py-2"
+                      className="w-1/2 bg-[#004080] text-yellow-400 py-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
                     >
                       Buy Now
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
