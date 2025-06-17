@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import noData from "../../assets/noData.avif";
+import Button from "../../components/Reusable/Button";
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,12 +77,7 @@ export default function WishlistPage() {
               {product.description}
             </p>
             <p className="font-bold text-blue-900 mt-1">₹{product.price}</p>
-            <button
-              onClick={() => handleBuyNow(product._id)}
-              className="mt-3 bg-blue-800 text-yellow-300 py-2 px-4 w-full rounded hover:bg-blue-700 transition"
-            >
-              Buy Now
-            </button>
+            <Button onClick={() => handleBuyNow(product._id)}>Buy Now</Button>
           </div>
         ))}
       </div>
