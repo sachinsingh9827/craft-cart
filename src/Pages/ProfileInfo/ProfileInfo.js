@@ -215,7 +215,7 @@ export default function ProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-blue-900">
+              <h2 className="text-sm uppercase font-semibold text-[#004080]">
                 {editingAddressId ? "Edit Address" : "Add New Address"}
               </h2>
               <button
@@ -260,12 +260,9 @@ export default function ProfilePage() {
                   className="w-full p-2 border rounded text-sm"
                 />
               ))}
-              <button
-                type="submit"
-                className="w-full bg-blue-900 text-yellow-300 py-2 rounded"
-              >
+              <Button type="submit">
                 {editingAddressId ? "Update Address" : "Add Address"}
-              </button>
+              </Button>
             </form>
           </div>
         </div>
