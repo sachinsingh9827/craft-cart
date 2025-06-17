@@ -16,9 +16,10 @@ export default function Orders() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [reviewInputs, setReviewInputs] = useState({});
-  const [ratingInputs, setRatingInputs] = useState({});
-  const [submittedReviews, setSubmittedReviews] = useState({});
+
+  // Review states
+  const [reviewInputs, setReviewInputs] = useState({}); // { [productId]: { rating, comment } }
+  const [reviewLoading, setReviewLoading] = useState({}); // { [productId]: true/false }
 
   useEffect(() => {
     if (!userId || !token) return;
@@ -26,11 +27,13 @@ export default function Orders() {
     (async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         setOrders(res.data.orders || []);
       } catch (err) {
-        toast.error("Failed to load orders.");
+        toast.error("Failed to load orders");
         console.error(err);
       } finally {
         setLoading(false);
@@ -45,7 +48,8 @@ export default function Orders() {
   const isWithinThreeDays = (dateStr) => {
     const createdDate = new Date(dateStr);
     const currentDate = new Date();
-    const diffDays = (currentDate - createdDate) / (1000 * 60 * 60 * 24);
+    const diffTime = currentDate - createdDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
     return diffDays <= 3;
   };
 
@@ -67,7 +71,11 @@ export default function Orders() {
       const res = await axios.patch(
         `${BASE_URL}/api/orders/${selectedOrderId}/status`,
         { status: "cancelled" },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (res.data.status === "success") {
@@ -90,39 +98,51 @@ export default function Orders() {
     }
   };
 
-  const handleSubmitReview = async (orderId) => {
-    const rating = ratingInputs[orderId];
-    const comment = reviewInputs[orderId]?.trim();
+  const handleReviewChange = (productId, field, value) => {
+    setReviewInputs((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [field]: value,
+      },
+    }));
+  };
 
-    if (!rating || !comment) {
-      toast.error("Please provide both rating and comment.");
+  const handleReviewSubmit = async (productId) => {
+    if (!reviewInputs[productId]?.rating || !reviewInputs[productId]?.comment) {
+      toast.warning("Please fill out both rating and comment");
       return;
     }
 
-    const order = orders.find((o) => o._id === orderId);
-    if (!order || !order.items?.length) {
-      toast.error("Invalid order data.");
-      return;
-    }
+    setReviewLoading((prev) => ({ ...prev, [productId]: true }));
 
     try {
-      for (const item of order.items) {
-        const productId = item.product;
-        if (!productId) continue;
+      const res = await axios.post(
+        `${BASE_URL}/api/reviews/products/${productId}/reviews`,
+        {
+          rating: reviewInputs[productId].rating,
+          comment: reviewInputs[productId].comment,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        await axios.post(
-          `${BASE_URL}/api/reviews/products/${productId}/reviews`,
-          { rating, comment },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      if (res.data.status === "success") {
+        toast.success("Review submitted successfully");
+        setReviewInputs((prev) => ({
+          ...prev,
+          [productId]: { rating: "", comment: "" },
+        }));
+      } else {
+        toast.error(res.data.message || "Review submission failed");
       }
-
-      toast.success("Review submitted successfully!");
-      setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
     } catch (err) {
-      const message =
-        err.response?.data?.message || "Review submission failed.";
-      toast.error(message);
+      toast.error(err.response?.data?.message || "Failed to submit review");
+    } finally {
+      setReviewLoading((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -132,8 +152,10 @@ export default function Orders() {
     return <div className="text-center p-6">No orders found.</div>;
 
   return (
-    <div className="mx-auto p-4 max-w-full">
-      <h1 className="text-xl font-bold text-[#004080] mb-4">Your Orders</h1>
+    <div className="mx-auto p-2 max-w-full">
+      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
+        Your Orders
+      </h1>
 
       {orders.map((order) => {
         const showCancelButton =
@@ -141,20 +163,18 @@ export default function Orders() {
           isWithinThreeDays(order.createdAt) &&
           order.status !== "cancelled";
 
-        const showReviewForm =
-          order.status === "delivered" && !submittedReviews[order._id];
-
         return (
           <div
             key={order._id}
-            className="border p-4 mb-6 rounded shadow bg-white"
+            className="border p-4 mb-4 rounded shadow-sm bg-white"
+            onClick={() => toggleOrder(order._id)}
           >
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-sm font-semibold text-[#004080]">
+            <div className="flex justify-between items-center mb-2 cursor-pointer">
+              <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
                 Order #{order.orderId}
               </h2>
               <span
-                className={`text-xs font-bold px-2 py-1 rounded ${
+                className={`text-sm font-bold px-2 py-1 rounded ${
                   order.status === "delivered"
                     ? "bg-green-100 text-green-700"
                     : order.status === "cancelled"
@@ -164,128 +184,168 @@ export default function Orders() {
               >
                 {order.status}
               </span>
-              <button
-                onClick={() => toggleOrder(order._id)}
-                className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200"
-              >
-                {expandedOrderId === order._id
-                  ? "Hide Details"
-                  : "Show Details"}
-              </button>
+            </div>
+
+            <div className="text-sm text-gray-700 mb-2">
+              <strong>Date:</strong>{" "}
+              {new Date(order.createdAt).toLocaleDateString()}
+            </div>
+
+            <div className="text-right font-bold text-[#004080]">
+              Total: ₹{order.totalAmount.toFixed(2)}
             </div>
 
             {expandedOrderId === order._id && (
-              <div className="mt-4 border-t pt-4 text-sm">
-                <div className="mb-4">
-                  <strong>Date:</strong>{" "}
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </div>
+              <div className="mt-6 border-t pt-4">
+                <h3 className="text-lg font-bold mb-4 text-[#004080]">
+                  Order Summary
+                </h3>
 
-                <table className="w-full mb-4 border text-left text-sm">
-                  <thead className="bg-[#004080] text-white">
-                    <tr>
-                      <th className="p-2">Product</th>
-                      <th className="p-2">Image</th>
+                <table className="w-full table-auto border-collapse mb-4 text-sm">
+                  <thead>
+                    <tr className="bg-[#004080] text-white">
+                      <th className="p-2 text-left">Product</th>
+                      <th className="p-2 text-left">Image</th>
                       <th className="p-2 text-right">Price (₹)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {order.items.map((item) => (
-                      <tr key={item._id} className="border-b">
-                        <td className="p-2">{item.name}</td>
-                        <td className="p-2">
-                          <img
-                            src={item.images?.[0]?.url || "/placeholder.jpg"}
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        </td>
-                        <td className="p-2 text-right">
-                          ₹{item.price.toFixed(2)}
-                        </td>
-                      </tr>
+                      <React.Fragment key={item._id}>
+                        <tr className="border-b">
+                          <td className="p-2">{item.name}</td>
+                          <td className="p-2">
+                            <img
+                              src={item.images?.[0]?.url || "/placeholder.jpg"}
+                              alt={item.name}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                          </td>
+                          <td className="p-2 text-right">
+                            ₹{item.price.toFixed(2)}
+                          </td>
+                        </tr>
+
+                        {/* Show review form only if order is delivered */}
+                        {order.status === "delivered" && (
+                          <tr>
+                            <td colSpan="3" className="p-4">
+                              <div className="bg-gray-50 p-4 rounded border">
+                                <div className="mb-2 font-semibold text-sm">
+                                  Leave a Review
+                                </div>
+                                <div className="flex flex-col gap-2 text-sm">
+                                  <select
+                                    value={reviewInputs[item._id]?.rating || ""}
+                                    onChange={(e) =>
+                                      handleReviewChange(
+                                        item._id,
+                                        "rating",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="border p-2 rounded"
+                                  >
+                                    <option value="">Select Rating</option>
+                                    <option value="1">1 - Poor</option>
+                                    <option value="2">2 - Fair</option>
+                                    <option value="3">3 - Good</option>
+                                    <option value="4">4 - Very Good</option>
+                                    <option value="5">5 - Excellent</option>
+                                  </select>
+                                  <textarea
+                                    value={
+                                      reviewInputs[item._id]?.comment || ""
+                                    }
+                                    onChange={(e) =>
+                                      handleReviewChange(
+                                        item._id,
+                                        "comment",
+                                        e.target.value
+                                      )
+                                    }
+                                    rows="3"
+                                    className="border p-2 rounded"
+                                    placeholder="Write your review..."
+                                  />
+                                  <button
+                                    onClick={() => handleReviewSubmit(item._id)}
+                                    disabled={reviewLoading[item._id]}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
+                                  >
+                                    {reviewLoading[item._id]
+                                      ? "Submitting..."
+                                      : "Submit Review"}
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
 
                 {order.coupon && (
-                  <div className="mb-4 text-green-700 font-medium">
+                  <div className="mb-4 p-4 border border-green-300 bg-green-50 rounded text-green-700 font-medium max-w-sm">
                     Coupon Applied: <strong>{order.coupon.code}</strong> —
                     Discount: ₹{order.coupon.discountAmt.toFixed(2)}
                   </div>
                 )}
 
-                <div className="text-sm mb-4">
-                  <strong>Address:</strong> {order.deliveryAddress.street},{" "}
-                  {order.deliveryAddress.city}, {order.deliveryAddress.state} -{" "}
-                  {order.deliveryAddress.postalCode},{" "}
-                  {order.deliveryAddress.country}
-                  <br />
-                  <strong>Contact:</strong> {order.deliveryAddress.contact}
+                <section className="mb-4 text-sm">
+                  <h4 className="font-semibold text-[#004080] mb-1">
+                    Shipping Address
+                  </h4>
+                  <address className="not-italic font-mono text-gray-700">
+                    {order.deliveryAddress.street}, {order.deliveryAddress.city}
+                    , {order.deliveryAddress.state} -{" "}
+                    {order.deliveryAddress.postalCode},{" "}
+                    {order.deliveryAddress.country}
+                    <br />
+                    <strong>Contact:</strong> {order.deliveryAddress.contact}
+                  </address>
+                </section>
+
+                <section className="mb-4 text-sm">
+                  <h4 className="font-semibold text-[#004080] mb-1">
+                    Payment Method
+                  </h4>
+                  <p className="font-mono text-gray-700">
+                    {order.paymentMethod === "cod"
+                      ? "Cash on Delivery"
+                      : "Online Payment"}
+                  </p>
+                </section>
+
+                <div className="max-w-md ml-auto border-t pt-4 font-mono text-sm">
+                  <div className="flex justify-between mb-2 text-gray-700">
+                    <span>Subtotal:</span>
+                    <span>₹{order.subtotal.toFixed(2)}</span>
+                  </div>
+                  {order.discount > 0 && (
+                    <div className="flex justify-between mb-2 text-red-600">
+                      <span>Discount:</span>{" "}
+                      <span>-₹{order.discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-base border-t pt-2">
+                    <span>Total:</span>{" "}
+                    <span>₹{order.totalAmount.toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {showCancelButton && (
-                  <div className="text-right mt-4">
+                  <div className="text-right mt-6">
                     <button
                       disabled={statusSaving}
                       onClick={() => openCancelModal(order._id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
                     >
                       Cancel Order
                     </button>
                   </div>
-                )}
-
-                {showReviewForm && (
-                  <div className="mt-6 border-t pt-4">
-                    <h4 className="font-semibold mb-2 text-[#004080]">
-                      Leave a Review
-                    </h4>
-                    <div className="mb-2">
-                      <label className="mr-2">Rating:</label>
-                      <select
-                        value={ratingInputs[order._id] || ""}
-                        onChange={(e) =>
-                          setRatingInputs((prev) => ({
-                            ...prev,
-                            [order._id]: Number(e.target.value),
-                          }))
-                        }
-                        className="border px-2 py-1 rounded"
-                      >
-                        <option value="">--</option>
-                        {[1, 2, 3, 4, 5].map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <textarea
-                      rows="3"
-                      className="w-full border p-2 rounded mb-2"
-                      placeholder="Write your review..."
-                      value={reviewInputs[order._id] || ""}
-                      onChange={(e) =>
-                        setReviewInputs((prev) => ({
-                          ...prev,
-                          [order._id]: e.target.value,
-                        }))
-                      }
-                    />
-                    <button
-                      onClick={() => handleSubmitReview(order._id)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Submit Review
-                    </button>
-                  </div>
-                )}
-
-                {submittedReviews[order._id] && (
-                  <p className="mt-4 text-green-600 italic">
-                    You already submitted a review. Thank you!
-                  </p>
                 )}
               </div>
             )}
