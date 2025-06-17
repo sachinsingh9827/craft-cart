@@ -216,7 +216,7 @@ const ShopPage = () => {
                     </button>
                     <button
                       onClick={(e) => handleBuyNow(_id, e)}
-                      className="w-1/2 bg-[#004080] text-yellow-400 py-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
+                      className="w-1/2 bg-[#004080] text-yellow-400 p-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
                     >
                       Buy Now
                     </button>
