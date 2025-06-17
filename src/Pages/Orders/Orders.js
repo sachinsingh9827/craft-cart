@@ -22,11 +22,12 @@ export default function Orders() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
   const [reviewInputs, setReviewInputs] = useState({});
   const [reviewLoading, setReviewLoading] = useState({});
   const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
-  const [reviewErrors, setReviewErrors] = useState({}); // ⬅️ New state
 
+  // Load orders
   useEffect(() => {
     if (!userId || !token) {
       toast.error("User not authenticated");
@@ -121,7 +122,6 @@ export default function Orders() {
     }
 
     setReviewLoading((prev) => ({ ...prev, [productId]: true }));
-    setReviewErrors((prev) => ({ ...prev, [productId]: "" }));
 
     try {
       const res = await axios.post(
@@ -146,22 +146,10 @@ export default function Orders() {
           navigate("/shop");
         }, 2000);
       } else {
-        const errorMsg = res.data.message || "Review submission failed";
-        setReviewErrors((prev) => ({ ...prev, [productId]: errorMsg }));
-        setReviewInputs((prev) => ({
-          ...prev,
-          [productId]: { rating: "", comment: "" },
-        }));
-        toast.error(errorMsg);
+        toast.error(res.data.message || "Review submission failed");
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Failed to submit review";
-      setReviewErrors((prev) => ({ ...prev, [productId]: errorMsg }));
-      setReviewInputs((prev) => ({
-        ...prev,
-        [productId]: { rating: "", comment: "" },
-      }));
-      toast.error(errorMsg);
+      toast.error(err.response?.data?.message || "Failed to submit review");
     } finally {
       setReviewLoading((prev) => ({ ...prev, [productId]: false }));
     }
@@ -261,14 +249,6 @@ export default function Orders() {
                                 <div className="mb-2 font-semibold text-sm">
                                   Leave a Review
                                 </div>
-
-                                {/* Show error message if exists */}
-                                {reviewErrors[item._id] && (
-                                  <div className="text-red-600 text-sm mb-2">
-                                    {reviewErrors[item._id]}
-                                  </div>
-                                )}
-
                                 <div className="flex flex-col gap-2 text-sm">
                                   <select
                                     value={reviewInputs[item._id]?.rating || ""}
@@ -321,6 +301,30 @@ export default function Orders() {
                     ))}
                   </tbody>
                 </table>
+
+                {order.coupon && (
+                  <div className="mb-4 p-4 border border-green-300 bg-green-50 rounded text-green-700 font-medium max-w-sm">
+                    Coupon Applied: <strong>{order.coupon.code}</strong> —
+                    Discount: ₹{order.coupon.discountAmt.toFixed(2)}
+                  </div>
+                )}
+
+                <div className="max-w-md ml-auto border-t pt-4 font-mono text-sm">
+                  <div className="flex justify-between mb-2 text-gray-700">
+                    <span>Subtotal:</span>
+                    <span>₹{order.subtotal.toFixed(2)}</span>
+                  </div>
+                  {order.discount > 0 && (
+                    <div className="flex justify-between mb-2 text-red-600">
+                      <span>Discount:</span>
+                      <span>-₹{order.discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-base border-t pt-2">
+                    <span>Total:</span>
+                    <span>₹{order.totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
 
                 {showCancelButton && (
                   <div className="text-right mt-6">
