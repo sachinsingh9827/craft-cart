@@ -22,12 +22,10 @@ export default function Orders() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-
   const [reviewInputs, setReviewInputs] = useState({});
   const [reviewLoading, setReviewLoading] = useState({});
   const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
 
-  // Load orders
   useEffect(() => {
     if (!userId || !token) {
       toast.error("User not authenticated");
@@ -39,10 +37,14 @@ export default function Orders() {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setOrders(res.data.orders || []);
+
+        if (res.data.status === "success") {
+          setOrders(res.data.orders || []);
+        } else {
+          toast.error(res.data.message || "Failed to load orders");
+        }
       } catch (err) {
-        toast.error("Failed to load orders");
-        console.error(err);
+        toast.error(err.response?.data?.message || "Error loading orders");
       } finally {
         setLoading(false);
       }
@@ -85,7 +87,7 @@ export default function Orders() {
       );
 
       if (res.data.status === "success") {
-        toast.success("Order cancelled successfully!");
+        toast.success(res.data.message || "Order cancelled successfully");
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order._id === selectedOrderId
@@ -135,7 +137,7 @@ export default function Orders() {
       );
 
       if (res.data.status === "success") {
-        toast.success("Review submitted successfully");
+        toast.success(res.data.message || "Review submitted successfully");
         setReviewInputs((prev) => ({
           ...prev,
           [productId]: { rating: "", comment: "" },
@@ -161,10 +163,8 @@ export default function Orders() {
     return <div className="text-center p-6">No orders found.</div>;
 
   return (
-    <div className="mx-auto p-2 max-w-full">
-      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
-        Your Orders
-      </h1>
+    <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-2xl font-bold text-[#004080] mb-6">Your Orders</h1>
 
       {orders.map((order) => {
         const showCancelButton =
@@ -175,66 +175,80 @@ export default function Orders() {
         return (
           <div
             key={order._id}
-            className="border p-4 mb-4 rounded shadow-sm bg-white"
+            className="border rounded-lg shadow-sm p-4 mb-6 bg-white"
           >
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
-                Order #{order.orderId}
-              </h2>
-              <span
-                className={`text-sm font-bold px-2 py-1 rounded ${
-                  order.status === "delivered"
-                    ? "bg-green-100 text-green-700"
-                    : order.status === "cancelled"
-                    ? "bg-red-100 text-red-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
-              >
-                {order.status}
-              </span>
-              <button
-                className="ml-2 text-blue-600 text-xs underline"
-                onClick={() => toggleOrder(order._id)}
-              >
-                {expandedOrderId === order._id
-                  ? "Hide Details"
-                  : "Show Details"}
-              </button>
-            </div>
-
-            <div className="text-sm text-gray-700 mb-2">
-              <strong>Date:</strong>{" "}
-              {new Date(order.createdAt).toLocaleDateString()}
-            </div>
-
-            <div className="text-right font-bold text-[#004080]">
-              Total: ₹{order.totalAmount.toFixed(2)}
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <div>
+                <h2 className="font-semibold text-[#004080]">
+                  Order #{order.orderId}
+                </h2>
+                <p className="text-xs text-gray-600">
+                  {new Date(order.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-medium px-2 py-1 rounded ${
+                    order.status === "delivered"
+                      ? "bg-green-100 text-green-700"
+                      : order.status === "cancelled"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {order.status}
+                </span>
+                <button
+                  className="text-blue-600 text-sm underline"
+                  onClick={() => toggleOrder(order._id)}
+                >
+                  {expandedOrderId === order._id
+                    ? "Hide Details"
+                    : "Show Details"}
+                </button>
+              </div>
             </div>
 
             {expandedOrderId === order._id && (
-              <div className="mt-6 border-t pt-4">
-                <h3 className="text-lg font-bold mb-4 text-[#004080]">
-                  Order Summary
-                </h3>
+              <div className="mt-4 border-t pt-4 text-sm">
+                <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="font-medium">Delivery Address</p>
+                    <p>{order.deliveryAddress.street}</p>
+                    <p>
+                      {order.deliveryAddress.city},{" "}
+                      {order.deliveryAddress.state}
+                    </p>
+                    <p>
+                      {order.deliveryAddress.country} -{" "}
+                      {order.deliveryAddress.postalCode}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Payment Method</p>
+                    <p className="capitalize">{order.paymentMethod}</p>
+                  </div>
+                </div>
 
-                <table className="w-full table-auto border-collapse mb-4 text-sm">
-                  <thead>
-                    <tr className="bg-[#004080] text-white">
+                <table className="w-full border text-sm mb-4">
+                  <thead className="bg-gray-100">
+                    <tr>
                       <th className="p-2 text-left">Product</th>
-                      <th className="p-2 text-left">Image</th>
-                      <th className="p-2 text-right">Price (₹)</th>
+                      <th className="p-2">Image</th>
+                      <th className="p-2 text-right">Price</th>
                     </tr>
                   </thead>
                   <tbody>
                     {order.items.map((item) => (
                       <React.Fragment key={item._id}>
-                        <tr className="border-b">
+                        <tr className="border-t">
                           <td className="p-2">{item.name}</td>
-                          <td className="p-2">
+                          <td className="p-2 text-center">
                             <img
                               src={item.images?.[0]?.url || "/placeholder.jpg"}
                               alt={item.name}
-                              className="w-12 h-12 object-cover rounded"
+                              className="w-12 h-12 object-cover rounded inline-block"
                             />
                           </td>
                           <td className="p-2 text-right">
@@ -244,12 +258,12 @@ export default function Orders() {
 
                         {order.status === "delivered" && (
                           <tr>
-                            <td colSpan="3" className="p-4">
-                              <div className="bg-gray-50 p-4 rounded border">
-                                <div className="mb-2 font-semibold text-sm">
+                            <td colSpan="3" className="p-4 bg-gray-50 border-b">
+                              <div>
+                                <p className="font-semibold mb-1">
                                   Leave a Review
-                                </div>
-                                <div className="flex flex-col gap-2 text-sm">
+                                </p>
+                                <div className="flex flex-col gap-2">
                                   <select
                                     value={reviewInputs[item._id]?.rating || ""}
                                     onChange={(e) =>
@@ -279,14 +293,14 @@ export default function Orders() {
                                         e.target.value
                                       )
                                     }
-                                    rows="3"
                                     className="border p-2 rounded"
+                                    rows="3"
                                     placeholder="Write your review..."
                                   />
                                   <button
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
                                     onClick={() => handleReviewSubmit(item._id)}
                                     disabled={reviewLoading[item._id]}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
                                   >
                                     {reviewLoading[item._id]
                                       ? "Submitting..."
@@ -302,38 +316,26 @@ export default function Orders() {
                   </tbody>
                 </table>
 
-                {order.coupon && (
-                  <div className="mb-4 p-4 border border-green-300 bg-green-50 rounded text-green-700 font-medium max-w-sm">
-                    Coupon Applied: <strong>{order.coupon.code}</strong> —
-                    Discount: ₹{order.coupon.discountAmt.toFixed(2)}
-                  </div>
-                )}
-
-                <div className="max-w-md ml-auto border-t pt-4 font-mono text-sm">
-                  <div className="flex justify-between mb-2 text-gray-700">
-                    <span>Subtotal:</span>
-                    <span>₹{order.subtotal.toFixed(2)}</span>
-                  </div>
+                <div className="text-right font-mono">
+                  <p>Subtotal: ₹{order.subtotal.toFixed(2)}</p>
                   {order.discount > 0 && (
-                    <div className="flex justify-between mb-2 text-red-600">
-                      <span>Discount:</span>
-                      <span>-₹{order.discount.toFixed(2)}</span>
-                    </div>
+                    <p className="text-red-600">
+                      Discount: -₹{order.discount.toFixed(2)}
+                    </p>
                   )}
-                  <div className="flex justify-between font-bold text-base border-t pt-2">
-                    <span>Total:</span>
-                    <span>₹{order.totalAmount.toFixed(2)}</span>
-                  </div>
+                  <p className="text-lg font-bold">
+                    Total: ₹{order.totalAmount.toFixed(2)}
+                  </p>
                 </div>
 
                 {showCancelButton && (
-                  <div className="text-right mt-6">
+                  <div className="text-right mt-4">
                     <button
-                      disabled={statusSaving}
                       onClick={() => openCancelModal(order._id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
+                      disabled={statusSaving}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                     >
-                      Cancel Order
+                      {statusSaving ? "Cancelling..." : "Cancel Order"}
                     </button>
                   </div>
                 )}
@@ -345,9 +347,9 @@ export default function Orders() {
 
       {/* Cancel Modal */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4 text-[#004080]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="text-lg font-bold text-[#004080] mb-4">
               Confirm Cancellation
             </h3>
             <p className="mb-6 text-sm text-gray-700">
