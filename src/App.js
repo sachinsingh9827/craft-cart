@@ -25,6 +25,7 @@ import NotFound from "./utils/NotFound";
 import VerifyEmailPage from "./components/Login/VerifyEmailPage";
 import ProfilePage from "./Pages/ProfileInfo/ProfilePage";
 import OrdersPage from "./Pages/Orders/OrdersPage";
+import ProductDetail from "./Pages/ProductDetail/ProductDetail";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -77,6 +78,7 @@ function App() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/about-offer" element={<AboutOffer />} />
+        <Route path="/product/:productId" element={<ProductDetail />} />
 
         {/* Protected Routes */}
         <Route
