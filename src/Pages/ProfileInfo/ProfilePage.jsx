@@ -43,7 +43,7 @@ export default function ProfilePage() {
         {activeTab === "wishlist" && <Wishlist />}
         {activeTab === "edit" && <EditProfile />}
       </div>
-      <ToastContainer position="buttom-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
