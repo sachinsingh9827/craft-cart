@@ -115,11 +115,9 @@ export default function Orders() {
           <div
             key={order._id}
             className="border p-4 mb-4 rounded shadow-sm bg-white"
+            onClick={() => toggleOrder(order._id)}
           >
-            <div
-              className="flex justify-between items-center mb-2 cursor-pointer"
-              onClick={() => toggleOrder(order._id)}
-            >
+            <div className="flex justify-between items-center mb-2 cursor-pointer">
               <h2 className="text-lg font-semibold">Order #{order.orderId}</h2>
               <span
                 className={`text-sm font-bold px-2 py-1 rounded ${
