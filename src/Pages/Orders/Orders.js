@@ -110,9 +110,8 @@ export default function Orders() {
     }
 
     const userData = JSON.parse(localStorage.getItem("user"));
-    const userToken = JSON.parse(localStorage.getItem("token"));
+    const token = localStorage.getItem("token");
 
-    const token = userToken?.token;
     const userId = userData?._id;
 
     if (!userId || !token) {
@@ -133,7 +132,10 @@ export default function Orders() {
 
         await axios.post(
           `${BASE_URL}/api/reviews/products/${productId}/reviews`,
-          { rating, comment },
+          {
+            rating,
+            comment,
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -146,6 +148,7 @@ export default function Orders() {
       setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Review submission failed.");
+      console.error("Review Error:", err);
     }
   };
 
