@@ -14,12 +14,13 @@ export default function ProfilePage() {
     state: "",
     postalCode: "",
     country: "",
+    contact: "",
   });
+  const [editingAddressId, setEditingAddressId] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState(null);
 
-  // Fetch user data
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
@@ -53,38 +54,41 @@ export default function ProfilePage() {
     fetchUserDetails();
   }, []);
 
-  // Add new address
-  const handleAddAddress = async (e) => {
+  const handleAddOrUpdateAddress = async (e) => {
     e.preventDefault();
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
-      const res = await axios.post(
-        `https://craft-cart-backend.vercel.app/api/user/auth/address`,
-        newAddress,
-        {
-          headers: { Authorization: `Bearer ${userData.token}` },
-        }
-      );
+      const endpoint = editingAddressId
+        ? `https://craft-cart-backend.vercel.app/api/user/auth/address/${userData._id}/${editingAddressId}`
+        : `https://craft-cart-backend.vercel.app/api/user/auth/address`;
+
+      const method = editingAddressId ? "put" : "post";
+
+      const res = await axios[method](endpoint, newAddress, {
+        headers: { Authorization: `Bearer ${userData.token}` },
+      });
+
       if (res.data.success) {
-        toast.success("Address added!");
+        toast.success(editingAddressId ? "Address updated!" : "Address added!");
         setNewAddress({
           street: "",
           city: "",
           state: "",
           postalCode: "",
           country: "",
+          contact: "",
         });
+        setEditingAddressId(null);
         setShowAddressForm(false);
         fetchUserDetails();
       } else {
-        toast.error(res.data.message || "Failed to add address");
+        toast.error(res.data.message || "Failed to submit address");
       }
     } catch (err) {
       toast.error(err.message);
     }
   };
 
-  // Delete selected address
   const handleDeleteAddress = async () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
@@ -112,6 +116,12 @@ export default function ProfilePage() {
       setShowConfirmDelete(false);
       setAddressToDelete(null);
     }
+  };
+
+  const openEditForm = (address) => {
+    setNewAddress(address);
+    setEditingAddressId(address._id);
+    setShowAddressForm(true);
   };
 
   if (loading)
@@ -170,22 +180,33 @@ export default function ProfilePage() {
                 <p>
                   <strong>Country:</strong> {addr.country}
                 </p>
+                <p>
+                  <strong>Contact:</strong> {addr.contact}
+                </p>
               </div>
-              <button
-                onClick={() => {
-                  setAddressToDelete(addr._id);
-                  setShowConfirmDelete(true);
-                }}
-                className="text-red-600 font-semibold hover:underline"
-              >
-                Delete
-              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={() => openEditForm(addr)}
+                  className="text-blue-600 font-semibold hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    setAddressToDelete(addr._id);
+                    setShowConfirmDelete(true);
+                  }}
+                  className="text-red-600 font-semibold hover:underline"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
         <Button onClick={() => setShowAddressForm(true)} className="mt-4">
-          Add New
+          Add New Address
         </Button>
       </div>
 
@@ -195,39 +216,55 @@ export default function ProfilePage() {
           <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-blue-900">
-                Add New Address
+                {editingAddressId ? "Edit Address" : "Add New Address"}
               </h2>
               <button
-                onClick={() => setShowAddressForm(false)}
+                onClick={() => {
+                  setShowAddressForm(false);
+                  setEditingAddressId(null);
+                  setNewAddress({
+                    street: "",
+                    city: "",
+                    state: "",
+                    postalCode: "",
+                    country: "",
+                    contact: "",
+                  });
+                }}
                 className="text-gray-500 text-lg"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleAddAddress} className="space-y-4">
-              {["street", "city", "state", "postalCode", "country"].map(
-                (field) => (
-                  <input
-                    key={field}
-                    type="text"
-                    required
-                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                    value={newAddress[field]}
-                    onChange={(e) =>
-                      setNewAddress((prev) => ({
-                        ...prev,
-                        [field]: e.target.value,
-                      }))
-                    }
-                    className="w-full p-2 border rounded text-sm"
-                  />
-                )
-              )}
+            <form onSubmit={handleAddOrUpdateAddress} className="space-y-4">
+              {[
+                "street",
+                "city",
+                "state",
+                "postalCode",
+                "country",
+                "contact",
+              ].map((field) => (
+                <input
+                  key={field}
+                  type="text"
+                  required
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={newAddress[field]}
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      [field]: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2 border rounded text-sm"
+                />
+              ))}
               <button
                 type="submit"
                 className="w-full bg-blue-900 text-yellow-300 py-2 rounded"
               >
-                Add Address
+                {editingAddressId ? "Update Address" : "Add Address"}
               </button>
             </form>
           </div>
