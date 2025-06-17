@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import noData from "../../assets/noData.avif";
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,16 @@ export default function WishlistPage() {
   if (error) return <div className="text-red-500">{error}</div>;
 
   if (wishlist.length === 0) {
-    return <div className="text-gray-500">Your wishlist is empty.</div>;
+    return (
+      <div className="text-center p-6">
+        <img
+          src={noData} // <-- replace with your actual image path or URL
+          alt="Empty Wishlist"
+          className="w-48 h-48 mx-auto mb-4"
+        />
+        <p className="text-gray-500 text-lg">Your wishlist is empty.</p>
+      </div>
+    );
   }
 
   return (
