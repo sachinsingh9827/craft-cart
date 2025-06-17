@@ -208,18 +208,18 @@ const ShopPage = () => {
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
 
-                  <div className="flex gap-2 mt-auto">
+                  <div className="mt-4 flex flex-col sm:flex-row gap-2">
                     <Button
                       onClick={(e) => handleAddToWishlist(_id, e)}
-                      className="w-1/2  rounded-lg  text-sm"
+                      className="w-full sm:w-1/2 rounded-lg text-sm py-2"
                     >
-                      Wishlist
+                      ❤️ Wishlist
                     </Button>
                     <Button
                       onClick={(e) => handleBuyNow(_id, e)}
-                      className="w-1/2 rounded-lg text-sm"
+                      className="w-full sm:w-1/2 rounded-lg text-sm py-2"
                     >
-                      Buy Now
+                      🛒 Buy Now
                     </Button>
                   </div>
                 </div>
