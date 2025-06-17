@@ -38,6 +38,15 @@ export default function Orders() {
   const [onlineBlocked, setOnlineBlocked] = useState(false);
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
+  // On mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // On step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   // Fetch user and wishlist / initial product
   useEffect(() => {
