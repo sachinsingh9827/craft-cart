@@ -109,21 +109,41 @@ export default function Orders() {
       return;
     }
 
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/api/orders/${orderId}/review`,
-        { rating, comment },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    const userData = JSON.parse(localStorage.getItem("user"));
+    const userToken = JSON.parse(localStorage.getItem("token"));
 
-      if (res.data.success) {
-        toast.success("Review submitted successfully!");
-        setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
-      } else {
-        toast.error(res.data.message || "Failed to submit review.");
+    const token = userToken?.token;
+    const userId = userData?._id;
+
+    if (!userId || !token) {
+      toast.error("User not authenticated.");
+      return;
+    }
+
+    const order = orders.find((o) => o._id === orderId);
+    if (!order || !order.items || !order.items.length) {
+      toast.error("Invalid order data.");
+      return;
+    }
+
+    try {
+      for (const item of order.items) {
+        const productId = item.product;
+        if (!productId) continue;
+
+        await axios.post(
+          `${BASE_URL}/api/reviews/products/${productId}/reviews`,
+          { rating, comment },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
+
+      toast.success("Review submitted successfully!");
+      setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Review submission failed.");
     }
@@ -194,10 +214,10 @@ export default function Orders() {
 
             {expandedOrderId === order._id && (
               <div className="mt-6 border-t pt-4">
+                {/* Order Details Table */}
                 <h3 className="text-lg font-bold mb-4 text-[#004080]">
                   Order Summary
                 </h3>
-
                 <table className="w-full table-auto border-collapse mb-4 text-sm">
                   <thead>
                     <tr className="bg-[#004080] text-white">
