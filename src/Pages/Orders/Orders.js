@@ -118,7 +118,9 @@ export default function Orders() {
             onClick={() => toggleOrder(order._id)}
           >
             <div className="flex justify-between items-center mb-2 cursor-pointer">
-              <h2 className="text-lg font-semibold">Order #{order.orderId}</h2>
+              <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
+                Order #{order.orderId}
+              </h2>
               <span
                 className={`text-sm font-bold px-2 py-1 rounded ${
                   order.status === "delivered"
