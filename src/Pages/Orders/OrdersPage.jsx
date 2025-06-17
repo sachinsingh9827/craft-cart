@@ -271,7 +271,7 @@ export default function Orders() {
 
   return (
     <div className="p-2 font-montserrat max-w-full mx-auto space-y-6 min-h-screen">
-      <h1 className="text-xl font-bold text-center mb-4 text-[#004080] uppercase">
+      <h1 className="text-xl font-bold text-start mb-4 text-[#004080] uppercase">
         Place Your Order
       </h1>
       <div className="text-right text-lg font-bold text-green-600 mb-4">
@@ -281,7 +281,7 @@ export default function Orders() {
       {/* Step 1 */}
       {step === 1 && (
         <>
-          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             1. Review &amp; Select Products
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
@@ -333,7 +333,7 @@ export default function Orders() {
       {/* Step 2 */}
       {step === 2 && (
         <>
-          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             2. Choose Address
           </h2>
           {user.addresses?.length ? (
@@ -389,7 +389,7 @@ export default function Orders() {
       {/* Step 3 */}
       {step === 3 && (
         <>
-          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             3. Apply Coupon
           </h2>
 
@@ -444,11 +444,11 @@ export default function Orders() {
       {/* Step 4 */}
       {step === 4 && (
         <>
-          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             4. Choose Payment Option
           </h2>
           <div className="space-y-3 max-w-md mx-auto">
-            <label className="flex items-center gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
+            <label className="flex items-start gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
                 type="radio"
                 name="paymentOption"
@@ -461,7 +461,7 @@ export default function Orders() {
               />
               <span className="font-semibold">Cash on Delivery (COD)</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
+            <label className="flex items-start gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
                 type="radio"
                 name="paymentOption"
@@ -497,7 +497,7 @@ export default function Orders() {
       {/* Step 5 */}
       {step === 5 && (
         <div className="max-w-full mx-auto p-4 bg-white border rounded shadow-md">
-          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             Order Summary &amp; Invoice
           </h2>
           <table className="w-full table-auto border-collapse mb-6">

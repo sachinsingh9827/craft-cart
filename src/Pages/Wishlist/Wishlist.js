@@ -68,7 +68,7 @@ export default function WishlistPage() {
         {wishlist.map((product) => (
           <div
             key={product._id}
-            className="border p-4 rounded shadow"
+            className="border p-2 rounded shadow"
             onClick={() => navigate(`/product/${product._id}`)}
           >
             <img

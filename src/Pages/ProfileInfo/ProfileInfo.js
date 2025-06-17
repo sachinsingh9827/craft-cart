@@ -155,14 +155,14 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="text-sm uppercase text-[#004080] font-bold mb-2">
           Addresses ({user?.addresses?.length || 0})
         </h2>
         <div className="space-y-4">
           {user?.addresses?.map((addr) => (
             <div
               key={addr._id}
-              className="border border-gray-300 rounded p-4 flex justify-between items-start"
+              className="border border-gray-300 rounded p-2 flex justify-between items-start"
             >
               <div>
                 <p>
@@ -231,7 +231,7 @@ export default function ProfilePage() {
                     contact: "",
                   });
                 }}
-                className="text-gray-500 text-lg"
+                className="text-[#004080] text-lg"
               >
                 ✕
               </button>
