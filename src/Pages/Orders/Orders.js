@@ -28,16 +28,31 @@ export default function Orders() {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setOrders(res.data.orders || []);
+        const orders = res.data.orders || [];
+        setOrders(orders);
+
+        // Check for already submitted reviews
         const reviewMap = {};
-        res.data.orders.forEach((order) => {
-          if (order.reviewSubmitted) {
-            reviewMap[order._id] = true;
+        for (const order of orders) {
+          if (order.status !== "delivered") continue;
+          for (const item of order.items) {
+            const productId = item.product;
+            const reviewRes = await axios.get(
+              `${BASE_URL}/api/products/${productId}/reviews`
+            );
+            const userReview = reviewRes.data.reviews.find(
+              (r) => r.user === userId
+            );
+            if (userReview) {
+              reviewMap[order._id] = true;
+              break; // no need to check further items in the same order
+            }
           }
-        });
+        }
+
         setSubmittedReviews(reviewMap);
       } catch (err) {
-        toast.error("Failed to load orders");
+        toast.error("Failed to load orders or reviews");
         console.error(err);
       } finally {
         setLoading(false);
