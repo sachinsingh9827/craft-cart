@@ -31,21 +31,22 @@ export default function Orders() {
         const orders = res.data.orders || [];
         setOrders(orders);
 
-        // Check for already submitted reviews
         const reviewMap = {};
         for (const order of orders) {
           if (order.status !== "delivered") continue;
+
           for (const item of order.items) {
             const productId = item.product;
             const reviewRes = await axios.get(
               `${BASE_URL}/api/products/${productId}/reviews`
             );
+
             const userReview = reviewRes.data.reviews.find(
               (r) => r.user === userId
             );
             if (userReview) {
               reviewMap[order._id] = true;
-              break; // no need to check further items in the same order
+              break;
             }
           }
         }
@@ -124,12 +125,7 @@ export default function Orders() {
       return;
     }
 
-    const userData = JSON.parse(localStorage.getItem("user"));
-    const token = localStorage.getItem("token");
-
-    const userId = userData?._id;
-
-    if (!userId || !token) {
+    if (!token || !userId) {
       toast.error("User not authenticated.");
       return;
     }
@@ -161,6 +157,8 @@ export default function Orders() {
 
       toast.success("Review submitted successfully!");
       setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
+      setRatingInputs((prev) => ({ ...prev, [orderId]: "" }));
+      setReviewInputs((prev) => ({ ...prev, [orderId]: "" }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Review submission failed.");
       console.error("Review Error:", err);
