@@ -14,7 +14,7 @@ const ProductDetail = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/product/${productId}`);
+        const res = await axios.get(`${BASE_URL}/${productId}`);
         setProduct(res.data.product);
       } catch (err) {
         console.error(err);
