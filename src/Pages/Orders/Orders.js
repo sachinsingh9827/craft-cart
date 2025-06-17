@@ -153,7 +153,6 @@ export default function Orders() {
           <div
             key={order._id}
             className="border p-4 mb-4 rounded shadow-sm bg-white"
-            onClick={() => toggleOrder(order._id)}
           >
             <div className="flex justify-between items-center mb-2 cursor-pointer">
               <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
@@ -170,6 +169,18 @@ export default function Orders() {
               >
                 {order.status}
               </span>
+              <button
+                onClick={() => toggleOrder(order._id)}
+                className={`text-sm font-bold px-3 py-1 rounded transition duration-200 ${
+                  expandedOrderId === order._id
+                    ? "bg-gray-200 text-gray-800"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                }`}
+              >
+                {expandedOrderId === order._id
+                  ? "Hide Details"
+                  : "Show Details"}
+              </button>
             </div>
 
             <div className="text-sm text-gray-700 mb-2">
