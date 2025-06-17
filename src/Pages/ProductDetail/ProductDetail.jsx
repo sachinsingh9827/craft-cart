@@ -18,6 +18,7 @@ const ProductDetail = () => {
           `${BASE_URL}/api/admin/protect/${productId}`
         );
         setProduct(res.data.product);
+        console.log(res);
       } catch (err) {
         console.error(err);
         showToast("Failed to load product details", "error");
