@@ -20,12 +20,12 @@ import TeamSection from "./components/TeamSection/TeamSection";
 import AboutOffer from "./components/AboutUs/AboutOffer";
 import Toast from "./components/Toast/Toast";
 import ScrollAutoPlayVideo from "./components/TeamSection/ScrollAutoPlayVideo";
-import ScrollToTop from "./ScrollToTop";
 import NotFound from "./utils/NotFound";
 import VerifyEmailPage from "./components/Login/VerifyEmailPage";
 import ProfilePage from "./Pages/ProfileInfo/ProfilePage";
 import OrdersPage from "./Pages/Orders/OrdersPage";
 import ProductDetail from "./Pages/ProductDetail/ProductDetail";
+import ScrollToTop from "./utils/ScrollToTop";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
