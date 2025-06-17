@@ -66,7 +66,11 @@ export default function WishlistPage() {
       </h1>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {wishlist.map((product) => (
-          <div key={product._id} className="border p-4 rounded shadow">
+          <div
+            key={product._id}
+            className="border p-4 rounded shadow"
+            onClick={() => navigate(`/product/${product._id}`)}
+          >
             <img
               src={
                 product.images?.[0]?.url || "https://via.placeholder.com/150"

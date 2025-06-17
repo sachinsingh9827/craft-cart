@@ -116,7 +116,7 @@ export default function Orders() {
         );
         if (res.data.success) {
           setAddressValid(true);
-          toast.success("Address validated!");
+          // toast.success("Address validated!");
         } else {
           throw new Error(res.data.message || "Invalid address");
         }
