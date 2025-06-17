@@ -28,8 +28,7 @@ export default function Orders() {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const orders = res.data.orders || [];
-        setOrders(orders);
+        setOrders(res.data.orders || []);
       } catch (err) {
         toast.error("Failed to load orders.");
         console.error(err);
@@ -39,8 +38,9 @@ export default function Orders() {
     })();
   }, [userId, token]);
 
-  const toggleOrder = (orderId) =>
+  const toggleOrder = (orderId) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
+  };
 
   const isWithinThreeDays = (dateStr) => {
     const createdDate = new Date(dateStr);
@@ -100,7 +100,7 @@ export default function Orders() {
     }
 
     const order = orders.find((o) => o._id === orderId);
-    if (!order || !order.items || !order.items.length) {
+    if (!order || !order.items?.length) {
       toast.error("Invalid order data.");
       return;
     }
@@ -123,7 +123,6 @@ export default function Orders() {
       const message =
         err.response?.data?.message || "Review submission failed.";
       toast.error(message);
-      console.error("Review Error:", err);
     }
   };
 
