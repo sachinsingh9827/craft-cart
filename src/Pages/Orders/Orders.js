@@ -178,7 +178,9 @@ export default function Orders() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold text-[#004080] mb-6">Your Orders</h1>
+      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
+        Your Orders
+      </h1>
 
       {orders.map((order) => {
         const showCancelButton =

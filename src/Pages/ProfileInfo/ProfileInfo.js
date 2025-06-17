@@ -148,10 +148,11 @@ export default function ProfilePage() {
 
         <div className="mb-6">
           <p>
-            <strong>Name:</strong> {user?.name || user?.username}
+            <strong className="text-[#004080]">Name:</strong>{" "}
+            {user?.name || user?.username}
           </p>
           <p>
-            <strong>Email:</strong> {user?.email}
+            <strong className="text-[#004080]">Email:</strong> {user?.email}
           </p>
         </div>
 
