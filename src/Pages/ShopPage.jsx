@@ -208,7 +208,7 @@ const ShopPage = () => {
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
 
-                  <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                  <div className="mt-4 flex flex-col sm:flex-col gap-2">
                     <Button
                       onClick={(e) => handleAddToWishlist(_id, e)}
                       className="w-full sm:w-1/2 rounded-lg text-sm py-2"
