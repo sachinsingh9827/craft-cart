@@ -60,8 +60,8 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <h1 className="text-sm uppercase text-[#004080] font-bold mb-6">
+    <div className="mx-auto">
+      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
         Your Wishlist
       </h1>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">

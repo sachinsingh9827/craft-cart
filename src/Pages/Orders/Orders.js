@@ -87,8 +87,8 @@ export default function Orders() {
     return <div className="text-center p-6">No orders found.</div>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-sm uppercase text-[#004080] font-bold mb-6">
+    <div className=" mx-auto">
+      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
         Your Orders
       </h1>
 
