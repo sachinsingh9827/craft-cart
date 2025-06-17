@@ -14,7 +14,9 @@ const ProductDetail = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/user/auth/${productId}`);
+        const res = await axios.get(
+          `${BASE_URL}/api/admin/protect/${productId}`
+        );
         setProduct(res.data.product);
       } catch (err) {
         console.error(err);
