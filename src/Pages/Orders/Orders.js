@@ -215,7 +215,11 @@ export default function Orders() {
                   {order.status}
                 </span>
                 <button
-                  className="text-blue-600 text-sm underline"
+                  className={`text-sm font-medium px-2 py-1 rounded transition-all ${
+                    expandedOrderId === order._id
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-blue-600"
+                  }`}
                   onClick={() => toggleOrder(order._id)}
                 >
                   {expandedOrderId === order._id
