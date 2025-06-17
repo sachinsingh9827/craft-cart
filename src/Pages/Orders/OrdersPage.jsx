@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
+import LoadingPage from "../../components/LoadingPage";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
@@ -251,7 +252,12 @@ export default function Orders() {
     navigate("/shop");
   };
 
-  if (!user) return <div className="text-center p-6">Loading user...</div>;
+  if (!user)
+    return (
+      <div className="text-center p-6">
+        <LoadingPage />
+      </div>
+    );
   const addr = user.addresses.find((a) => a._id === selectedAddressId);
 
   return (
