@@ -211,7 +211,7 @@ const ShopPage = () => {
                   <div className="flex gap-2 mt-auto">
                     <Button
                       onClick={(e) => handleAddToWishlist(_id, e)}
-                      className="w-1/2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+                      className="w-1/2  rounded-lg  text-sm"
                     >
                       Wishlist
                     </Button>
