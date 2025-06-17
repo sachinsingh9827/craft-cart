@@ -281,7 +281,7 @@ export default function Orders() {
       {/* Step 1 */}
       {step === 1 && (
         <>
-          <h2 className="font-semibold mb-2">
+          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
             1. Review &amp; Select Products
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
@@ -333,7 +333,9 @@ export default function Orders() {
       {/* Step 2 */}
       {step === 2 && (
         <>
-          <h2 className="font-semibold mb-2">2. Choose Address</h2>
+          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+            2. Choose Address
+          </h2>
           {user.addresses?.length ? (
             <div className="space-y-2">
               {user.addresses.map((a) => (
@@ -387,7 +389,9 @@ export default function Orders() {
       {/* Step 3 */}
       {step === 3 && (
         <>
-          <h2 className="font-semibold mb-2">3. Apply Coupon</h2>
+          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+            3. Apply Coupon
+          </h2>
 
           {/* Show instructional text if no coupon is applied */}
           {!couponData && (
@@ -440,7 +444,9 @@ export default function Orders() {
       {/* Step 4 */}
       {step === 4 && (
         <>
-          <h2 className="font-semibold mb-4">4. Choose Payment Option</h2>
+          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
+            4. Choose Payment Option
+          </h2>
           <div className="space-y-3 max-w-md mx-auto">
             <label className="flex items-center gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
@@ -490,8 +496,8 @@ export default function Orders() {
 
       {/* Step 5 */}
       {step === 5 && (
-        <div className="max-w-full mx-auto p-6 bg-white border rounded shadow-md">
-          <h2 className="text-2xl font-bold mb-6 text-[#004080] uppercase text-center">
+        <div className="max-w-full mx-auto p-4 bg-white border rounded shadow-md">
+          <h2 className="text-sm font-bold text-center mb-4 text-[#004080] uppercase">
             Order Summary &amp; Invoice
           </h2>
           <table className="w-full table-auto border-collapse mb-6">
