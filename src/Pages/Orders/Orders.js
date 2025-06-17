@@ -16,44 +16,44 @@ export default function Orders() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [reviewInputs, setReviewInputs] = useState({});
+  const [ratingInputs, setRatingInputs] = useState({});
+  const [submittedReviews, setSubmittedReviews] = useState({});
 
   useEffect(() => {
     if (!userId || !token) return;
-
     (async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(res.data.orders || []);
+        // Mark orders that already have reviews submitted
+        const reviewMap = {};
+        res.data.orders.forEach((order) => {
+          if (order.reviewSubmitted) {
+            reviewMap[order._id] = true;
+          }
+        });
+        setSubmittedReviews(reviewMap);
       } catch (err) {
         toast.error("Failed to load orders");
-        console.error(err);
       } finally {
         setLoading(false);
       }
     })();
   }, [userId, token]);
 
-  const toggleOrder = (orderId) => {
-    setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
-  };
+  const toggleOrder = (id) =>
+    setExpandedOrderId((prev) => (prev === id ? null : id));
 
-  const isWithinThreeDays = (dateStr) => {
-    const createdDate = new Date(dateStr);
-    const currentDate = new Date();
-    const diffTime = currentDate - createdDate;
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 3;
-  };
+  const isWithinThreeDays = (dateStr) =>
+    (new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24) <= 3;
 
-  const openCancelModal = (orderId) => {
-    setSelectedOrderId(orderId);
+  const openCancelModal = (id) => {
+    setSelectedOrderId(id);
     setCancelModalOpen(true);
   };
-
   const closeCancelModal = () => {
     setSelectedOrderId(null);
     setCancelModalOpen(false);
@@ -62,67 +62,86 @@ export default function Orders() {
   const handleCancelOrder = async () => {
     if (!selectedOrderId) return;
     setStatusSaving(true);
-
     try {
       const res = await axios.patch(
         `${BASE_URL}/api/orders/${selectedOrderId}/status`,
         { status: "cancelled" },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (res.data.status === "success") {
-        toast.success("Order cancelled successfully!");
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order._id === selectedOrderId
-              ? { ...order, status: res.data.order.status }
-              : order
+        toast.success("Order cancelled");
+        setOrders((prev) =>
+          prev.map((o) =>
+            o._id === selectedOrderId
+              ? { ...o, status: res.data.order.status }
+              : o
           )
         );
       } else {
-        toast.error(res.data.message || "Failed to cancel order.");
+        toast.error(res.data.message || "Failed to cancel");
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Status update failed.");
+    } catch {
+      toast.error("Status update failed");
     } finally {
       setStatusSaving(false);
       closeCancelModal();
     }
   };
 
-  if (loading)
-    return <div className="text-center p-6">Loading your orders...</div>;
+  const handleSubmitReview = async (orderId) => {
+    const rating = ratingInputs[orderId];
+    const comment = reviewInputs[orderId]?.trim();
+    if (!rating || !comment) {
+      toast.error("Please provide both rating and review.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/orders/${orderId}/review`,
+        { rating, comment },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        toast.success("Review submitted!");
+        setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
+      } else {
+        throw new Error(res.data.message);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message);
+    }
+  };
+
+  if (loading) return <div className="text-center p-6">Loading...</div>;
   if (!orders.length)
     return <div className="text-center p-6">No orders found.</div>;
 
   return (
-    <div className="mx-auto p-2 max-w-full">
-      <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
-        Your Orders
-      </h1>
+    <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-xl font-bold text-[#004080] mb-6">Your Orders</h1>
 
       {orders.map((order) => {
-        const showCancelButton =
+        const showCancel =
           order.status === "pending" &&
           isWithinThreeDays(order.createdAt) &&
           order.status !== "cancelled";
+
+        const showReviewForm =
+          order.status === "delivered" && !submittedReviews[order._id];
 
         return (
           <div
             key={order._id}
             className="border p-4 mb-4 rounded shadow-sm bg-white"
-            onClick={() => toggleOrder(order._id)}
           >
-            <div className="flex justify-between items-center mb-2 cursor-pointer">
-              <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
-                Order #{order.orderId}
-              </h2>
+            <div
+              className="flex justify-between cursor-pointer"
+              onClick={() => toggleOrder(order._id)}
+            >
+              <h2 className="font-semibold">Order #{order.orderId}</h2>
               <span
-                className={`text-sm font-bold px-2 py-1 rounded ${
+                className={`px-2 py-1 rounded ${
                   order.status === "delivered"
                     ? "bg-green-100 text-green-700"
                     : order.status === "cancelled"
@@ -134,107 +153,86 @@ export default function Orders() {
               </span>
             </div>
 
-            <div className="text-sm text-gray-700 mb-2">
-              <strong>Date:</strong>{" "}
-              {new Date(order.createdAt).toLocaleDateString()}
-            </div>
-
-            <div className="text-right font-bold text-[#004080]">
-              Total: ₹{order.totalAmount.toFixed(2)}
-            </div>
-
             {expandedOrderId === order._id && (
-              <div className="mt-6 border-t pt-4">
-                <h3 className="text-lg font-bold mb-4 text-[#004080]">
-                  Order Summary
-                </h3>
+              <div className="mt-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Date:</strong>{" "}
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Total:</strong> ₹{order.totalAmount.toFixed(2)}
+                </p>
 
-                <table className="w-full table-auto border-collapse mb-4 text-sm">
-                  <thead>
-                    <tr className="bg-[#004080] text-white">
-                      <th className="p-2 text-left">Product</th>
-                      <th className="p-2 text-left">Image</th>
-                      <th className="p-2 text-right">Price (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {order.items.map((item) => (
-                      <tr key={item._id} className="border-b">
-                        <td className="p-2">{item.name}</td>
-                        <td className="p-2">
-                          <img
-                            src={item.images?.[0]?.url || "/placeholder.jpg"}
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        </td>
-                        <td className="p-2 text-right">
-                          ₹{item.price.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {order.coupon && (
-                  <div className="mb-4 p-4 border border-green-300 bg-green-50 rounded text-green-700 font-medium max-w-sm">
-                    Coupon Applied: <strong>{order.coupon.code}</strong> —
-                    Discount: ₹{order.coupon.discountAmt.toFixed(2)}
-                  </div>
-                )}
-
-                <section className="mb-4 text-sm">
-                  <h4 className="font-semibold text-[#004080] mb-1">
-                    Shipping Address
-                  </h4>
-                  <address className="not-italic font-mono text-gray-700">
-                    {order.deliveryAddress.street}, {order.deliveryAddress.city}
-                    , {order.deliveryAddress.state} -{" "}
-                    {order.deliveryAddress.postalCode},{" "}
-                    {order.deliveryAddress.country}
-                    <br />
-                    <strong>Contact:</strong> {order.deliveryAddress.contact}
-                  </address>
-                </section>
-
-                <section className="mb-4 text-sm">
-                  <h4 className="font-semibold text-[#004080] mb-1">
-                    Payment Method
-                  </h4>
-                  <p className="font-mono text-gray-700">
-                    {order.paymentMethod === "cod"
-                      ? "Cash on Delivery"
-                      : "Online Payment"}
-                  </p>
-                </section>
-
-                <div className="max-w-md ml-auto border-t pt-4 font-mono text-sm">
-                  <div className="flex justify-between mb-2 text-gray-700">
-                    <span>Subtotal:</span>
-                    <span>₹{order.subtotal.toFixed(2)}</span>
-                  </div>
-                  {order.discount > 0 && (
-                    <div className="flex justify-between mb-2 text-red-600">
-                      <span>Discount:</span>{" "}
-                      <span>-₹{order.discount.toFixed(2)}</span>
+                <div className="border-t pt-3 mt-3">
+                  <h3 className="font-semibold text-[#004080] mb-2">
+                    Order Items:
+                  </h3>
+                  {order.items.map((item) => (
+                    <div key={item._id} className="mb-2 text-sm">
+                      <span>{item.name}</span> — ₹{item.price.toFixed(2)}
                     </div>
-                  )}
-                  <div className="flex justify-between font-bold text-base border-t pt-2">
-                    <span>Total:</span>{" "}
-                    <span>₹{order.totalAmount.toFixed(2)}</span>
-                  </div>
+                  ))}
                 </div>
 
-                {showCancelButton && (
-                  <div className="text-right mt-6">
+                {showCancel && (
+                  <div className="mt-4 text-right">
                     <button
-                      disabled={statusSaving}
                       onClick={() => openCancelModal(order._id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
+                      className="bg-red-600 text-white px-3 py-2 rounded"
                     >
                       Cancel Order
                     </button>
                   </div>
+                )}
+
+                {showReviewForm && (
+                  <div className="mt-6 border-t pt-4">
+                    <h4 className="font-semibold mb-2">Leave a Review</h4>
+                    <div className="flex items-center gap-2 mb-2">
+                      <label>Rating:</label>
+                      <select
+                        value={ratingInputs[order._id] || ""}
+                        onChange={(e) =>
+                          setRatingInputs((prev) => ({
+                            ...prev,
+                            [order._id]: +e.target.value,
+                          }))
+                        }
+                        className="border px-2 py-1 rounded"
+                      >
+                        <option value="">--</option>
+                        {[1, 2, 3, 4, 5].map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <textarea
+                      rows="3"
+                      className="w-full border p-2 rounded"
+                      placeholder="Write your review..."
+                      value={reviewInputs[order._id] || ""}
+                      onChange={(e) =>
+                        setReviewInputs((prev) => ({
+                          ...prev,
+                          [order._id]: e.target.value,
+                        }))
+                      }
+                    />
+                    <button
+                      onClick={() => handleSubmitReview(order._id)}
+                      className="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      Submit Review
+                    </button>
+                  </div>
+                )}
+
+                {submittedReviews[order._id] && (
+                  <p className="mt-4 text-green-600 italic">
+                    You already submitted a review. Thank you!
+                  </p>
                 )}
               </div>
             )}
@@ -242,27 +240,21 @@ export default function Orders() {
         );
       })}
 
-      {/* Cancel Confirmation Modal */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4 text-[#004080]">
-              Confirm Cancellation
-            </h3>
-            <p className="mb-6 text-sm text-gray-700">
-              Are you sure you want to cancel this order?
-            </p>
-            <div className="flex justify-end space-x-4">
+            <h3 className="font-semibold mb-4">Confirm Cancellation?</h3>
+            <div className="flex justify-end gap-4">
               <button
                 onClick={closeCancelModal}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="px-4 py-2 border rounded"
               >
                 No
               </button>
               <button
                 onClick={handleCancelOrder}
                 disabled={statusSaving}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 bg-red-600 text-white rounded disabled:opacity-50"
               >
                 {statusSaving ? "Cancelling..." : "Yes, Cancel"}
               </button>
