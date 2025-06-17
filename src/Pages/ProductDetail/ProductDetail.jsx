@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingPage from "../../components/LoadingPage";
 import Toast, { showToast } from "../../components/Toast/Toast";
+import Button from "../../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
@@ -155,12 +156,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Buy Now Button */}
-          <button
-            onClick={(e) => handleBuyNow(product._id, e)}
-            className="w-full bg-[#004080] text-yellow-400 py-3 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm sm:text-base"
-          >
-            Buy Now
-          </button>
+          <Button onClick={(e) => handleBuyNow(product._id, e)}>Buy Now</Button>
         </div>
       </div>
     </div>
