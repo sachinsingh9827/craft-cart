@@ -79,7 +79,7 @@ const ProductDetail = () => {
     );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 font-montserrat">
+    <div className="max-w-full min-h-1/2 mx-auto p-4 sm:p-6 font-montserrat">
       <Toast />
       <div className="flex flex-col md:flex-row gap-6">
         {/* Image Section */}
