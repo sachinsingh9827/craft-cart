@@ -5,19 +5,13 @@ import { toast } from "react-toastify";
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 export default function Orders() {
-  // 🔐 Get user data from localStorage
   const storedUser = localStorage.getItem("user");
-  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-  const token = parsedUser?.token;
-  const userId = parsedUser?._id;
+  const storedToken = localStorage.getItem("token"); // ✅ token stored separately
 
-  // ✅ Debug: Prove localStorage works
-  useEffect(() => {
-    console.log("Raw user from localStorage:", storedUser);
-    console.log("Parsed user object:", parsedUser);
-    console.log("Extracted userId:", userId);
-    console.log("Extracted token:", token);
-  }, []);
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+  const token = storedToken || null;
+  const userId = parsedUser?._id;
+  const userName = parsedUser?.username;
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +111,8 @@ export default function Orders() {
   };
 
   const handleReviewSubmit = async (productId) => {
-    if (!reviewInputs[productId]?.rating || !reviewInputs[productId]?.comment) {
+    const input = reviewInputs[productId];
+    if (!input?.rating || !input?.comment) {
       toast.warning("Please fill out both rating and comment");
       return;
     }
@@ -128,11 +123,10 @@ export default function Orders() {
       const res = await axios.post(
         `${BASE_URL}/api/reviews/products/${productId}/reviews`,
         {
-          rating: reviewInputs[productId].rating,
-          comment: reviewInputs[productId].comment,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+          rating: input.rating,
+          comment: input.comment,
+          userId,
+          userName,
         }
       );
 
