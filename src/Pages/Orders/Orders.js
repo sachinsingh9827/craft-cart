@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Button from "../../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
@@ -24,6 +25,7 @@ export default function Orders() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [reviewInputs, setReviewInputs] = useState({});
   const [reviewLoading, setReviewLoading] = useState({});
+  const [reviewErrors, setReviewErrors] = useState({});
   const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
 
   useEffect(() => {
@@ -119,10 +121,14 @@ export default function Orders() {
   const handleReviewSubmit = async (productId) => {
     const input = reviewInputs[productId];
     if (!input?.rating || !input?.comment) {
-      toast.warning("Please fill out both rating and comment");
+      setReviewErrors((prev) => ({
+        ...prev,
+        [productId]: "Please fill out both rating and comment",
+      }));
       return;
     }
 
+    setReviewErrors((prev) => ({ ...prev, [productId]: null }));
     setReviewLoading((prev) => ({ ...prev, [productId]: true }));
 
     try {
@@ -263,25 +269,51 @@ export default function Orders() {
                                 <p className="font-semibold mb-1">
                                   Leave a Review
                                 </p>
+
+                                {reviewErrors[item._id] && (
+                                  <p className="text-red-600 text-sm mb-2">
+                                    {reviewErrors[item._id]}
+                                  </p>
+                                )}
+
                                 <div className="flex flex-col gap-2">
-                                  <select
-                                    value={reviewInputs[item._id]?.rating || ""}
-                                    onChange={(e) =>
-                                      handleReviewChange(
-                                        item._id,
-                                        "rating",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="border p-2 rounded"
-                                  >
-                                    <option value="">Select Rating</option>
-                                    <option value="1">1 - Poor</option>
-                                    <option value="2">2 - Fair</option>
-                                    <option value="3">3 - Good</option>
-                                    <option value="4">4 - Very Good</option>
-                                    <option value="5">5 - Excellent</option>
-                                  </select>
+                                  <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <button
+                                        key={star}
+                                        type="button"
+                                        onClick={() =>
+                                          handleReviewChange(
+                                            item._id,
+                                            "rating",
+                                            star
+                                          )
+                                        }
+                                        className="focus:outline-none"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          fill={
+                                            reviewInputs[item._id]?.rating >=
+                                            star
+                                              ? "#facc15"
+                                              : "none"
+                                          }
+                                          viewBox="0 0 24 24"
+                                          stroke="#facc15"
+                                          strokeWidth="1.5"
+                                          className="w-6 h-6 transition-all"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    ))}
+                                  </div>
+
                                   <textarea
                                     value={
                                       reviewInputs[item._id]?.comment || ""
@@ -297,15 +329,14 @@ export default function Orders() {
                                     rows="3"
                                     placeholder="Write your review..."
                                   />
-                                  <button
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
+                                  <Button
                                     onClick={() => handleReviewSubmit(item._id)}
                                     disabled={reviewLoading[item._id]}
                                   >
                                     {reviewLoading[item._id]
                                       ? "Submitting..."
                                       : "Submit Review"}
-                                  </button>
+                                  </Button>
                                 </div>
                               </div>
                             </td>
