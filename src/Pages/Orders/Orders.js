@@ -5,10 +5,19 @@ import { toast } from "react-toastify";
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 export default function Orders() {
+  // 🔐 Get user data from localStorage
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
   const token = parsedUser?.token;
   const userId = parsedUser?._id;
+
+  // ✅ Debug: Prove localStorage works
+  useEffect(() => {
+    console.log("Raw user from localStorage:", storedUser);
+    console.log("Parsed user object:", parsedUser);
+    console.log("Extracted userId:", userId);
+    console.log("Extracted token:", token);
+  }, []);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,19 +26,20 @@ export default function Orders() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-  // Review states
-  const [reviewInputs, setReviewInputs] = useState({}); // { [productId]: { rating, comment } }
-  const [reviewLoading, setReviewLoading] = useState({}); // { [productId]: true/false }
+  const [reviewInputs, setReviewInputs] = useState({});
+  const [reviewLoading, setReviewLoading] = useState({});
 
+  // 📦 Load user's orders
   useEffect(() => {
-    if (!userId || !token) return;
+    if (!userId || !token) {
+      toast.error("User not authenticated");
+      return;
+    }
 
     (async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/orders/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(res.data.orders || []);
       } catch (err) {
@@ -72,9 +82,7 @@ export default function Orders() {
         `${BASE_URL}/api/orders/${selectedOrderId}/status`,
         { status: "cancelled" },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -124,9 +132,7 @@ export default function Orders() {
           comment: reviewInputs[productId].comment,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -167,9 +173,8 @@ export default function Orders() {
           <div
             key={order._id}
             className="border p-4 mb-4 rounded shadow-sm bg-white"
-            onClick={() => toggleOrder(order._id)}
           >
-            <div className="flex justify-between items-center mb-2 cursor-pointer">
+            <div className="flex justify-between items-center mb-2">
               <h2 className="text-sm uppercase text-[#004080] font-bold mb-4">
                 Order #{order.orderId}
               </h2>
@@ -184,6 +189,14 @@ export default function Orders() {
               >
                 {order.status}
               </span>
+              <button
+                className="ml-2 text-blue-600 text-xs underline"
+                onClick={() => toggleOrder(order._id)}
+              >
+                {expandedOrderId === order._id
+                  ? "Hide Details"
+                  : "Show Details"}
+              </button>
             </div>
 
             <div className="text-sm text-gray-700 mb-2">
@@ -226,7 +239,6 @@ export default function Orders() {
                           </td>
                         </tr>
 
-                        {/* Show review form only if order is delivered */}
                         {order.status === "delivered" && (
                           <tr>
                             <td colSpan="3" className="p-4">
@@ -294,31 +306,6 @@ export default function Orders() {
                   </div>
                 )}
 
-                <section className="mb-4 text-sm">
-                  <h4 className="font-semibold text-[#004080] mb-1">
-                    Shipping Address
-                  </h4>
-                  <address className="not-italic font-mono text-gray-700">
-                    {order.deliveryAddress.street}, {order.deliveryAddress.city}
-                    , {order.deliveryAddress.state} -{" "}
-                    {order.deliveryAddress.postalCode},{" "}
-                    {order.deliveryAddress.country}
-                    <br />
-                    <strong>Contact:</strong> {order.deliveryAddress.contact}
-                  </address>
-                </section>
-
-                <section className="mb-4 text-sm">
-                  <h4 className="font-semibold text-[#004080] mb-1">
-                    Payment Method
-                  </h4>
-                  <p className="font-mono text-gray-700">
-                    {order.paymentMethod === "cod"
-                      ? "Cash on Delivery"
-                      : "Online Payment"}
-                  </p>
-                </section>
-
                 <div className="max-w-md ml-auto border-t pt-4 font-mono text-sm">
                   <div className="flex justify-between mb-2 text-gray-700">
                     <span>Subtotal:</span>
@@ -326,12 +313,12 @@ export default function Orders() {
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between mb-2 text-red-600">
-                      <span>Discount:</span>{" "}
+                      <span>Discount:</span>
                       <span>-₹{order.discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-bold text-base border-t pt-2">
-                    <span>Total:</span>{" "}
+                    <span>Total:</span>
                     <span>₹{order.totalAmount.toFixed(2)}</span>
                   </div>
                 </div>
@@ -353,7 +340,7 @@ export default function Orders() {
         );
       })}
 
-      {/* Cancel Confirmation Modal */}
+      {/* Cancel Modal */}
       {cancelModalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
