@@ -3,6 +3,7 @@ import Orders from "../Orders/Orders";
 import Wishlist from "../Wishlist/Wishlist";
 import EditProfile from "./EditProfile";
 import ProfileInfo from "../ProfileInfo/ProfileInfo"; // Import ProfileInfo component
+import { ToastContainer } from "react-toastify";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -42,6 +43,7 @@ export default function ProfilePage() {
         {activeTab === "wishlist" && <Wishlist />}
         {activeTab === "edit" && <EditProfile />}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 }
