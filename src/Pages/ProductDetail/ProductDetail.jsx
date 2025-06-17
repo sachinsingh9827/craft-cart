@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingPage from "../../components/LoadingPage";
 import Toast, { showToast } from "../../components/Toast/Toast";
@@ -8,10 +8,12 @@ const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 const ProductDetail = () => {
   const { productId } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch product details
   useEffect(() => {
     (async () => {
       try {
@@ -29,6 +31,46 @@ const ProductDetail = () => {
       }
     })();
   }, [productId]);
+
+  // Buy Now handler
+  const handleBuyNow = async (productId, e) => {
+    e.stopPropagation();
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      showToast("Please login to continue.", "warning");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${BASE_URL}/api/user/auth/wishlist/add`,
+        { productId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 409) {
+        // Already in wishlist, continue
+      } else if (status === 401) {
+        showToast("Session expired. Please login again.", "warning");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      } else {
+        showToast("Error adding to wishlist. Try again.", "error");
+        return;
+      }
+    }
+
+    navigate(`/order/${productId}`);
+  };
 
   if (loading) return <LoadingPage />;
   if (!product)
@@ -112,9 +154,12 @@ const ProductDetail = () => {
             </p>
           </div>
 
-          {/* Add to Cart Button */}
-          <button className="bg-[#004080] text-yellow-400 px-6 py-2 rounded hover:bg-yellow-400 hover:text-[#004080] transition font-semibold w-full md:w-auto">
-            Add to Cart
+          {/* Buy Now Button */}
+          <button
+            onClick={(e) => handleBuyNow(product._id, e)}
+            className="w-full bg-[#004080] text-yellow-400 py-3 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm sm:text-base"
+          >
+            Buy Now
           </button>
         </div>
       </div>
