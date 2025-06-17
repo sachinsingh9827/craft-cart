@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 export default function Orders() {
+  const navigate = useNavigate();
+
   const storedUser = localStorage.getItem("user");
-  const storedToken = localStorage.getItem("token"); // ✅ token stored separately
+  const storedToken = localStorage.getItem("token");
 
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
   const token = storedToken || null;
@@ -22,8 +25,9 @@ export default function Orders() {
 
   const [reviewInputs, setReviewInputs] = useState({});
   const [reviewLoading, setReviewLoading] = useState({});
+  const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
 
-  // 📦 Load user's orders
+  // Load orders
   useEffect(() => {
     if (!userId || !token) {
       toast.error("User not authenticated");
@@ -136,6 +140,11 @@ export default function Orders() {
           ...prev,
           [productId]: { rating: "", comment: "" },
         }));
+        setThankYouModalOpen(true);
+        setTimeout(() => {
+          setThankYouModalOpen(false);
+          navigate("/shop");
+        }, 2000);
       } else {
         toast.error(res.data.message || "Review submission failed");
       }
@@ -359,6 +368,20 @@ export default function Orders() {
                 {statusSaving ? "Cancelling..." : "Yes, Cancel"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Thank You Modal */}
+      {thankYouModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+            <h2 className="text-lg font-bold text-green-700 mb-4">
+              Thank You!
+            </h2>
+            <p className="text-gray-700 text-sm">
+              Your review has been submitted.
+            </p>
           </div>
         </div>
       )}
