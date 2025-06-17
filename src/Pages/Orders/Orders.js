@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Button from "../../components/Reusable/Button";
+import { showToast } from "../../components/Toast/Toast";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
@@ -143,7 +144,10 @@ export default function Orders() {
       );
 
       if (res.data.status === "success") {
-        toast.success(res.data.message || "Review submitted successfully");
+        showToast(
+          res.data.message || "Review submitted successfully",
+          "success"
+        );
         setReviewInputs((prev) => ({
           ...prev,
           [productId]: { rating: "", comment: "" },
@@ -154,10 +158,13 @@ export default function Orders() {
           navigate("/shop");
         }, 2000);
       } else {
-        toast.error(res.data.message || "Review submission failed");
+        showToast(res.data.message || "Review submission failed", "error");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit review");
+      showToast(
+        err.response?.data?.message || "Failed to submit review",
+        "error"
+      );
     } finally {
       setReviewLoading((prev) => ({ ...prev, [productId]: false }));
     }
