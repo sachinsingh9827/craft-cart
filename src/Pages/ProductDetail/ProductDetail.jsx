@@ -84,7 +84,7 @@ const ProductDetail = () => {
       <div className="flex flex-col md:flex-row gap-6">
         {/* Image Section */}
         <div className="w-full md:w-1/2">
-          <div className="w-full aspect-square mb-4">
+          <div className="w-full md:w-1/2 aspect-square mb-4">
             <img
               src={selectedImage}
               alt={product.name}
