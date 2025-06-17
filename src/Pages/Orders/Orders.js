@@ -14,6 +14,8 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [statusSaving, setStatusSaving] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
     if (!userId || !token) return;
@@ -47,13 +49,23 @@ export default function Orders() {
     return diffDays <= 3;
   };
 
-  const handleCancelOrder = async (orderId) => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+  const openCancelModal = (orderId) => {
+    setSelectedOrderId(orderId);
+    setCancelModalOpen(true);
+  };
 
+  const closeCancelModal = () => {
+    setSelectedOrderId(null);
+    setCancelModalOpen(false);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrderId) return;
     setStatusSaving(true);
+
     try {
       const res = await axios.patch(
-        `${BASE_URL}/api/orders/${orderId}/status`,
+        `${BASE_URL}/api/orders/${selectedOrderId}/status`,
         { status: "cancelled" },
         {
           headers: {
@@ -66,7 +78,7 @@ export default function Orders() {
         toast.success("Order cancelled successfully!");
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
-            order._id === orderId
+            order._id === selectedOrderId
               ? { ...order, status: res.data.order.status }
               : order
           )
@@ -78,6 +90,7 @@ export default function Orders() {
       toast.error(err.response?.data?.message || "Status update failed.");
     } finally {
       setStatusSaving(false);
+      closeCancelModal();
     }
   };
 
@@ -87,7 +100,7 @@ export default function Orders() {
     return <div className="text-center p-6">No orders found.</div>;
 
   return (
-    <div className=" mx-auto">
+    <div className="mx-auto p-6 max-w-4xl">
       <h1 className="text-sm uppercase text-[#004080] font-bold mb-4">
         Your Orders
       </h1>
@@ -102,9 +115,11 @@ export default function Orders() {
           <div
             key={order._id}
             className="border p-4 mb-4 rounded shadow-sm bg-white"
-            onClick={() => toggleOrder(order._id)}
           >
-            <div className="flex justify-between items-center mb-2 cursor-pointer">
+            <div
+              className="flex justify-between items-center mb-2 cursor-pointer"
+              onClick={() => toggleOrder(order._id)}
+            >
               <h2 className="text-lg font-semibold">Order #{order.orderId}</h2>
               <span
                 className={`text-sm font-bold px-2 py-1 rounded ${
@@ -214,10 +229,10 @@ export default function Orders() {
                   <div className="text-right mt-6">
                     <button
                       disabled={statusSaving}
-                      onClick={() => handleCancelOrder(order._id)}
+                      onClick={() => openCancelModal(order._id)}
                       className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
                     >
-                      {statusSaving ? "Cancelling..." : "Cancel Order"}
+                      Cancel Order
                     </button>
                   </div>
                 )}
@@ -226,6 +241,35 @@ export default function Orders() {
           </div>
         );
       })}
+
+      {/* Cancel Confirmation Modal */}
+      {cancelModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4 text-[#004080]">
+              Confirm Cancellation
+            </h3>
+            <p className="mb-6 text-sm text-gray-700">
+              Are you sure you want to cancel this order?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                No
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={statusSaving}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                {statusSaving ? "Cancelling..." : "Yes, Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
