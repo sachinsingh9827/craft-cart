@@ -110,18 +110,6 @@ export default function Orders() {
         const productId = item.product;
         if (!productId) continue;
 
-        const existingReviews = await axios.get(
-          `${BASE_URL}/api/products/${productId}/reviews`
-        );
-        const alreadyReviewed = existingReviews.data.reviews.some(
-          (r) => r.user === userId
-        );
-
-        if (alreadyReviewed) {
-          toast.info(`You already reviewed: ${item.name}`);
-          continue;
-        }
-
         await axios.post(
           `${BASE_URL}/api/reviews/products/${productId}/reviews`,
           { rating, comment },
@@ -129,10 +117,12 @@ export default function Orders() {
         );
       }
 
-      toast.success("Review submitted!");
+      toast.success("Review submitted successfully!");
       setSubmittedReviews((prev) => ({ ...prev, [orderId]: true }));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Review submission failed.");
+      const message =
+        err.response?.data?.message || "Review submission failed.";
+      toast.error(message);
       console.error("Review Error:", err);
     }
   };
