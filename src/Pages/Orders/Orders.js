@@ -193,7 +193,7 @@ export default function Orders() {
           >
             <div className="flex flex-wrap justify-between items-center gap-2">
               <div>
-                <h2 className="font-semibold text-[#004080]">
+                <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
                   Order #{order.orderId}
                 </h2>
                 <p className="text-xs text-gray-600">
