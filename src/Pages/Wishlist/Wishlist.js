@@ -61,7 +61,9 @@ export default function WishlistPage() {
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
-      <h2 className="text-xl font-bold mb-4 text-center">Your Wishlist</h2>
+      <h1 className="text-sm uppercase text-[#004080] font-bold mb-6">
+        Your Wishlist
+      </h1>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {wishlist.map((product) => (
           <div key={product._id} className="border p-4 rounded shadow">
