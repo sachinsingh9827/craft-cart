@@ -213,13 +213,13 @@ const ShopPage = () => {
                       onClick={(e) => handleAddToWishlist(_id, e)}
                       className="w-full sm:w-1/2 rounded-lg text-sm py-2"
                     >
-                      ❤️ Wishlist
+                      Wishlist
                     </Button>
                     <Button
                       onClick={(e) => handleBuyNow(_id, e)}
                       className="w-full sm:w-1/2 rounded-lg text-sm py-2"
                     >
-                      🛒 Buy Now
+                      Buy Now
                     </Button>
                   </div>
                 </div>
