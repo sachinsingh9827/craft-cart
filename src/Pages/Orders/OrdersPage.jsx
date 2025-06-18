@@ -198,9 +198,12 @@ export default function Orders() {
       if (res.data.success) {
         // Redirect to PhonePe payment page
         window.location.href = res.data.data.paymentUrl; // Assuming the response contains the payment URL
+      } else {
+        // Handle the error response
+        console.error("Payment initiation failed:", res.data.message);
       }
     } catch (err) {
-      // Handle error silently
+      console.error("Error initiating payment:", err.message);
     } finally {
       setSubmittingOrder(false);
     }

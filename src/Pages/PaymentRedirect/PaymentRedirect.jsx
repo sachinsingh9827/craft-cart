@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
@@ -17,12 +16,13 @@ const PaymentRedirect = () => {
           transactionId,
         });
         if (res.data.success) {
-          toast.success("Payment verified successfully!");
+          // Handle successful payment verification
+          console.log("Payment verified successfully:", res.data.data);
         } else {
-          toast.error("Payment verification failed.");
+          console.error("Payment verification failed:", res.data.message);
         }
       } catch (err) {
-        toast.error("Error verifying payment: " + err.message);
+        console.error("Error verifying payment:", err.message);
       }
     };
 
@@ -32,9 +32,22 @@ const PaymentRedirect = () => {
   }, [transactionId]);
 
   return (
-    <div className="text-center p-6">
-      <h1 className="text-xl font-bold">Payment Redirect</h1>
-      <p>Please wait while we verify your payment...</p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded shadow-md text-center">
+        <h1 className="text-2xl font-bold mb-4">Processing Payment...</h1>
+        <p className="text-gray-600">
+          Please wait while we process your payment.
+        </p>
+        <p className="mt-4">
+          If you are not redirected automatically, click the button below.
+        </p>
+        <a
+          href="/shop"
+          className="mt-6 inline-block bg-[#004080] text-white px-4 py-2 rounded hover:bg-[#003366]"
+        >
+          Go to Shop
+        </a>
+      </div>
     </div>
   );
 };
