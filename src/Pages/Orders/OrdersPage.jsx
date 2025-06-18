@@ -26,7 +26,12 @@ export default function Orders() {
   const [couponCode, setCouponCode] = useState("");
   const [couponData, setCouponData] = useState(null);
   const [discount, setDiscount] = useState(0);
-  const [totals, setTotals] = useState({ subtotal: 0, total: 0 });
+  const [totals, setTotals] = useState({
+    subtotal: 0,
+    tax: 0,
+    delivery: 30,
+    total: 0,
+  });
   const [loadingCoupon, setLoadingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [addressValid, setAddressValid] = useState(false);
@@ -82,14 +87,20 @@ export default function Orders() {
     })();
   }, [token, userId, productIdFromQuery]);
 
-  // Calculate totals
+  // Calculate totals (subtotal, tax, delivery, total)
   useEffect(() => {
     const subtotal = selectedProducts.reduce(
       (sum, p) => sum + (p.price || 0),
       0
     );
-    setTotals({ subtotal, total: Math.max(subtotal - discount, 0) });
-  }, [selectedProducts, discount]);
+    const deliveryCharges = 30; // fixed delivery charge
+    let tax = 0;
+    if (paymentOption === "online") {
+      tax = (5 / 100) * subtotal; // 5% tax on product price if online payment
+    }
+    const total = Math.max(subtotal - discount + deliveryCharges + tax, 0);
+    setTotals({ subtotal, tax, delivery: deliveryCharges, total });
+  }, [selectedProducts, discount, paymentOption]);
 
   // Validate address via API
   useEffect(() => {
@@ -186,15 +197,16 @@ export default function Orders() {
   const handleInitiatePayment = async () => {
     setSubmittingOrder(true);
     try {
+      const amountWithTax = totals.subtotal + totals.tax + totals.delivery;
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         orderId: Date.now(), // Unique order ID
-        amount: totals.total,
-        redirectUrl: `${BASE_URL}/payment-redirect`, // Redirect URL
+        amount: amountWithTax,
+        redirectUrl: `${BASE_URL}/payment-redirect`,
       });
 
       if (res.data.success) {
-        // Redirect to PhonePe payment page
-        window.location.href = res.data.data.paymentUrl; // Assuming the response contains the payment URL
+        // Redirect to payment page
+        window.location.href = res.data.data.paymentUrl;
       } else {
         toast.error("Failed to initiate payment");
       }
@@ -223,6 +235,8 @@ export default function Orders() {
         coupon: couponData || null,
         subtotal: totals.subtotal,
         discount,
+        tax: totals.tax,
+        deliveryCharges: totals.delivery,
         totalAmount: totals.total,
         paymentMethod: paymentOption,
       };
@@ -266,7 +280,6 @@ export default function Orders() {
         await removeWishlistItem(product._id);
       }
 
-      // Optional: update user state after removal
       setUser((prevUser) => ({
         ...prevUser,
         wishlist: prevUser.wishlist.filter(
@@ -414,7 +427,6 @@ export default function Orders() {
             3. Apply Coupon
           </h2>
 
-          {/* Show instructional text if no coupon is applied */}
           {!couponData && (
             <p className="text-sm text-gray-600 mb-2">
               If you have a coupon code, please enter it below to get a
@@ -440,7 +452,6 @@ export default function Orders() {
             </Button>
           </div>
 
-          {/* Show success or error messages */}
           {couponData && (
             <div className="mt-2 text-green-600">
               {couponData.code} applied! Discount: ₹{discount.toFixed(2)}
@@ -450,7 +461,6 @@ export default function Orders() {
             <div className="mt-2 text-red-600">{couponError}</div>
           )}
 
-          {/* Navigation buttons */}
           <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(2)} className="btn-secondary">
               Back
@@ -544,7 +554,7 @@ export default function Orders() {
           </table>
 
           {couponData && (
-            <div className="mb-6 p-4 border border-green-400 bg -green-50 rounded text-green-700 font-semibold max-w-sm">
+            <div className="mb-6 p-4 border border-green-400 bg-green-50 rounded text-green-700 font-semibold max-w-sm">
               Coupon Applied:{" "}
               <span className="uppercase">{couponData.code}</span> — Discount: ₹
               {discount.toFixed(2)}
@@ -579,6 +589,16 @@ export default function Orders() {
             {discount > 0 && (
               <div className="flex justify-between mb-2 text-red-600">
                 <span>Discount:</span> <span>-₹{discount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between mb-2 text-gray-700">
+              <span>Delivery Charges:</span>
+              <span>₹{totals.delivery.toFixed(2)}</span>
+            </div>
+            {paymentOption === "online" && (
+              <div className="flex justify-between mb-2 text-gray-700">
+                <span>Tax (5% online payment):</span>
+                <span>₹{totals.tax.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-lg border-t pt-2">
