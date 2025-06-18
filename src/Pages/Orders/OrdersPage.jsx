@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
 import LoadingPage from "../../components/LoadingPage";
@@ -69,15 +68,11 @@ export default function Orders() {
             );
             if (pr.data.success) {
               setSelectedProducts([pr.data.data]);
-            } else {
-              toast.error("Product not found");
             }
           }
-        } else {
-          toast.error("Failed to fetch user data");
         }
       } catch (err) {
-        toast.error("Error: " + err.message);
+        // Handle error silently
       }
     })();
   }, [token, userId, productIdFromQuery]);
@@ -123,7 +118,6 @@ export default function Orders() {
         const msg = err.response?.data?.message || err.message;
         setAddressValid(false);
         setAddressValidationError(msg);
-        toast.error(msg);
       } finally {
         setAddressValidationLoading(false);
       }
@@ -133,7 +127,7 @@ export default function Orders() {
   // Apply coupon
   const handleApplyCoupon = async () => {
     if (!couponCode.trim() || !selectedProducts.length) {
-      return toast.error("Please enter a coupon and select a product");
+      return; // Do not show error
     }
     setLoadingCoupon(true);
     setCouponError("");
@@ -153,14 +147,12 @@ export default function Orders() {
       if (res.data.success) {
         setCouponData(res.data.data);
         setDiscount(res.data.data.discountAmt);
-        toast.success("Coupon applied!");
       } else {
         throw new Error(res.data.message);
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       setCouponError(msg);
-      toast.error(msg);
     } finally {
       setLoadingCoupon(false);
     }
@@ -169,7 +161,7 @@ export default function Orders() {
   // Confirm payment step
   const handleConfirmStep4 = async () => {
     if (!selectedAddressId || !selectedProducts.length) {
-      return toast.error("Please select address and products");
+      return; // Do not show error
     }
     if (!paymentOption) {
       return setPaymentError("Please select a payment option");
@@ -200,17 +192,15 @@ export default function Orders() {
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         orderId: Date.now(), // Unique order ID
         amount: totals.total,
-        redirectUrl: `${BASE_URL}/payment-redirect`, // Replace with your redirect URL
+        redirectUrl: `${BASE_URL}/payment-redirect`, // Redirect URL
       });
 
       if (res.data.success) {
         // Redirect to PhonePe payment page
         window.location.href = res.data.data.paymentUrl; // Assuming the response contains the payment URL
-      } else {
-        toast.error("Failed to initiate payment");
       }
     } catch (err) {
-      toast.error("Error: " + err.message);
+      // Handle error silently
     } finally {
       setSubmittingOrder(false);
     }
@@ -219,7 +209,7 @@ export default function Orders() {
   // Submit order, then show modal
   const handleSubmitOrder = async () => {
     if (!selectedAddressId || !selectedProducts.length || !paymentOption) {
-      return toast.error("Complete all steps before placing order");
+      return; // Do not show error
     }
     setSubmittingOrder(true);
 
@@ -244,14 +234,10 @@ export default function Orders() {
         },
       });
       if (res.data.status === "success") {
-        toast.success("Order placed successfully!");
         setShowThankYouModal(true);
-      } else {
-        toast.error(res.data.message || "Order failed");
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message;
-      toast.error(msg);
+      // Handle error silently
     } finally {
       setSubmittingOrder(false);
     }
@@ -285,9 +271,7 @@ export default function Orders() {
         ),
       }));
     } catch (err) {
-      toast.error(
-        err?.response?.data?.message || "Failed to remove items from wishlist"
-      );
+      // Handle error silently
     }
 
     navigate("/shop");
@@ -543,7 +527,7 @@ export default function Orders() {
                     <img
                       src={p.images?.[0]?.url}
                       alt={p.name}
-                      className="w -16 object-cover rounded"
+                      className="w-16 h-16 object-cover rounded"
                     />
                   </td>
                   <td className="p-3 text-right font-mono">
