@@ -197,7 +197,7 @@ export default function Orders() {
         paymentMethod: paymentOption,
       };
 
-      const res = await axios.post(`${BASE_URL}/api/payment/payment/initiate`, {
+      const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         orderId: Date.now(), // Unique order ID
         amount: totals.total,
         redirectUrl: `${BASE_URL}/payment-redirect`, // Replace with your redirect URL
