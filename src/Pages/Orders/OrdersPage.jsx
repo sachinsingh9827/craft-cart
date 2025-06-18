@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../components/Reusable/Button";
 import LoadingPage from "../../components/LoadingPage";
@@ -68,11 +69,15 @@ export default function Orders() {
             );
             if (pr.data.success) {
               setSelectedProducts([pr.data.data]);
+            } else {
+              toast.error("Product not found");
             }
           }
+        } else {
+          toast.error("Failed to fetch user data");
         }
       } catch (err) {
-        // Handle error silently
+        toast.error("Error: " + err.message);
       }
     })();
   }, [token, userId, productIdFromQuery]);
@@ -118,6 +123,7 @@ export default function Orders() {
         const msg = err.response?.data?.message || err.message;
         setAddressValid(false);
         setAddressValidationError(msg);
+        toast.error(msg);
       } finally {
         setAddressValidationLoading(false);
       }
@@ -127,7 +133,7 @@ export default function Orders() {
   // Apply coupon
   const handleApplyCoupon = async () => {
     if (!couponCode.trim() || !selectedProducts.length) {
-      return; // Do not show error
+      return toast.error("Please enter a coupon and select a product");
     }
     setLoadingCoupon(true);
     setCouponError("");
@@ -147,12 +153,14 @@ export default function Orders() {
       if (res.data.success) {
         setCouponData(res.data.data);
         setDiscount(res.data.data.discountAmt);
+        toast.success("Coupon applied!");
       } else {
         throw new Error(res.data.message);
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       setCouponError(msg);
+      toast.error(msg);
     } finally {
       setLoadingCoupon(false);
     }
@@ -161,7 +169,7 @@ export default function Orders() {
   // Confirm payment step
   const handleConfirmStep4 = async () => {
     if (!selectedAddressId || !selectedProducts.length) {
-      return; // Do not show error
+      return toast.error("Please select address and products");
     }
     if (!paymentOption) {
       return setPaymentError("Please select a payment option");
@@ -178,17 +186,6 @@ export default function Orders() {
   const handleInitiatePayment = async () => {
     setSubmittingOrder(true);
     try {
-      const order = {
-        userId,
-        deliveryAddress: user.addresses.find(
-          (a) => a._id === selectedAddressId
-        ),
-        items: selectedProducts,
-        subtotal: totals.subtotal,
-        totalAmount: totals.total,
-        paymentMethod: paymentOption,
-      };
-
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         orderId: Date.now(), // Unique order ID
         amount: totals.total,
@@ -199,11 +196,10 @@ export default function Orders() {
         // Redirect to PhonePe payment page
         window.location.href = res.data.data.paymentUrl; // Assuming the response contains the payment URL
       } else {
-        // Handle the error response
-        console.error("Payment initiation failed:", res.data.message);
+        toast.error("Failed to initiate payment");
       }
     } catch (err) {
-      console.error("Error initiating payment:", err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setSubmittingOrder(false);
     }
@@ -212,7 +208,7 @@ export default function Orders() {
   // Submit order, then show modal
   const handleSubmitOrder = async () => {
     if (!selectedAddressId || !selectedProducts.length || !paymentOption) {
-      return; // Do not show error
+      return toast.error("Complete all steps before placing order");
     }
     setSubmittingOrder(true);
 
@@ -237,10 +233,14 @@ export default function Orders() {
         },
       });
       if (res.data.status === "success") {
+        toast.success("Order placed successfully!");
         setShowThankYouModal(true);
+      } else {
+        toast.error(res.data.message || "Order failed");
       }
     } catch (err) {
-      // Handle error silently
+      const msg = err.response?.data?.message || err.message;
+      toast.error(msg);
     } finally {
       setSubmittingOrder(false);
     }
@@ -274,7 +274,9 @@ export default function Orders() {
         ),
       }));
     } catch (err) {
-      // Handle error silently
+      toast.error(
+        err?.response?.data?.message || "Failed to remove items from wishlist"
+      );
     }
 
     navigate("/shop");
@@ -542,7 +544,7 @@ export default function Orders() {
           </table>
 
           {couponData && (
-            <div className="mb-6 p-4 border border-green-400 bg-green-50 rounded text-green-700 font-semibold max-w-sm">
+            <div className="mb-6 p-4 border border-green-400 bg -green-50 rounded text-green-700 font-semibold max-w-sm">
               Coupon Applied:{" "}
               <span className="uppercase">{couponData.code}</span> — Discount: ₹
               {discount.toFixed(2)}
