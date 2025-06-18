@@ -485,12 +485,11 @@ export default function Orders() {
                 name="paymentOption"
                 value="online"
                 checked={paymentOption === "online"}
-                onChange={() => setPaymentOption("online")}
-                disabled // ← disables this option
+                onChange={() => {
+                  setPaymentOption("online");
+                }}
               />
-              <span className="font-semibold text-gray-400">
-                Online Payment (Currently Unavailable)
-              </span>
+              <span className="font-semibold">Online Payment</span>
             </label>
           </div>
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
