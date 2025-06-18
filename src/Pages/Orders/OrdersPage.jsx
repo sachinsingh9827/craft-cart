@@ -389,7 +389,7 @@ export default function Orders() {
                     onChange={() => setSelectedAddressId(a._id)}
                     className="mr-2"
                   />
-                  {a.street}, {a.city}, {a.state} - {a.postalCode}
+                  {a.street}, {a.city}, {a.state} - {a.postalCode},{a.contact}
                   <div>{a.country}</div>
                 </label>
               ))}
