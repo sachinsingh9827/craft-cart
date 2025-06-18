@@ -233,6 +233,7 @@ export default function Orders() {
               <div className="mt-4 border-t pt-4 text-sm">
                 <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
 
+                {/* Delivery and Payment Info */}
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="font-medium">Delivery Address</p>
@@ -252,121 +253,27 @@ export default function Orders() {
                   </div>
                 </div>
 
-                {/* Table starts here */}
-                <table className="w-full border text-sm mb-4">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-2 text-left">Product</th>
-                      <th className="p-2 text-center">Image</th>
-                      <th className="p-2 text-right">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {order.items.map((item) => (
-                      <React.Fragment key={item._id}>
-                        <tr className="border-t">
-                          <td className="p-2">{item.name}</td>
-                          <td className="p-2 text-center">
-                            <img
-                              src={item.images?.[0]?.url || "/placeholder.jpg"}
-                              alt={item.name}
-                              className="w-12 h-12 object-cover rounded inline-block"
-                            />
-                          </td>
-                          <td className="p-2 text-right">
-                            ₹{item.price.toFixed(2)}
-                          </td>
-                        </tr>
-
-                        {/* Review section */}
-                        {order.status === "delivered" && (
-                          <tr>
-                            <td colSpan="3" className="p-4 bg-gray-50 border-b">
-                              <div>
-                                <p className="font-semibold mb-1">
-                                  Leave a Review
-                                </p>
-
-                                {reviewErrors[item._id] && (
-                                  <p className="text-red-600 text-sm mb-2">
-                                    {reviewErrors[item._id]}
-                                  </p>
-                                )}
-
-                                <div className="flex flex-col gap-2">
-                                  {/* Star Rating */}
-                                  <div className="flex gap-1">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() =>
-                                          handleReviewChange(
-                                            item._id,
-                                            "rating",
-                                            star
-                                          )
-                                        }
-                                        className="focus:outline-none"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          fill={
-                                            reviewInputs[item._id]?.rating >=
-                                            star
-                                              ? "#facc15"
-                                              : "none"
-                                          }
-                                          viewBox="0 0 24 24"
-                                          stroke="#facc15"
-                                          strokeWidth="1.5"
-                                          className="w-6 h-6 transition-all"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
-                                          />
-                                        </svg>
-                                      </button>
-                                    ))}
-                                  </div>
-
-                                  {/* Comment box */}
-                                  <textarea
-                                    value={
-                                      reviewInputs[item._id]?.comment || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleReviewChange(
-                                        item._id,
-                                        "comment",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="border p-2 rounded"
-                                    rows="3"
-                                    placeholder="Write your review..."
-                                  />
-
-                                  {/* Submit Button */}
-                                  <Button
-                                    onClick={() => handleReviewSubmit(item._id)}
-                                    disabled={reviewLoading[item._id]}
-                                  >
-                                    {reviewLoading[item._id]
-                                      ? "Submitting..."
-                                      : "Submit Review"}
-                                  </Button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                {/* Items */}
+                <div className="mb-4 space-y-4">
+                  {order.items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="border rounded p-4 flex items-center gap-4"
+                    >
+                      <img
+                        src={item.images?.[0]?.url || "/placeholder.jpg"}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-gray-600">
+                          Price: ₹{item.price.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Total Summary */}
                 <div className="text-right font-mono">
@@ -380,6 +287,86 @@ export default function Orders() {
                     Total: ₹{order.totalAmount.toFixed(2)}
                   </p>
                 </div>
+
+                {/* Review Section */}
+                {order.status === "delivered" && (
+                  <div className="mt-6 border-t pt-4">
+                    <h3 className="text-[#004080] font-semibold mb-2">
+                      Leave a Review
+                    </h3>
+                    {order.items.map((item) => (
+                      <div key={item._id} className="mb-6">
+                        <p className="font-medium mb-1">{item.name}</p>
+
+                        {reviewErrors[item._id] && (
+                          <p className="text-red-600 text-sm mb-2">
+                            {reviewErrors[item._id]}
+                          </p>
+                        )}
+
+                        <div className="flex flex-col gap-2 p-2 border rounded">
+                          {/* Star Rating */}
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() =>
+                                  handleReviewChange(item._id, "rating", star)
+                                }
+                                className="focus:outline-none"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill={
+                                    reviewInputs[item._id]?.rating >= star
+                                      ? "#facc15"
+                                      : "none"
+                                  }
+                                  viewBox="0 0 24 24"
+                                  stroke="#facc15"
+                                  strokeWidth="1.5"
+                                  className="w-6 h-6 transition-all"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
+                                  />
+                                </svg>
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Comment box */}
+                          <textarea
+                            value={reviewInputs[item._id]?.comment || ""}
+                            onChange={(e) =>
+                              handleReviewChange(
+                                item._id,
+                                "comment",
+                                e.target.value
+                              )
+                            }
+                            className="border p-2 rounded"
+                            rows="3"
+                            placeholder="Write your review..."
+                          />
+
+                          {/* Submit Button */}
+                          <Button
+                            onClick={() => handleReviewSubmit(item._id)}
+                            disabled={reviewLoading[item._id]}
+                          >
+                            {reviewLoading[item._id]
+                              ? "Submitting..."
+                              : "Submit Review"}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Cancel Order Button */}
                 {showCancelButton && (
