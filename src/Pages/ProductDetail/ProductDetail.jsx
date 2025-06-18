@@ -7,6 +7,7 @@ import Button from "../../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
+// Format date to Indian format
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-IN", {
@@ -14,6 +15,19 @@ const formatDate = (dateStr) => {
     month: "short",
     day: "numeric",
   });
+};
+
+// Convert number to star rating
+const renderStars = (rating) => {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 >= 0.5;
+  const stars = [];
+
+  for (let i = 0; i < fullStars; i++) stars.push("★");
+  if (halfStar) stars.push("☆");
+  while (stars.length < 5) stars.push("☆");
+
+  return stars.join(" ");
 };
 
 const ProductDetail = () => {
@@ -114,7 +128,6 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Thumbnails */}
           <div className="flex flex-wrap gap-2">
             {(product.images || []).map((img, idx) => (
               <img
@@ -154,19 +167,20 @@ const ProductDetail = () => {
             </p>
           </div>
 
-          {/* Ratings */}
-          <div className="mb-4">
+          <div className="mb-4 space-y-1">
             <p className="text-md">
               <strong className="text-gray-800">Rating:</strong>{" "}
-              {ratings ? `${ratings} / 5` : "No ratings yet"}
+              {ratings ? `${ratings.toFixed(1)} / 5` : "No ratings yet"}
             </p>
+            {ratings > 0 && (
+              <p className="text-yellow-500 text-lg">{renderStars(ratings)}</p>
+            )}
             <p className="text-md">
               <strong className="text-gray-800">Reviews:</strong>{" "}
               {numReviews > 0 ? `${numReviews} review(s)` : "No reviews yet"}
             </p>
           </div>
 
-          {/* Buy Now Button */}
           <Button onClick={(e) => handleBuyNow(product._id, e)}>Buy Now</Button>
         </div>
       </div>
@@ -192,7 +206,7 @@ const ProductDetail = () => {
                   </span>
                 </div>
                 <div className="text-yellow-500 font-semibold mb-1">
-                  Rating: {review.rating} / 5
+                  {renderStars(review.rating)} ({review.rating} / 5)
                 </div>
                 <p className="text-gray-700">{review.comment}</p>
               </div>
