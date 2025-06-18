@@ -7,14 +7,23 @@ import Button from "../../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
-  // Fetch product details
   useEffect(() => {
     (async () => {
       try {
@@ -33,7 +42,6 @@ const ProductDetail = () => {
     })();
   }, [productId]);
 
-  // Buy Now handler
   const handleBuyNow = async (productId, e) => {
     e.stopPropagation();
     const token = localStorage.getItem("token");
@@ -58,7 +66,7 @@ const ProductDetail = () => {
     } catch (err) {
       const status = err.response?.status;
       if (status === 409) {
-        // Already in wishlist, continue
+        // Already in wishlist
       } else if (status === 401) {
         showToast("Session expired. Please login again.", "warning");
         localStorage.removeItem("token");
@@ -79,16 +87,29 @@ const ProductDetail = () => {
       <div className="text-center mt-10 text-gray-500">Product not found.</div>
     );
 
+  const {
+    name,
+    price,
+    description,
+    category,
+    brand,
+    stock,
+    ratings,
+    numReviews,
+    productId: pId,
+    reviews,
+  } = product;
+
   return (
-    <div className="max-w-full min-h-1/2 mx-auto p-4 sm:p-6 font-montserrat">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 font-montserrat">
       <Toast />
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-10">
         {/* Image Section */}
-        <div className="w-full md:w-1/2">
-          <div className="w-full md:w-1/2 aspect-square mb-4">
+        <div className="w-full lg:w-1/2">
+          <div className="aspect-square w-full mb-4">
             <img
               src={selectedImage}
-              alt={product.name}
+              alt={name}
               className="w-full h-full object-cover rounded-lg border"
             />
           </div>
@@ -111,47 +132,37 @@ const ProductDetail = () => {
 
         {/* Info Section */}
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-[#004080] mb-2">
-            {product.name}
-          </h1>
-          <p className="text-yellow-500 text-xl font-semibold mb-2">
-            ₹{product.price.toFixed(2)}
+          <h1 className="text-3xl font-bold text-[#004080] mb-3">{name}</h1>
+          <p className="text-yellow-500 text-2xl font-semibold mb-2">
+            ₹{price.toFixed(2)}
           </p>
-          <p className="text-gray-700 mb-4">{product.description}</p>
+          <p className="text-gray-700 mb-4 leading-relaxed">{description}</p>
 
-          {/* Extra Details */}
-          <div className="text-sm text-gray-600 space-y-1 mb-4">
+          <div className="text-sm text-gray-600 space-y-2 mb-4">
             <p>
-              <span className="font-semibold text-gray-800">Category:</span>{" "}
-              {product.category}
+              <strong className="text-gray-800">Category:</strong> {category}
             </p>
             <p>
-              <span className="font-semibold text-gray-800">Brand:</span>{" "}
-              {product.brand}
+              <strong className="text-gray-800">Brand:</strong> {brand}
             </p>
             <p>
-              <span className="font-semibold text-gray-800">Stock:</span>{" "}
-              {product.stock > 0 ? product.stock : "Out of stock"}
+              <strong className="text-gray-800">Stock:</strong>{" "}
+              {stock > 0 ? stock : "Out of stock"}
             </p>
             <p>
-              <span className="font-semibold text-gray-800">Product ID:</span>{" "}
-              {product.productId}
+              <strong className="text-gray-800">Product ID:</strong> {pId}
             </p>
           </div>
 
           {/* Ratings */}
           <div className="mb-4">
             <p className="text-md">
-              <span className="font-semibold text-gray-800">Rating:</span>{" "}
-              {product.ratings > 0
-                ? `${product.ratings} / 5`
-                : "No ratings yet"}
+              <strong className="text-gray-800">Rating:</strong>{" "}
+              {ratings ? `${ratings} / 5` : "No ratings yet"}
             </p>
             <p className="text-md">
-              <span className="font-semibold text-gray-800">Reviews:</span>{" "}
-              {product.numReviews > 0
-                ? `${product.numReviews} review(s)`
-                : "No reviews yet"}
+              <strong className="text-gray-800">Reviews:</strong>{" "}
+              {numReviews > 0 ? `${numReviews} review(s)` : "No reviews yet"}
             </p>
           </div>
 
@@ -159,6 +170,49 @@ const ProductDetail = () => {
           <Button onClick={(e) => handleBuyNow(product._id, e)}>Buy Now</Button>
         </div>
       </div>
+
+      {/* Reviews */}
+      {reviews?.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-xl font-bold text-[#004080] mb-4">
+            Customer Reviews
+          </h2>
+          <div className="space-y-4">
+            {(showAllReviews ? reviews : [reviews[0]]).map((review) => (
+              <div
+                key={review._id}
+                className="border border-gray-200 rounded-md p-4 shadow-sm bg-white"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-semibold text-gray-800">
+                    {review.name}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {formatDate(review.createdAt)}
+                  </span>
+                </div>
+                <div className="text-yellow-500 font-semibold mb-1">
+                  Rating: {review.rating} / 5
+                </div>
+                <p className="text-gray-700">{review.comment}</p>
+              </div>
+            ))}
+
+            {reviews.length > 1 && (
+              <button
+                className={`text-sm font-medium px-3 py-1 mt-4 rounded transition-all ${
+                  showAllReviews
+                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    : "bg-gray-100 text-blue-600 hover:bg-gray-200"
+                }`}
+                onClick={() => setShowAllReviews((prev) => !prev)}
+              >
+                {showAllReviews ? "Hide Reviews" : "Show All Reviews"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
