@@ -35,9 +35,9 @@ export default function Orders() {
   const [addressValidationError, setAddressValidationError] = useState("");
   const [paymentOption, setPaymentOption] = useState("");
   const [paymentError, setPaymentError] = useState("");
-  const [onlineBlocked, setOnlineBlocked] = useState(false);
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
+
   // On mount
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -116,7 +116,6 @@ export default function Orders() {
         );
         if (res.data.success) {
           setAddressValid(true);
-          // toast.success("Address validated!");
         } else {
           throw new Error(res.data.message || "Invalid address");
         }
@@ -168,7 +167,7 @@ export default function Orders() {
   };
 
   // Confirm payment step
-  const handleConfirmStep4 = () => {
+  const handleConfirmStep4 = async () => {
     if (!selectedAddressId || !selectedProducts.length) {
       return toast.error("Please select address and products");
     }
@@ -176,12 +175,45 @@ export default function Orders() {
       return setPaymentError("Please select a payment option");
     }
     if (paymentOption === "online") {
-      toast.warn("Online payment is not available");
-      return setOnlineBlocked(true);
+      await handleInitiatePayment();
+      return;
     }
-    setOnlineBlocked(false);
     setPaymentError("");
     setStep(5);
+  };
+
+  // Initiate online payment
+  const handleInitiatePayment = async () => {
+    setSubmittingOrder(true);
+    try {
+      const order = {
+        userId,
+        deliveryAddress: user.addresses.find(
+          (a) => a._id === selectedAddressId
+        ),
+        items: selectedProducts,
+        subtotal: totals.subtotal,
+        totalAmount: totals.total,
+        paymentMethod: paymentOption,
+      };
+
+      const res = await axios.post(`${BASE_URL}/api/payment/payment/initiate`, {
+        orderId: Date.now(), // Unique order ID
+        amount: totals.total,
+        redirectUrl: `${BASE_URL}/payment-redirect`, // Replace with your redirect URL
+      });
+
+      if (res.data.success) {
+        // Redirect to PhonePe payment page
+        window.location.href = res.data.data.paymentUrl; // Assuming the response contains the payment URL
+      } else {
+        toast.error("Failed to initiate payment");
+      }
+    } catch (err) {
+      toast.error("Error: " + err.message);
+    } finally {
+      setSubmittingOrder(false);
+    }
   };
 
   // Submit order, then show modal
@@ -245,7 +277,7 @@ export default function Orders() {
         await removeWishlistItem(product._id);
       }
 
-      // Optional: update user state after removal (like you do in `handleDeleteFromWishlist`)
+      // Optional: update user state after removal
       setUser((prevUser) => ({
         ...prevUser,
         wishlist: prevUser.wishlist.filter(
@@ -456,7 +488,6 @@ export default function Orders() {
                 checked={paymentOption === "cod"}
                 onChange={() => {
                   setPaymentOption("cod");
-                  setOnlineBlocked(false);
                 }}
               />
               <span className="font-semibold">Cash on Delivery (COD)</span>
@@ -469,13 +500,9 @@ export default function Orders() {
                 checked={paymentOption === "online"}
                 onChange={() => {
                   setPaymentOption("online");
-                  toast.warn("Online payment not available");
-                  setOnlineBlocked(true);
                 }}
               />
-              <span className="font-semibold text-gray-500 line-through">
-                Online Payment (Unavailable)
-              </span>
+              <span className="font-semibold">Online Payment</span>
             </label>
           </div>
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
@@ -486,7 +513,7 @@ export default function Orders() {
             <Button
               onClick={handleConfirmStep4}
               className="btn-primary"
-              disabled={!paymentOption || onlineBlocked}
+              disabled={!paymentOption}
             >
               Confirm
             </Button>
@@ -516,7 +543,7 @@ export default function Orders() {
                     <img
                       src={p.images?.[0]?.url}
                       alt={p.name}
-                      className="w-16 h-16 object-cover rounded"
+                      className="w -16 object-cover rounded"
                     />
                   </td>
                   <td className="p-3 text-right font-mono">
