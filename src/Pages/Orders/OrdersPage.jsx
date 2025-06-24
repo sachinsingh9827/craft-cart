@@ -328,23 +328,19 @@ export default function Orders() {
           <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             1. Review &amp; Select Products
           </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
             {user.wishlist.map((p) => {
               const sel = selectedProducts.some((sp) => sp._id === p._id);
+
               return (
                 <div
                   key={p._id}
-                  className={`border p-2 rounded cursor-pointer ${
+                  className={`border p-2 rounded relative ${
                     sel ? "border-blue-600 bg-blue-50" : ""
                   }`}
-                  onClick={() => {
-                    sel
-                      ? setSelectedProducts((prev) =>
-                          prev.filter((x) => x._id !== p._id)
-                        )
-                      : setSelectedProducts((prev) => [...prev, p]);
-                  }}
                 >
+                  {/* Product Image and Info */}
                   <img
                     src={p.images?.[0]?.url}
                     alt={p.name}
@@ -352,7 +348,9 @@ export default function Orders() {
                   />
                   <div className="text-sm mt-1">{p.name}</div>
                   <div className="font-semibold">₹{p.price}</div>
-                  <div>
+
+                  {/* Select Checkbox */}
+                  <div className="mt-2">
                     <label className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -373,51 +371,52 @@ export default function Orders() {
                       />
                       <span>Select</span>
                     </label>
-
-                    {sel && (
-                      <div className="mt-2 flex items-center space-x-2">
-                        <label className="text-sm">Qty:</label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedProducts((prev) =>
-                              prev.map((sp) =>
-                                sp._id === p._id
-                                  ? { ...sp, qty: Math.max(1, sp.qty - 1) }
-                                  : sp
-                              )
-                            );
-                          }}
-                          className="px-2 py-1 border rounded"
-                        >
-                          -
-                        </button>
-                        <span className="px-3">
-                          {selectedProducts.find((sp) => sp._id === p._id)
-                            ?.qty || 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedProducts((prev) =>
-                              prev.map((sp) =>
-                                sp._id === p._id
-                                  ? { ...sp, qty: sp.qty + 1 }
-                                  : sp
-                              )
-                            );
-                          }}
-                          className="px-2 py-1 border rounded"
-                        >
-                          +
-                        </button>
-                      </div>
-                    )}
                   </div>
+
+                  {/* Quantity Counter (if selected) */}
+                  {sel && (
+                    <div className="mt-2 flex items-center space-x-2">
+                      <label className="text-sm">Qty:</label>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedProducts((prev) =>
+                            prev.map((sp) =>
+                              sp._id === p._id
+                                ? { ...sp, qty: Math.max(1, sp.qty - 1) }
+                                : sp
+                            )
+                          )
+                        }
+                        className="px-2 py-1 border rounded"
+                      >
+                        -
+                      </button>
+                      <span className="px-3">
+                        {selectedProducts.find((sp) => sp._id === p._id)?.qty ||
+                          1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedProducts((prev) =>
+                            prev.map((sp) =>
+                              sp._id === p._id ? { ...sp, qty: sp.qty + 1 } : sp
+                            )
+                          )
+                        }
+                        className="px-2 py-1 border rounded"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
+
+          {/* Next Button */}
           <div className="flex justify-end mt-6">
             <Button
               onClick={() => setStep(2)}
