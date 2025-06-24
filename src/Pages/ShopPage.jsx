@@ -193,7 +193,7 @@ const ShopPage = () => {
               role="button"
               tabIndex={0}
               onClick={() => navigate(`/product/${_id}`)}
-              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col max-w-[260px] w-full mx-auto"
+              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-row max-w-[260px] w-full mx-auto"
             >
               <img
                 src={imageUrl}
