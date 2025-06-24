@@ -28,6 +28,7 @@ import OrdersPage from "./Pages/Orders/OrdersPage";
 import ProductDetail from "./Pages/ProductDetail/ProductDetail";
 import ScrollToTop from "./utils/ScrollToTop";
 import PaymentRedirect from "./Pages/PaymentRedirect/PaymentRedirect";
+import PrivacyPolicy from "./Pages/PrivacyPolicy/PrivacyPolicy";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -82,6 +83,7 @@ function App() {
         <Route path="/about-offer" element={<AboutOffer />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/payment-redirect" element={<PaymentRedirect />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Protected Routes */}
         <Route
