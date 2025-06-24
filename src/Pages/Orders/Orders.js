@@ -304,7 +304,7 @@ export default function Orders() {
 
                       <div className="flex flex-col gap-2 p-2 border rounded">
                         {/* Star Rating */}
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 p-2">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
                               key={star}
