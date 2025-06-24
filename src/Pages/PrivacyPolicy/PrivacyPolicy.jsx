@@ -1,5 +1,4 @@
 import React from "react";
-
 import contactusbanner from "../../assets/4862931.webp";
 
 const PrivacyPolicy = () => {
@@ -105,6 +104,24 @@ const PrivacyPolicy = () => {
                 We prioritize transparency and trust. Contact us with concerns.
               </li>
             </ul>
+          </section>
+
+          {/* 7. Additional Queries */}
+          <section className="space-y-2 mb-8">
+            <h2 className="text-2xl font-semibold text-[#004080]">
+              7. Need More Help?
+            </h2>
+            <p className="text-gray-700">
+              If you have any other queries, please go to our{" "}
+              <a
+                href="/contact-us"
+                className="text-[#004080] underline font-semibold hover:text-blue-800"
+              >
+                Contact Us
+              </a>{" "}
+              page and send your issue in the message form. Our support team
+              will review and respond within <strong>3 business days</strong>.
+            </p>
           </section>
 
           <p className="text-center text-sm text-gray-500 mt-10">
