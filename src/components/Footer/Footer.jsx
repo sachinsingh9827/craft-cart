@@ -8,6 +8,7 @@ import {
 import { GoLocation } from "react-icons/go";
 import { FiPhone } from "react-icons/fi";
 import { HiOutlineMail } from "react-icons/hi";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -29,14 +30,14 @@ export default function Footer() {
             Quick Links
           </h3>
           <ul className="grid grid-cols-2 gap-y-3 text-base">
-            {["Shop", "About", "Contact-us", "Privacy-Policy"].map((item) => (
+            {["Shop", "About", "Contact-us", "Privacy Policy"].map((item) => (
               <li key={item}>
-                <a
-                  href={`/${item.toLowerCase().replace(/\s/g, "")}`}
+                <Link
+                  to={`/${item.toLowerCase().replace(/\s/g, "-")}`}
                   className="hover:text-yellow-400 transition-colors duration-300"
                 >
                   {item}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
