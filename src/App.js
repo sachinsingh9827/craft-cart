@@ -45,6 +45,7 @@ function App() {
       "/shop",
       "/about",
       "/about-offer",
+      "privacy-policy",
     ].some((path) => location.pathname.startsWith(path)) &&
     !/^\/(buynow|wishlist|profile|product|order)\/[^/]+$/.test(
       location.pathname
@@ -83,7 +84,7 @@ function App() {
         <Route path="/about-offer" element={<AboutOffer />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/payment-redirect" element={<PaymentRedirect />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Protected Routes */}
         <Route

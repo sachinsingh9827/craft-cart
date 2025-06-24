@@ -15,7 +15,7 @@ export default function Footer() {
     { name: "Shop", path: "/shop" },
     { name: "About", path: "/about" },
     { name: "Contact Us", path: "/contact-us" },
-    { name: "Privacy Policy", path: "/privacy" },
+    { name: "Privacy Policy", path: "/privacy-policy" },
   ];
 
   return (
