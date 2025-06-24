@@ -394,7 +394,10 @@ export default function Orders() {
                       >
                         -
                       </button>
-                      <span className="px-3">{selectedItem.qty}</span>
+                      <span className="px-3">
+                        {selectedProducts.find((sp) => sp._id === p._id)?.qty ||
+                          1}
+                      </span>
                       <button
                         type="button"
                         onClick={() =>
