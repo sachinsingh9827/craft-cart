@@ -158,9 +158,21 @@ const ProductDetail = () => {
             <p>
               <strong className="text-gray-800">Brand:</strong> {brand}
             </p>
-            <p>
+            <p className="flex items-center gap-1">
               <strong className="text-gray-800">Stock:</strong>{" "}
-              {stock > 0 ? stock : "Out of stock"}
+              {stock > 10 && (
+                <span className="text-green-600 font-medium">
+                  In Stock ({stock})
+                </span>
+              )}
+              {stock > 0 && stock <= 10 && (
+                <span className="text-orange-500 font-medium">
+                  Only {stock} left!
+                </span>
+              )}
+              {stock === 0 && (
+                <span className="text-red-600 font-medium">Out of Stock</span>
+              )}
             </p>
             <p>
               <strong className="text-gray-800">Product ID:</strong> {pId}
@@ -181,7 +193,12 @@ const ProductDetail = () => {
             </p>
           </div>
 
-          <Button onClick={(e) => handleBuyNow(product._id, e)}>Buy Now</Button>
+          <Button
+            onClick={(e) => handleBuyNow(product._id, e)}
+            disabled={stock === 0}
+          >
+            {stock === 0 ? "Out of Stock" : "Buy Now"}
+          </Button>
         </div>
       </div>
 

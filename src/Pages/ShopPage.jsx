@@ -106,7 +106,7 @@ const ShopPage = () => {
     }
   };
 
-  const handleBuyNow = async (productId, e) => {
+  const handleBuyNow = (productId, e) => {
     e.stopPropagation();
 
     const token = localStorage.getItem("token");
@@ -116,41 +116,16 @@ const ShopPage = () => {
       return;
     }
 
-    try {
-      await axios.post(
-        `${BASE_URL}/api/user/auth/wishlist/add`,
-        { productId },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-    } catch (err) {
-      if (err.response?.status === 409) {
-        // Already in wishlist, continue
-      } else if (err.response?.status === 401) {
-        showToast("Session expired. Please login again.", "warning");
-        localStorage.removeItem("token");
-        navigate("/login");
-        return;
-      } else {
-        showToast("Error adding to wishlist. Try again.", "error");
-        return;
-      }
-    }
-
     navigate(`/order/${productId}`);
   };
 
   return (
-    <div className="font-montserrat min-h-screen">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 font-montserrat min-h-screen">
       <Toast />
       <OfferBanner />
 
       {/* Search & Sort */}
-      <div className="max-w-6xl mx-auto px-4 mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
         <input
           type="text"
           placeholder="Search products..."
@@ -159,7 +134,7 @@ const ShopPage = () => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#004080]"
+          className="px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#004080] w-full sm:w-auto"
         />
         <select
           value={sortOption}
@@ -172,90 +147,83 @@ const ShopPage = () => {
         </select>
       </div>
 
-      {error && (
-        <p className="max-w-6xl mx-auto px-4 mt-4 text-red-600 text-center">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-center text-red-600 mt-4">{error}</p>}
 
       {/* Product Grid */}
-      {sortedProducts.length > 0 ? (
-        sortedProducts.map(({ _id, name, price, images, stock }) => {
-          const imageUrl =
-            images?.[0]?.url || "https://via.placeholder.com/260";
+      <div className="max-w-6xl mx-auto mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {sortedProducts.length > 0 ? (
+          sortedProducts.map(({ _id, name, price, images, stock }) => {
+            const imageUrl =
+              images?.[0]?.url || "https://via.placeholder.com/260";
 
-          const isOutOfStock = stock === 0;
-          const isLowStock = stock <= 3 && stock > 0;
+            const isOutOfStock = stock === 0;
+            const isLowStock = stock > 0 && stock <= 3;
 
-          return (
-            <div
-              key={_id}
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate(`/product/${_id}`)}
-              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-row max-w-[260px] w-full mx-auto"
-            >
-              <img
-                src={imageUrl}
-                alt={name}
-                className="w-full object-cover aspect-square"
-                loading="lazy"
-              />
-              <div className="p-4 flex flex-col flex-grow">
-                <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
-                  {name}
-                </h2>
-                <p className="text-yellow-500 font-bold text-md mb-1">
-                  ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
-                </p>
-
-                {/* Stock Status */}
-                {isOutOfStock ? (
-                  <p className="text-red-600 text-sm mb-2 font-semibold">
-                    Out of Stock
+            return (
+              <div
+                key={_id}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/product/${_id}`)}
+                className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col w-full"
+              >
+                <img
+                  src={imageUrl}
+                  alt={name}
+                  className="w-full object-cover aspect-square"
+                  loading="lazy"
+                />
+                <div className="p-4 flex flex-col flex-grow">
+                  <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
+                    {name}
+                  </h2>
+                  <p className="text-yellow-500 font-bold text-md mb-1">
+                    ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
-                ) : isLowStock ? (
-                  <p className="text-orange-500 text-sm mb-2 font-semibold">
-                    Hurry! Only {stock} left
-                  </p>
-                ) : (
-                  <p className="text-green-600 text-sm mb-2 font-semibold">
-                    In Stock
-                  </p>
-                )}
 
-                <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={(e) => handleAddToWishlist(_id, e)}
-                    className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
-                  >
-                    Wishlist
-                  </button>
-                  <button
-                    onClick={(e) => !isOutOfStock && handleBuyNow(_id, e)}
-                    disabled={isOutOfStock}
-                    className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 ${
-                      isOutOfStock
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
-                    }`}
-                  >
-                    Buy Now
-                  </button>
+                  {isOutOfStock && (
+                    <p className="text-red-500 text-sm">Out of Stock</p>
+                  )}
+
+                  {isLowStock && !isOutOfStock && (
+                    <p className="text-orange-500 text-sm">
+                      Hurry! Only {stock} left
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 mt-auto pt-3">
+                    <button
+                      onClick={(e) => handleAddToWishlist(_id, e)}
+                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
+                    >
+                      Wishlist
+                    </button>
+                    <button
+                      onClick={(e) => handleBuyNow(_id, e)}
+                      className={`w-1/2 py-2 rounded-lg font-semibold text-sm transition-colors duration-300 ${
+                        isOutOfStock
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
+                      }`}
+                      disabled={isOutOfStock}
+                    >
+                      Buy Now
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })
-      ) : loading ? (
-        <div className="col-span-full text-center">
-          <LoadingPage />
-        </div>
-      ) : (
-        <p className="col-span-full text-center text-gray-500">
-          No products found.
-        </p>
-      )}
+            );
+          })
+        ) : loading ? (
+          <div className="col-span-full text-center">
+            <LoadingPage />
+          </div>
+        ) : (
+          <p className="col-span-full text-center text-gray-500">
+            No products found.
+          </p>
+        )}
+      </div>
 
       {/* Load More */}
       {page < totalPages && !loading && (
