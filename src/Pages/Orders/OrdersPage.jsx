@@ -90,9 +90,10 @@ export default function Orders() {
   // Calculate totals (subtotal, tax, delivery, total)
   useEffect(() => {
     const subtotal = selectedProducts.reduce(
-      (sum, p) => sum + (p.price || 0),
+      (sum, p) => sum + p.price * (p.qty || 1),
       0
     );
+
     const deliveryCharges = 30; // fixed delivery charge
     let tax = 0;
     if (paymentOption === "online") {
@@ -228,10 +229,17 @@ export default function Orders() {
       const deliveryAddress = user.addresses.find(
         (a) => a._id === selectedAddressId
       );
+
       const order = {
         userId,
         deliveryAddress,
-        items: selectedProducts,
+        // Ensure quantity is included in items
+        items: selectedProducts.map((p) => ({
+          productId: p._id,
+          name: p.name,
+          price: p.price,
+          quantity: p.qty || 1,
+        })),
         coupon: couponData || null,
         subtotal: totals.subtotal,
         discount,
@@ -240,12 +248,14 @@ export default function Orders() {
         totalAmount: totals.total,
         paymentMethod: paymentOption,
       };
+
       const res = await axios.post(`${BASE_URL}/orders`, order, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
+
       if (res.data.status === "success") {
         toast.success("Order placed successfully!");
         setShowThankYouModal(true);
@@ -349,6 +359,28 @@ export default function Orders() {
                     className="mt-1"
                   />{" "}
                   Select
+                  {sel && (
+                    <div className="mt-2">
+                      <label className="text-sm">Qty: </label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={
+                          selectedProducts.find((sp) => sp._id === p._id)
+                            ?.qty || 1
+                        }
+                        onChange={(e) => {
+                          const qty = parseInt(e.target.value) || 1;
+                          setSelectedProducts((prev) =>
+                            prev.map((sp) =>
+                              sp._id === p._id ? { ...sp, qty } : sp
+                            )
+                          );
+                        }}
+                        className="border p-1 w-16 ml-2"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -546,7 +578,8 @@ export default function Orders() {
                     />
                   </td>
                   <td className="p-3 text-right font-mono">
-                    ₹{p.price.toFixed(2)}
+                    {p.qty} × ₹{p.price.toFixed(2)} = ₹
+                    {(p.price * p.qty).toFixed(2)}
                   </td>
                 </tr>
               ))}
