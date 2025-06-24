@@ -305,85 +305,86 @@ export default function Orders() {
                 </div>
 
                 {/* Review Section */}
-                {order.items.map((item) => {
-                  const productId = item.productId;
+                {order.status === "delivered" &&
+                  order.items.map((item) => {
+                    const productId = item.productId;
 
-                  return (
-                    <div key={item._id} className="mb-6">
-                      <p className="font-medium mb-1">{item.name}</p>
+                    return (
+                      <div key={item._id} className="mb-6">
+                        <p className="font-medium mb-1">{item.name}</p>
 
-                      {reviewErrors[productId] && (
-                        <p className="text-red-600 text-sm mb-2">
-                          {reviewErrors[productId]}
-                        </p>
-                      )}
+                        {reviewErrors[productId] && (
+                          <p className="text-red-600 text-sm mb-2">
+                            {reviewErrors[productId]}
+                          </p>
+                        )}
 
-                      <div className="flex flex-col gap-4 p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
-                        {/* Star Rating */}
-                        <div className="flex gap-1 p-4">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() =>
-                                handleReviewChange(productId, "rating", star)
-                              }
-                              className="focus:outline-none"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill={
-                                  reviewInputs[productId]?.rating >= star
-                                    ? "#facc15"
-                                    : "none"
+                        <div className="flex flex-col gap-4 p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
+                          {/* Star Rating */}
+                          <div className="flex gap-1 p-4">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() =>
+                                  handleReviewChange(productId, "rating", star)
                                 }
-                                viewBox="0 0 24 24"
-                                stroke="#facc15"
-                                strokeWidth="1.5"
-                                className="w-5 h-5 transition-all"
+                                className="focus:outline-none"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
-                                />
-                              </svg>
-                            </button>
-                          ))}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill={
+                                    reviewInputs[productId]?.rating >= star
+                                      ? "#facc15"
+                                      : "none"
+                                  }
+                                  viewBox="0 0 24 24"
+                                  stroke="#facc15"
+                                  strokeWidth="1.5"
+                                  className="w-5 h-5 transition-all"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
+                                  />
+                                </svg>
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Comment box */}
+                          <textarea
+                            value={reviewInputs[productId]?.comment || ""}
+                            onChange={(e) =>
+                              setReviewInputs((prev) => ({
+                                ...prev,
+                                [productId]: {
+                                  ...prev[productId],
+                                  comment: e.target.value,
+                                  manualComment: true,
+                                },
+                              }))
+                            }
+                            className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
+                            rows="4"
+                            placeholder="Write your review..."
+                          />
+
+                          {/* Submit Button */}
+                          <Button
+                            onClick={() => handleReviewSubmit(productId)}
+                            disabled={reviewLoading[productId]}
+                            className="w-full md:w-auto"
+                          >
+                            {reviewLoading[productId]
+                              ? "Submitting..."
+                              : "Submit Review"}
+                          </Button>
                         </div>
-
-                        {/* Comment box */}
-                        <textarea
-                          value={reviewInputs[productId]?.comment || ""}
-                          onChange={(e) =>
-                            setReviewInputs((prev) => ({
-                              ...prev,
-                              [productId]: {
-                                ...prev[productId],
-                                comment: e.target.value,
-                                manualComment: true, // Flag to stop auto-update when rating changes
-                              },
-                            }))
-                          }
-                          className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
-                          rows="4"
-                          placeholder="Write your review..."
-                        />
-
-                        {/* Submit Button */}
-                        <Button
-                          onClick={() => handleReviewSubmit(productId)}
-                          disabled={reviewLoading[productId]}
-                          className="w-full md:w-auto"
-                        >
-                          {reviewLoading[productId]
-                            ? "Submitting..."
-                            : "Submit Review"}
-                        </Button>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
 
                 {/* Cancel Order Button */}
                 {showCancelButton && (
