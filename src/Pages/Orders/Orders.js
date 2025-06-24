@@ -18,6 +18,14 @@ export default function Orders() {
   const userId = parsedUser?._id;
   const userName = parsedUser?.username;
 
+  const ratingComments = {
+    1: "Okay",
+    2: "Could be better",
+    3: "Good",
+    4: "Very good",
+    5: "Excellent",
+  };
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
@@ -109,14 +117,22 @@ export default function Orders() {
     }
   };
 
-  const handleReviewChange = (productId, field, value) => {
-    setReviewInputs((prev) => ({
-      ...prev,
-      [productId]: {
-        ...prev[productId],
-        [field]: value,
-      },
-    }));
+  const handleReviewChange = (productId, key, value) => {
+    setReviewInputs((prev) => {
+      const updated = {
+        ...prev,
+        [productId]: {
+          ...prev[productId],
+          [key]: value,
+        },
+      };
+
+      if (key === "rating" && !prev[productId]?.manualComment) {
+        updated[productId].comment = ratingComments[value] || "";
+      }
+
+      return updated;
+    });
   };
 
   const handleReviewSubmit = async (productId) => {
@@ -340,11 +356,14 @@ export default function Orders() {
                         <textarea
                           value={reviewInputs[productId]?.comment || ""}
                           onChange={(e) =>
-                            handleReviewChange(
-                              productId,
-                              "comment",
-                              e.target.value
-                            )
+                            setReviewInputs((prev) => ({
+                              ...prev,
+                              [productId]: {
+                                ...prev[productId],
+                                comment: e.target.value,
+                                manualComment: true,
+                              },
+                            }))
                           }
                           className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
                           rows="4"
