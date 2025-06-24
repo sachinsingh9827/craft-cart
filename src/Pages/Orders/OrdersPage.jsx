@@ -21,7 +21,6 @@ export default function Orders() {
 
   const [user, setUser] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState([]);
-  const [quantities, setQuantities] = useState({});
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [step, setStep] = useState(1);
   const [couponCode, setCouponCode] = useState("");
@@ -44,13 +43,20 @@ export default function Orders() {
   const [submittingOrder, setSubmittingOrder] = useState(false);
   const [showThankYouModal, setShowThankYouModal] = useState(false);
 
-  // Scroll resets
-  useEffect(() => window.scrollTo(0, 0), []);
-  useEffect(() => window.scrollTo({ top: 0, behavior: "smooth" }), [step]);
+  // On mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  // Fetch user & wishlist/initial product
+  // On step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
+  // Fetch user and wishlist / initial product
   useEffect(() => {
     if (!token || !userId) return;
+
     (async () => {
       try {
         const res = await axios.get(`${BASE_URL}/user/auth/${userId}`, {
@@ -59,24 +65,19 @@ export default function Orders() {
         if (res.data.success) {
           const userData = res.data.data.user;
           setUser(userData);
-          let initial = [];
 
           if (userData.wishlist?.length) {
-            initial = userData.wishlist;
+            setSelectedProducts(userData.wishlist);
           } else if (productIdFromQuery) {
             const pr = await axios.get(
               `${BASE_URL}/products/${productIdFromQuery}`
             );
-            if (pr.data.success) initial = [pr.data.data];
-            else toast.error("Product not found");
+            if (pr.data.success) {
+              setSelectedProducts([pr.data.data]);
+            } else {
+              toast.error("Product not found");
+            }
           }
-
-          setSelectedProducts(initial);
-          const initialQuantities = {};
-          initial.forEach((p) => {
-            initialQuantities[p._id] = 1;
-          });
-          setQuantities(initialQuantities);
         } else {
           toast.error("Failed to fetch user data");
         }
@@ -86,26 +87,34 @@ export default function Orders() {
     })();
   }, [token, userId, productIdFromQuery]);
 
-  // Update totals whenever selectedProducts, quantities, discount, or paymentOption change
+  // Calculate totals (subtotal, tax, delivery, total)
   useEffect(() => {
-    const subtotal = selectedProducts.reduce((sum, p) => {
-      const qty = quantities[p._id] || 1;
-      return sum + (p.price || 0) * qty;
-    }, 0);
-    const tax = paymentOption === "online" ? subtotal * 0.05 : 0;
-    const total = Math.max(subtotal - discount + totals.delivery + tax, 0);
-    setTotals({ subtotal, tax, delivery: totals.delivery, total });
-  }, [selectedProducts, quantities, discount, paymentOption]);
+    const subtotal = selectedProducts.reduce(
+      (sum, p) => sum + (p.price || 0),
+      0
+    );
+    const deliveryCharges = 30; // fixed delivery charge
+    let tax = 0;
+    if (paymentOption === "online") {
+      tax = (5 / 100) * subtotal; // 5% tax on product price if online payment
+    }
+    const total = Math.max(subtotal - discount + deliveryCharges + tax, 0);
+    setTotals({ subtotal, tax, delivery: deliveryCharges, total });
+  }, [selectedProducts, discount, paymentOption]);
 
-  // Validate address
+  // Validate address via API
   useEffect(() => {
-    if (!selectedAddressId) return setAddressValid(false);
+    if (!selectedAddressId) {
+      setAddressValid(false);
+      setAddressValidationError("");
+      return;
+    }
     const addr = user?.addresses?.find((a) => a._id === selectedAddressId);
-    if (!addr)
-      return (
-        setAddressValid(false) &&
-        setAddressValidationError("Selected address not found")
-      );
+    if (!addr) {
+      setAddressValid(false);
+      setAddressValidationError("Selected address not found");
+      return;
+    }
 
     (async () => {
       setAddressValidationLoading(true);
@@ -114,11 +123,13 @@ export default function Orders() {
         const res = await axios.post(
           `${BASE_URL}/user/auth/order`,
           { deliveryAddress: addr },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        setAddressValid(res.data.success);
+        if (res.data.success) {
+          setAddressValid(true);
+        } else {
+          throw new Error(res.data.message || "Invalid address");
+        }
       } catch (err) {
         const msg = err.response?.data?.message || err.message;
         setAddressValid(false);
@@ -128,16 +139,18 @@ export default function Orders() {
         setAddressValidationLoading(false);
       }
     })();
-  }, [selectedAddressId, user, token]);
+  }, [selectedAddressId, token, user]);
 
+  // Apply coupon
   const handleApplyCoupon = async () => {
-    if (!couponCode.trim() || selectedProducts.length === 0)
+    if (!couponCode.trim() || !selectedProducts.length) {
       return toast.error("Please enter a coupon and select a product");
-
+    }
     setLoadingCoupon(true);
     setCouponError("");
     setCouponData(null);
     setDiscount(0);
+
     try {
       const res = await axios.post(
         `${BASE_URL}/user/auth/verify`,
@@ -146,15 +159,15 @@ export default function Orders() {
           productId: selectedProducts[0]._id,
           subtotal: totals.subtotal,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.data.success) {
         setCouponData(res.data.data);
         setDiscount(res.data.data.discountAmt);
         toast.success("Coupon applied!");
-      } else throw new Error(res.data.message);
+      } else {
+        throw new Error(res.data.message);
+      }
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       setCouponError(msg);
@@ -164,41 +177,53 @@ export default function Orders() {
     }
   };
 
+  // Confirm payment step
   const handleConfirmStep4 = async () => {
-    if (!selectedAddressId || selectedProducts.length === 0)
+    if (!selectedAddressId || !selectedProducts.length) {
       return toast.error("Please select address and products");
-    if (!paymentOption)
-      return setPaymentError("Please select a payment option");
-    if (paymentOption === "online") await handleInitiatePayment();
-    else {
-      setPaymentError("");
-      setStep(5);
     }
+    if (!paymentOption) {
+      return setPaymentError("Please select a payment option");
+    }
+    if (paymentOption === "online") {
+      await handleInitiatePayment();
+      return;
+    }
+    setPaymentError("");
+    setStep(5);
   };
 
+  // Initiate online payment
   const handleInitiatePayment = async () => {
     setSubmittingOrder(true);
     try {
       const amountWithTax = totals.subtotal + totals.tax + totals.delivery;
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
-        orderId: Date.now(),
+        orderId: Date.now(), // Unique order ID
         amount: amountWithTax,
         redirectUrl: `${BASE_URL}/payment-redirect`,
       });
-      if (res.data.success) window.location.href = res.data.data.paymentUrl;
-      else toast.error("Failed to initiate payment");
+
+      if (res.data.success) {
+        // Redirect to payment page
+        window.location.href = res.data.data.paymentUrl;
+      } else {
+        toast.error("Failed to initiate payment");
+      }
     } catch (err) {
-      toast.error(err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setSubmittingOrder(false);
     }
   };
 
+  // Submit order, then show modal
   const handleSubmitOrder = async () => {
-    if (!selectedAddressId || selectedProducts.length === 0 || !paymentOption)
+    if (!selectedAddressId || !selectedProducts.length || !paymentOption) {
       return toast.error("Complete all steps before placing order");
-
+    }
     setSubmittingOrder(true);
+
     try {
       const deliveryAddress = user.addresses.find(
         (a) => a._id === selectedAddressId
@@ -206,10 +231,7 @@ export default function Orders() {
       const order = {
         userId,
         deliveryAddress,
-        items: selectedProducts.map((p) => ({
-          ...p,
-          quantity: quantities[p._id] || 1,
-        })),
+        items: selectedProducts,
         coupon: couponData || null,
         subtotal: totals.subtotal,
         discount,
@@ -218,7 +240,6 @@ export default function Orders() {
         totalAmount: totals.total,
         paymentMethod: paymentOption,
       };
-
       const res = await axios.post(`${BASE_URL}/orders`, order, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -228,7 +249,9 @@ export default function Orders() {
       if (res.data.status === "success") {
         toast.success("Order placed successfully!");
         setShowThankYouModal(true);
-      } else toast.error(res.data.message || "Order failed");
+      } else {
+        toast.error(res.data.message || "Order failed");
+      }
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       toast.error(msg);
@@ -237,34 +260,67 @@ export default function Orders() {
     }
   };
 
+  // On modal close: remove wishlist, navigate
   const closeModal = async () => {
     setShowThankYouModal(false);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const removeWishlistItem = (productId) =>
+        axios.post(
+          `${BASE_URL}/user/auth/wishlist/remove`,
+          { productId },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+      for (const product of selectedProducts) {
+        await removeWishlistItem(product._id);
+      }
+
+      setUser((prevUser) => ({
+        ...prevUser,
+        wishlist: prevUser.wishlist.filter(
+          (item) => !selectedProducts.some((p) => p._id === item._id)
+        ),
+      }));
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Failed to remove items from wishlist"
+      );
+    }
+
     navigate("/shop");
   };
 
-  if (!user) return <LoadingPage />;
+  if (!user)
+    return (
+      <div className="text-center p-6">
+        <LoadingPage />
+      </div>
+    );
   const addr = user.addresses.find((a) => a._id === selectedAddressId);
 
   return (
     <div className="p-2 font-montserrat max-w-full mx-auto space-y-6 min-h-screen">
-      <h1 className="text-xl font-bold text-[#004080] uppercase">
+      <h1 className="text-xl font-bold text-start mb-4 text-[#004080] uppercase">
         Place Your Order
       </h1>
-      <div className="text-right text-lg font-bold text-green-600">
+      <div className="text-right text-lg font-bold text-green-600 mb-4">
         Total: ₹{totals.total.toFixed(2)}
       </div>
 
       {/* Step 1 */}
       {step === 1 && (
         <>
-          <h2 className="text-sm font-bold text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             1. Review &amp; Select Products
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
             {user.wishlist.map((p) => {
               const sel = selectedProducts.some((sp) => sp._id === p._id);
-              const qty = quantities[p._id] || 1;
-
               return (
                 <div
                   key={p._id}
@@ -272,19 +328,11 @@ export default function Orders() {
                     sel ? "border-blue-600 bg-blue-50" : ""
                   }`}
                   onClick={() => {
-                    if (sel) {
-                      setSelectedProducts((prev) =>
-                        prev.filter((x) => x._id !== p._id)
-                      );
-                      setQuantities((prev) => {
-                        const updated = { ...prev };
-                        delete updated[p._id];
-                        return updated;
-                      });
-                    } else {
-                      setSelectedProducts((prev) => [...prev, p]);
-                      setQuantities((prev) => ({ ...prev, [p._id]: 1 }));
-                    }
+                    sel
+                      ? setSelectedProducts((prev) =>
+                          prev.filter((x) => x._id !== p._id)
+                        )
+                      : setSelectedProducts((prev) => [...prev, p]);
                   }}
                 >
                   <img
@@ -294,33 +342,13 @@ export default function Orders() {
                   />
                   <div className="text-sm mt-1">{p.name}</div>
                   <div className="font-semibold">₹{p.price}</div>
-
-                  <div className="flex items-center justify-between mt-2">
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked={sel} readOnly />
-                      <span>Select</span>
-                    </label>
-
-                    {sel && (
-                      <select
-                        value={qty}
-                        onChange={(e) => {
-                          const newQty = parseInt(e.target.value);
-                          setQuantities((prev) => ({
-                            ...prev,
-                            [p._id]: newQty,
-                          }));
-                        }}
-                        className="border rounded px-2 py-1 text-sm"
-                      >
-                        {[...Array(10)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            Qty: {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
+                  <input
+                    type="checkbox"
+                    checked={sel}
+                    readOnly
+                    className="mt-1"
+                  />{" "}
+                  Select
                 </div>
               );
             })}
@@ -339,7 +367,7 @@ export default function Orders() {
       {/* Step 2 */}
       {step === 2 && (
         <>
-          <h2 className="text-sm font-bold text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             2. Choose Address
           </h2>
           {user.addresses?.length ? (
@@ -361,28 +389,29 @@ export default function Orders() {
                     onChange={() => setSelectedAddressId(a._id)}
                     className="mr-2"
                   />
-                  {a.street}, {a.city}, {a.state} - {a.postalCode}, {a.contact}
+                  {a.street}, {a.city}, {a.state} - {a.postalCode},{a.contact}
                   <div>{a.country}</div>
                 </label>
               ))}
             </div>
           ) : (
-            <p className="uppercase text-[#004080]">
+            <p className="text-[#004080] uppercase">
               No address found—please add one.
             </p>
           )}
-
           {addressValidationLoading && (
             <p className="text-gray-600 mt-2">Validating address...</p>
           )}
           {addressValidationError && (
             <p className="text-red-600 mt-2">{addressValidationError}</p>
           )}
-
           <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setStep(1)}>Back</Button>
+            <Button onClick={() => setStep(1)} className="btn-secondary">
+              Back
+            </Button>
             <Button
               onClick={() => setStep(3)}
+              className="btn-primary"
               disabled={!addressValid || addressValidationLoading}
             >
               Proceed to Coupon
@@ -394,34 +423,51 @@ export default function Orders() {
       {/* Step 3 */}
       {step === 3 && (
         <>
-          <h2 className="text-sm font-bold text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             3. Apply Coupon
           </h2>
+
+          {!couponData && (
+            <p className="text-sm text-gray-600 mb-2">
+              If you have a coupon code, please enter it below to get a
+              discount. If you don't have one, you can skip this step and
+              continue.
+            </p>
+          )}
+
           <div className="flex gap-2 flex-wrap">
             <input
-              type="text"
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              className="border p-2 flex-grow rounded min-w-[180px]"
               placeholder="Coupon code"
-              className="border p-2 rounded min-w-[180px]"
               disabled={loadingCoupon}
             />
             <Button
               onClick={handleApplyCoupon}
-              disabled={loadingCoupon || !couponCode.trim()}
+              className="btn-primary min-w-[100px]"
+              disabled={loadingCoupon || couponCode.trim() === ""}
             >
               {loadingCoupon ? "Applying..." : "Apply"}
             </Button>
           </div>
+
           {couponData && (
-            <p className="mt-2 text-green-600">
+            <div className="mt-2 text-green-600">
               {couponData.code} applied! Discount: ₹{discount.toFixed(2)}
-            </p>
+            </div>
           )}
-          {couponError && <p className="mt-2 text-red-600">{couponError}</p>}
+          {couponError && (
+            <div className="mt-2 text-red-600">{couponError}</div>
+          )}
+
           <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setStep(2)}>Back</Button>
-            <Button onClick={() => setStep(4)}>Proceed to Payment</Button>
+            <Button onClick={() => setStep(2)} className="btn-secondary">
+              Back
+            </Button>
+            <Button onClick={() => setStep(4)} className="btn-primary">
+              Proceed to Payment
+            </Button>
           </div>
         </>
       )}
@@ -429,35 +475,45 @@ export default function Orders() {
       {/* Step 4 */}
       {step === 4 && (
         <>
-          <h2 className="text-sm font-bold text-[#004080] uppercase">
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
             4. Choose Payment Option
           </h2>
           <div className="space-y-3 max-w-md mx-auto">
-            <label className="flex items-start gap-3 border p-3 rounded hover:bg-blue-50">
+            <label className="flex items-start gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
                 type="radio"
                 name="paymentOption"
                 value="cod"
                 checked={paymentOption === "cod"}
-                onChange={() => setPaymentOption("cod")}
+                onChange={() => {
+                  setPaymentOption("cod");
+                }}
               />
               <span className="font-semibold">Cash on Delivery (COD)</span>
             </label>
-            <label className="flex items-start gap-3 border p-3 rounded hover:bg-blue-50">
+            <label className="flex items-start gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
                 type="radio"
                 name="paymentOption"
                 value="online"
                 checked={paymentOption === "online"}
-                onChange={() => setPaymentOption("online")}
+                onChange={() => {
+                  setPaymentOption("online");
+                }}
               />
               <span className="font-semibold">Online Payment</span>
             </label>
           </div>
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
           <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setStep(3)}>Back</Button>
-            <Button onClick={handleConfirmStep4} disabled={!paymentOption}>
+            <Button onClick={() => setStep(3)} className="btn-secondary">
+              Back
+            </Button>
+            <Button
+              onClick={handleConfirmStep4}
+              className="btn-primary"
+              disabled={!paymentOption}
+            >
               Confirm
             </Button>
           </div>
@@ -467,8 +523,8 @@ export default function Orders() {
       {/* Step 5 */}
       {step === 5 && (
         <div className="max-w-full mx-auto p-4 bg-white border rounded shadow-md">
-          <h2 className="text-sm font-bold text-[#004080] uppercase mb-4">
-            Order Summary & Invoice
+          <h2 className="text-sm font-bold text-start mb-4 text-[#004080] uppercase">
+            Order Summary &amp; Invoice
           </h2>
           <table className="w-full table-auto border-collapse mb-6">
             <thead>
@@ -479,27 +535,21 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody>
-              {selectedProducts.map((p) => {
-                const qty = quantities[p._id] || 1;
-                return (
-                  <tr key={p._id} className="border-b">
-                    <td className="p-3 font-semibold">{p.name}</td>
-                    <td className="p-3 hidden sm:table-cell">
-                      <img
-                        src={p.images?.[0]?.url}
-                        alt={p.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    </td>
-                    <td className="p-3 text-right font-mono">
-                      ₹{(p.price * qty).toFixed(2)}{" "}
-                      <span className="text-xs text-gray-500">
-                        ({qty}×₹{p.price.toFixed(2)})
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {selectedProducts.map((p) => (
+                <tr key={p._id} className="border-b">
+                  <td className="p-3 font-semibold">{p.name}</td>
+                  <td className="p-3 hidden sm:table-cell">
+                    <img
+                      src={p.images?.[0]?.url}
+                      alt={p.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+                  <td className="p-3 text-right font-mono">
+                    ₹{p.price.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
@@ -512,10 +562,10 @@ export default function Orders() {
           )}
 
           <section className="mb-6 max-w-md">
-            <h3 className="uppercase font-semibold text-[#004080] border-b pb-1 mb-2">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-[#004080] uppercase">
               Shipping Address
             </h3>
-            <address className="not-italic whitespace-pre-line font-mono text-gray-700 text-sm">
+            <address className="not-italic whitespace-pre-line text-gray-700 leading-relaxed font-mono text-sm">
               {addr?.street},{"\n"}
               {addr?.city}, {addr?.state} - {addr?.postalCode},{"\n"}
               {addr?.country}
@@ -523,10 +573,10 @@ export default function Orders() {
           </section>
 
           <section className="mb-6 max-w-md">
-            <h3 className="uppercase font-semibold text-[#004080] border-b pb-1 mb-2">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-[#004080] uppercase">
               Payment Method
             </h3>
-            <p className="font-mono text-gray-800">
+            <p className="text-gray-800 font-mono">
               {paymentOption === "cod" ? "Cash on Delivery" : "Online Payment"}
             </p>
           </section>
@@ -538,8 +588,7 @@ export default function Orders() {
             </div>
             {discount > 0 && (
               <div className="flex justify-between mb-2 text-red-600">
-                <span>Discount:</span>
-                <span>-₹{discount.toFixed(2)}</span>
+                <span>Discount:</span> <span>-₹{discount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between mb-2 text-gray-700">
@@ -553,15 +602,15 @@ export default function Orders() {
               </div>
             )}
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total:</span>
-              <span>₹{totals.total.toFixed(2)}</span>
+              <span>Total:</span> <span>₹{totals.total.toFixed(2)}</span>
             </div>
           </section>
 
-          <div className="mt-6 flex space-x-4 justify-end">
+          <div className="mt-6 flex flex-row justify-between md:justify-end md:space-x-4">
             <Button onClick={handleSubmitOrder} disabled={submittingOrder}>
               {submittingOrder ? "Placing Order..." : "Place Order"}
             </Button>
+
             <Button onClick={() => setStep(4)} disabled={submittingOrder}>
               Back to Payment
             </Button>
@@ -575,7 +624,13 @@ export default function Orders() {
           <div className="bg-white p-6 rounded shadow-lg w-full max-w-md text-center">
             <h2 className="text-2xl font-semibold mb-4">Thank You!</h2>
             <p className="mb-4">Your order was placed successfully.</p>
-            <Button onClick={closeModal}>Continue Shopping</Button>
+
+            <button
+              onClick={closeModal}
+              className="bg-[#004080] text-white px-4 py-2 rounded hover:bg-[#003366]"
+            >
+              Continue Shopping
+            </button>
           </div>
         </div>
       )}

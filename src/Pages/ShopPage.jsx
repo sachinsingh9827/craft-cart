@@ -106,7 +106,7 @@ const ShopPage = () => {
     }
   };
 
-  const handleBuyNow = (productId, e) => {
+  const handleBuyNow = async (productId, e) => {
     e.stopPropagation();
 
     const token = localStorage.getItem("token");
@@ -116,16 +116,41 @@ const ShopPage = () => {
       return;
     }
 
+    try {
+      await axios.post(
+        `${BASE_URL}/api/user/auth/wishlist/add`,
+        { productId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (err) {
+      if (err.response?.status === 409) {
+        // Already in wishlist, continue
+      } else if (err.response?.status === 401) {
+        showToast("Session expired. Please login again.", "warning");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      } else {
+        showToast("Error adding to wishlist. Try again.", "error");
+        return;
+      }
+    }
+
     navigate(`/order/${productId}`);
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 font-montserrat min-h-screen">
+    <div className="font-montserrat min-h-screen">
       <Toast />
       <OfferBanner />
 
       {/* Search & Sort */}
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
+      <div className="max-w-6xl mx-auto px-4 mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <input
           type="text"
           placeholder="Search products..."
@@ -134,7 +159,7 @@ const ShopPage = () => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#004080] w-full sm:w-auto"
+          className="px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#004080]"
         />
         <select
           value={sortOption}
@@ -147,17 +172,18 @@ const ShopPage = () => {
         </select>
       </div>
 
-      {error && <p className="text-center text-red-600 mt-4">{error}</p>}
+      {error && (
+        <p className="max-w-6xl mx-auto px-4 mt-4 text-red-600 text-center">
+          {error}
+        </p>
+      )}
 
       {/* Product Grid */}
-      <div className="max-w-6xl mx-auto mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
         {sortedProducts.length > 0 ? (
-          sortedProducts.map(({ _id, name, price, images, stock }) => {
+          sortedProducts.map(({ _id, name, price, images }) => {
             const imageUrl =
               images?.[0]?.url || "https://via.placeholder.com/260";
-
-            const isOutOfStock = stock === 0;
-            const isLowStock = stock > 0 && stock <= 3;
 
             return (
               <div
@@ -165,7 +191,7 @@ const ShopPage = () => {
                 role="button"
                 tabIndex={0}
                 onClick={() => navigate(`/product/${_id}`)}
-                className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col w-full"
+                className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col max-w-[260px] w-full mx-auto"
               >
                 <img
                   src={imageUrl}
@@ -177,21 +203,11 @@ const ShopPage = () => {
                   <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
                     {name}
                   </h2>
-                  <p className="text-yellow-500 font-bold text-md mb-1">
+                  <p className="text-yellow-500 font-bold text-md mb-3">
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
 
-                  {isOutOfStock && (
-                    <p className="text-red-500 text-sm">Out of Stock</p>
-                  )}
-
-                  {isLowStock && !isOutOfStock && (
-                    <p className="text-orange-500 text-sm">
-                      Hurry! Only {stock} left
-                    </p>
-                  )}
-
-                  <div className="flex gap-2 mt-auto pt-3">
+                  <div className="flex gap-2 mt-auto">
                     <button
                       onClick={(e) => handleAddToWishlist(_id, e)}
                       className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
@@ -200,12 +216,7 @@ const ShopPage = () => {
                     </button>
                     <button
                       onClick={(e) => handleBuyNow(_id, e)}
-                      className={`w-1/2 py-2 rounded-lg font-semibold text-sm transition-colors duration-300 ${
-                        isOutOfStock
-                          ? "bg-gray-400 text-white cursor-not-allowed"
-                          : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
-                      }`}
-                      disabled={isOutOfStock}
+                      className="w-1/2 bg-[#004080] text-yellow-400 p-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
                     >
                       Buy Now
                     </button>
