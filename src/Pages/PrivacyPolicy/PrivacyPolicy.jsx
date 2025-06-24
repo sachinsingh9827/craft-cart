@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
   return (
     <>
       <div className="flex items-center justify-center p-4 md:p-6 font-montserrat">
-        <div className="w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-hidden p-6 md:p-10">
+        <div className="w-full max-w-full bg-white shadow-2xl rounded-2xl overflow-hidden p-6 md:p-10">
           <h1 className="text-4xl font-extrabold text-[#004080] mb-10 uppercase text-center tracking-wide">
             Privacy Policy & Order Terms
           </h1>
