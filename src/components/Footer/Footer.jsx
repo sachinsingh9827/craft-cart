@@ -11,6 +11,13 @@ import { HiOutlineMail } from "react-icons/hi";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
+  const quickLinks = [
+    { name: "Shop", path: "/shop" },
+    { name: "About", path: "/about" },
+    { name: "Contact Us", path: "/contact-us" },
+    { name: "Privacy Policy", path: "/privacy-policy" },
+  ];
+
   return (
     <footer className="bg-[#004080] text-gray-100 px-4 sm:px-6 py-10 font-montserrat">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
@@ -30,16 +37,18 @@ export default function Footer() {
             Quick Links
           </h3>
           <ul className="grid grid-cols-2 gap-y-3 text-base">
-            {["Shop", "About", "Contact-us", "Privacy Policy"].map((item) => (
-              <li key={item}>
-                <Link
-                  to={`/${item.toLowerCase().replace(/\s/g, "-")}`}
-                  className="hover:text-yellow-400 transition-colors duration-300"
-                >
-                  {item}
-                </Link>
-              </li>
-            ))}
+            <ul className="grid grid-cols-2 gap-y-3 text-base">
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.path}
+                    className="hover:text-yellow-400 transition-colors duration-300"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </ul>
         </div>
 
