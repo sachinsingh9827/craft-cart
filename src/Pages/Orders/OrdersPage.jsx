@@ -613,7 +613,7 @@ export default function Orders() {
                     />
                   </td>
                   <td className="p-3 text-right font-mono">
-                    {p.qty} × ₹{p.price.toFixed(2)} = ₹
+                    {p.qty} × ₹{p.price.toFixed(2)} ₹
                     {(p.price * p.qty).toFixed(2)}
                   </td>
                 </tr>
