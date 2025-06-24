@@ -352,35 +352,68 @@ export default function Orders() {
                   />
                   <div className="text-sm mt-1">{p.name}</div>
                   <div className="font-semibold">₹{p.price}</div>
-                  <input
-                    type="checkbox"
-                    checked={sel}
-                    readOnly
-                    className="mt-1"
-                  />{" "}
-                  Select
-                  {sel && (
-                    <div className="mt-2">
-                      <label className="text-sm">Qty: </label>
+                  <div>
+                    <label className="flex items-center space-x-2">
                       <input
-                        type="number"
-                        min={1}
-                        value={
-                          selectedProducts.find((sp) => sp._id === p._id)
-                            ?.qty || 1
-                        }
+                        type="checkbox"
+                        checked={sel}
                         onChange={(e) => {
-                          const qty = parseInt(e.target.value) || 1;
-                          setSelectedProducts((prev) =>
-                            prev.map((sp) =>
-                              sp._id === p._id ? { ...sp, qty } : sp
-                            )
-                          );
+                          if (e.target.checked) {
+                            setSelectedProducts((prev) => [
+                              ...prev,
+                              { ...p, qty: 1 },
+                            ]);
+                          } else {
+                            setSelectedProducts((prev) =>
+                              prev.filter((sp) => sp._id !== p._id)
+                            );
+                          }
                         }}
-                        className="border p-1 w-16 ml-2"
+                        className="mt-1"
                       />
-                    </div>
-                  )}
+                      <span>Select</span>
+                    </label>
+
+                    {sel && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <label className="text-sm">Qty:</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProducts((prev) =>
+                              prev.map((sp) =>
+                                sp._id === p._id
+                                  ? { ...sp, qty: Math.max(1, sp.qty - 1) }
+                                  : sp
+                              )
+                            );
+                          }}
+                          className="px-2 py-1 border rounded"
+                        >
+                          -
+                        </button>
+                        <span className="px-3">
+                          {selectedProducts.find((sp) => sp._id === p._id)
+                            ?.qty || 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProducts((prev) =>
+                              prev.map((sp) =>
+                                sp._id === p._id
+                                  ? { ...sp, qty: sp.qty + 1 }
+                                  : sp
+                              )
+                            );
+                          }}
+                          className="px-2 py-1 border rounded"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
