@@ -181,7 +181,7 @@ const ShopPage = () => {
       {/* Product Grid */}
       <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
         {sortedProducts.length > 0 ? (
-          sortedProducts.map(({ _id, name, price, images }) => {
+          sortedProducts.map(({ _id, name, price, images, stock }) => {
             const imageUrl =
               images?.[0]?.url || "https://via.placeholder.com/260";
 
@@ -203,9 +203,21 @@ const ShopPage = () => {
                   <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
                     {name}
                   </h2>
-                  <p className="text-yellow-500 font-bold text-md mb-3">
+                  <p className="text-yellow-500 font-bold text-md mb-1">
                     ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
                   </p>
+
+                  {/* Stock Display */}
+                  <p className="text-xs text-gray-600 mb-1">
+                    Stock: {stock > 0 ? stock : "Out of Stock"}
+                  </p>
+
+                  {/* Hurry text if stock is 3 or less */}
+                  {stock > 0 && stock <= 3 && (
+                    <p className="text-xs text-red-600 font-semibold mb-2">
+                      Hurry! Only {stock} left
+                    </p>
+                  )}
 
                   <div className="flex gap-2 mt-auto">
                     <button
@@ -216,9 +228,14 @@ const ShopPage = () => {
                     </button>
                     <button
                       onClick={(e) => handleBuyNow(_id, e)}
-                      className="w-1/2 bg-[#004080] text-yellow-400 p-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
+                      disabled={stock === 0}
+                      className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 ${
+                        stock === 0
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
+                      }`}
                     >
-                      Buy Now
+                      {stock === 0 ? "Out of Stock" : "Buy Now"}
                     </button>
                   </div>
                 </div>
