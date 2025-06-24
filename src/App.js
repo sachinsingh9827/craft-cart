@@ -83,7 +83,7 @@ function App() {
         <Route path="/about-offer" element={<AboutOffer />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/payment-redirect" element={<PaymentRedirect />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
         {/* Protected Routes */}
         <Route
