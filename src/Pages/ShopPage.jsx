@@ -179,62 +179,83 @@ const ShopPage = () => {
       )}
 
       {/* Product Grid */}
-      <div className="max-w-full mx-auto px-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-        {sortedProducts.length > 0 ? (
-          sortedProducts.map(({ _id, name, price, images }) => {
-            const imageUrl =
-              images?.[0]?.url || "https://via.placeholder.com/260";
+      {sortedProducts.length > 0 ? (
+        sortedProducts.map(({ _id, name, price, images, stock }) => {
+          const imageUrl =
+            images?.[0]?.url || "https://via.placeholder.com/260";
 
-            return (
-              <div
-                key={_id}
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate(`/product/${_id}`)}
-                className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col max-w-[260px] w-full mx-auto"
-              >
-                <img
-                  src={imageUrl}
-                  alt={name}
-                  className="w-full object-cover aspect-square"
-                  loading="lazy"
-                />
-                <div className="p-4 flex flex-col flex-grow">
-                  <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
-                    {name}
-                  </h2>
-                  <p className="text-yellow-500 font-bold text-md mb-3">
-                    ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
+          const isOutOfStock = stock === 0;
+          const isLowStock = stock <= 3 && stock > 0;
+
+          return (
+            <div
+              key={_id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/product/${_id}`)}
+              className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col max-w-[260px] w-full mx-auto"
+            >
+              <img
+                src={imageUrl}
+                alt={name}
+                className="w-full object-cover aspect-square"
+                loading="lazy"
+              />
+              <div className="p-4 flex flex-col flex-grow">
+                <h2 className="text-lg font-semibold text-[#004080] mb-1 truncate">
+                  {name}
+                </h2>
+                <p className="text-yellow-500 font-bold text-md mb-1">
+                  ₹{typeof price === "number" ? price.toFixed(2) : "N/A"}
+                </p>
+
+                {/* Stock Status */}
+                {isOutOfStock ? (
+                  <p className="text-red-600 text-sm mb-2 font-semibold">
+                    Out of Stock
                   </p>
+                ) : isLowStock ? (
+                  <p className="text-orange-500 text-sm mb-2 font-semibold">
+                    Hurry! Only {stock} left
+                  </p>
+                ) : (
+                  <p className="text-green-600 text-sm mb-2 font-semibold">
+                    In Stock
+                  </p>
+                )}
 
-                  <div className="flex gap-2 mt-auto">
-                    <button
-                      onClick={(e) => handleAddToWishlist(_id, e)}
-                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
-                    >
-                      Wishlist
-                    </button>
-                    <button
-                      onClick={(e) => handleBuyNow(_id, e)}
-                      className="w-1/2 bg-[#004080] text-yellow-400 p-2 rounded-lg font-semibold hover:bg-yellow-400 hover:text-[#004080] transition-colors duration-300 text-sm"
-                    >
-                      Buy Now
-                    </button>
-                  </div>
+                <div className="flex gap-2 mt-auto">
+                  <button
+                    onClick={(e) => handleAddToWishlist(_id, e)}
+                    className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
+                  >
+                    Wishlist
+                  </button>
+                  <button
+                    onClick={(e) => !isOutOfStock && handleBuyNow(_id, e)}
+                    disabled={isOutOfStock}
+                    className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 ${
+                      isOutOfStock
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
+                    }`}
+                  >
+                    Buy Now
+                  </button>
                 </div>
               </div>
-            );
-          })
-        ) : loading ? (
-          <div className="col-span-full text-center">
-            <LoadingPage />
-          </div>
-        ) : (
-          <p className="col-span-full text-center text-gray-500">
-            No products found.
-          </p>
-        )}
-      </div>
+            </div>
+          );
+        })
+      ) : loading ? (
+        <div className="col-span-full text-center">
+          <LoadingPage />
+        </div>
+      ) : (
+        <p className="col-span-full text-center text-gray-500">
+          No products found.
+        </p>
+      )}
 
       {/* Load More */}
       {page < totalPages && !loading && (
