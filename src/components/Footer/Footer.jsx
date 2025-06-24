@@ -29,7 +29,7 @@ export default function Footer() {
             Quick Links
           </h3>
           <ul className="grid grid-cols-2 gap-y-3 text-base">
-            {["Shop", "About", "Contact-us", "Privacy Policy"].map((item) => (
+            {["Shop", "About", "Contact-us", "Privacy-Policy"].map((item) => (
               <li key={item}>
                 <a
                   href={`/${item.toLowerCase().replace(/\s/g, "")}`}
