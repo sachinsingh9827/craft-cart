@@ -331,16 +331,18 @@ export default function Orders() {
 
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
             {user.wishlist.map((p) => {
-              const sel = selectedProducts.some((sp) => sp._id === p._id);
+              const selectedItem = selectedProducts.find(
+                (sp) => sp._id === p._id
+              );
+              const sel = !!selectedItem;
 
               return (
                 <div
                   key={p._id}
-                  className={`border p-2 rounded relative ${
+                  className={`border p-2 rounded ${
                     sel ? "border-blue-600 bg-blue-50" : ""
                   }`}
                 >
-                  {/* Product Image and Info */}
                   <img
                     src={p.images?.[0]?.url}
                     alt={p.name}
@@ -349,7 +351,7 @@ export default function Orders() {
                   <div className="text-sm mt-1">{p.name}</div>
                   <div className="font-semibold">₹{p.price}</div>
 
-                  {/* Select Checkbox */}
+                  {/* Selection Checkbox */}
                   <div className="mt-2">
                     <label className="flex items-center space-x-2">
                       <input
@@ -373,7 +375,7 @@ export default function Orders() {
                     </label>
                   </div>
 
-                  {/* Quantity Counter (if selected) */}
+                  {/* Quantity Counter */}
                   {sel && (
                     <div className="mt-2 flex items-center space-x-2">
                       <label className="text-sm">Qty:</label>
@@ -383,7 +385,7 @@ export default function Orders() {
                           setSelectedProducts((prev) =>
                             prev.map((sp) =>
                               sp._id === p._id
-                                ? { ...sp, qty: Math.max(1, sp.qty - 1) }
+                                ? { ...sp, qty: Math.max(1, (sp.qty || 1) - 1) }
                                 : sp
                             )
                           )
@@ -392,16 +394,15 @@ export default function Orders() {
                       >
                         -
                       </button>
-                      <span className="px-3">
-                        {selectedProducts.find((sp) => sp._id === p._id)?.qty ||
-                          1}
-                      </span>
+                      <span className="px-3">{selectedItem.qty}</span>
                       <button
                         type="button"
                         onClick={() =>
                           setSelectedProducts((prev) =>
                             prev.map((sp) =>
-                              sp._id === p._id ? { ...sp, qty: sp.qty + 1 } : sp
+                              sp._id === p._id
+                                ? { ...sp, qty: (sp.qty || 1) + 1 }
+                                : sp
                             )
                           )
                         }
@@ -416,7 +417,6 @@ export default function Orders() {
             })}
           </div>
 
-          {/* Next Button */}
           <div className="flex justify-end mt-6">
             <Button
               onClick={() => setStep(2)}
