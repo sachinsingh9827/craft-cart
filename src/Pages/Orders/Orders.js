@@ -324,7 +324,7 @@ export default function Orders() {
                                 viewBox="0 0 24 24"
                                 stroke="#facc15"
                                 strokeWidth="1.5"
-                                className="w-7 h-7 transition-all"
+                                className="w-5 h-5 transition-all"
                               >
                                 <path
                                   strokeLinecap="round"
