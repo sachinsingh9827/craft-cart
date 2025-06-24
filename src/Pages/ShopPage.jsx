@@ -221,15 +221,18 @@ const ShopPage = () => {
                   )}
 
                   <div className="flex gap-2 mt-auto">
-                    <Button onClick={(e) => handleAddToWishlist(_id, e)}>
+                    <Button
+                      onClick={(e) => handleAddToWishlist(_id, e)}
+                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
+                    >
                       Wishlist
                     </Button>
                     <Button
                       onClick={(e) => handleBuyNow(_id, e)}
                       disabled={stock === 0}
-                      className={`${
+                      className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 ${
                         stock === 0
-                          ? ""
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                           : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
                       }`}
                     >
