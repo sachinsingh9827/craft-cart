@@ -381,23 +381,6 @@ export default function Orders() {
                             : "Submit Review"}
                         </Button>
                       </div>
-                      <Button
-                        onClick={() => {
-                          const rating = reviewInputs[productId]?.rating;
-                          setReviewInputs((prev) => ({
-                            ...prev,
-                            [productId]: {
-                              ...prev[productId],
-                              comment: ratingComments[rating] || "",
-                              manualComment: false,
-                            },
-                          }));
-                        }}
-                        variant="outline"
-                        className="mt-2 w-fit"
-                      >
-                        Reset Comment
-                      </Button>
                     </div>
                   );
                 })}
