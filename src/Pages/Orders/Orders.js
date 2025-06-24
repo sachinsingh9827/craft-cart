@@ -355,10 +355,10 @@ export default function Orders() {
 
                           {/* Submit Button */}
                           <Button
-                            onClick={() => handleReviewSubmit(item._id)}
-                            disabled={reviewLoading[item._id]}
+                            onClick={() => handleReviewSubmit(item.productId)}
+                            disabled={reviewLoading[item.productId]}
                           >
-                            {reviewLoading[item._id]
+                            {reviewLoading[item.productId]
                               ? "Submitting..."
                               : "Submit Review"}
                           </Button>
