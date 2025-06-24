@@ -302,9 +302,9 @@ export default function Orders() {
                         </p>
                       )}
 
-                      <div className="flex flex-col gap-2 p-2 border rounded">
+                      <div className="flex flex-col gap-4 p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
                         {/* Star Rating */}
-                        <div className="flex gap-1 p-2">
+                        <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
                               key={star}
@@ -324,7 +324,7 @@ export default function Orders() {
                                 viewBox="0 0 24 24"
                                 stroke="#facc15"
                                 strokeWidth="1.5"
-                                className="w-6 h-6 transition-all"
+                                className="w-7 h-7 transition-all"
                               >
                                 <path
                                   strokeLinecap="round"
@@ -346,8 +346,8 @@ export default function Orders() {
                               e.target.value
                             )
                           }
-                          className="border p-2 rounded"
-                          rows="3"
+                          className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
+                          rows="4"
                           placeholder="Write your review..."
                         />
 
@@ -355,6 +355,7 @@ export default function Orders() {
                         <Button
                           onClick={() => handleReviewSubmit(productId)}
                           disabled={reviewLoading[productId]}
+                          className="w-full md:w-auto"
                         >
                           {reviewLoading[productId]
                             ? "Submitting..."
