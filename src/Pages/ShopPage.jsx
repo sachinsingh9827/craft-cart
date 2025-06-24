@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import OfferBanner from "../components/Banner/Banner";
 import LoadingPage from "../components/LoadingPage";
 import Toast, { showToast } from "../components/Toast/Toast";
+import Button from "../components/Reusable/Button";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 const PAGE_SIZE = 10;
@@ -220,23 +221,20 @@ const ShopPage = () => {
                   )}
 
                   <div className="flex gap-2 mt-auto">
-                    <button
-                      onClick={(e) => handleAddToWishlist(_id, e)}
-                      className="w-1/2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 text-sm"
-                    >
+                    <Button onClick={(e) => handleAddToWishlist(_id, e)}>
                       Wishlist
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={(e) => handleBuyNow(_id, e)}
                       disabled={stock === 0}
-                      className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 ${
+                      className={`${
                         stock === 0
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          ? ""
                           : "bg-[#004080] text-yellow-400 hover:bg-yellow-400 hover:text-[#004080]"
                       }`}
                     >
                       {stock === 0 ? "Out of Stock" : "Buy Now"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
