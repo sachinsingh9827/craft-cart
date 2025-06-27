@@ -24,12 +24,9 @@ const DeliveryOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [totalRemainingOrders, setTotalRemainingOrders] = useState(0);
+  const [videoUploaded, setVideoUploaded] = useState(false);
   const inputRefs = useRef([]);
-  const [videoUploaded, setVideoUploaded] = useState(false); // NEW
 
-  const handleVideoUploadSuccess = () => {
-    setVideoUploaded(true);
-  };
   const fetchOrders = async (page = 1) => {
     const token = localStorage.getItem("token");
     setLoading(true);
@@ -62,6 +59,7 @@ const DeliveryOrdersPage = () => {
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
     setShowOtpInput(false);
+    setVideoUploaded(false);
   };
 
   const handleSendOtp = async (orderId) => {
@@ -95,14 +93,13 @@ const DeliveryOrdersPage = () => {
       const res = await axios.post(
         `${BASE_URL}/orders/delivery/verify-otp/${orderId}`,
         { otp },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.data.success) {
         toast.success("Order marked as delivered!");
         setSelectedOrder(null);
         setShowOtpInput(false);
+        setVideoUploaded(false);
         fetchOrders();
       } else {
         toast.error(res.data.message || "Invalid OTP");
@@ -110,6 +107,11 @@ const DeliveryOrdersPage = () => {
     } catch {
       toast.error("Failed to verify OTP.");
     }
+  };
+
+  const handleVideoUploadSuccess = () => {
+    setVideoUploaded(true);
+    toast.success("Video uploaded successfully.");
   };
 
   return (
@@ -167,7 +169,8 @@ const DeliveryOrdersPage = () => {
             <p className="font-semibold text-[#004080]">Total:</p>
             <p>₹{selectedOrder.totalAmount}</p>
           </div>
-          {/* Video Upload Section */}
+
+          {/* Video Upload */}
           <div className="mt-4">
             <h3 className="font-semibold text-[#004080] mb-2">
               Unboxing Video:
@@ -178,7 +181,13 @@ const DeliveryOrdersPage = () => {
               onUploadSuccess={handleVideoUploadSuccess}
             />
           </div>
-          {!showOtpInput && videoUploaded ? (
+
+          {/* Send OTP or OTP input */}
+          {!videoUploaded ? (
+            <p className="text-sm text-red-500 mt-2">
+              Please upload the delivery video to enable OTP sending.
+            </p>
+          ) : !showOtpInput ? (
             <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
               <Button
                 onClick={() => setSelectedOrder(null)}
