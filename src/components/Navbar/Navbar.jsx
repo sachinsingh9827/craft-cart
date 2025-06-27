@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // fixed import (jwtDecode is default export)
+import { jwtDecode } from "jwt-decode";
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import { encrypt } from "../../utils/cryptoHelper";
+
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 const Navbar = () => {
@@ -46,13 +47,11 @@ const Navbar = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Optional: Add loading state or spinner
-
       const res = await fetch(`${BASE_URL}/api/user/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Pass token to backend
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -65,13 +64,15 @@ const Navbar = () => {
       console.error("Logout error:", error);
       toast.error("Something went wrong while logging out.");
     } finally {
-      // Clear local state
       logout?.();
       setMenuOpen(false);
       navigate("/");
       window.location.reload();
     }
   };
+
+  // ✅ Helper to check user roles
+  const hasRole = (role) => user?.role?.includes(role);
 
   return (
     <nav className="navbar">
@@ -137,6 +138,18 @@ const Navbar = () => {
                 <span className="btn-text secondary">Profile</span>
               </button>
 
+              {/* ✅ Show this link only for delivery boy role */}
+              {hasRole("deliveryboy") && (
+                <NavLink
+                  to="/delivery/orders"
+                  onClick={handleLinkClick}
+                  className="nav-3d-link"
+                >
+                  <span className="link-text primary">Delivery Orders</span>
+                  <span className="link-text secondary">Delivery Orders</span>
+                </NavLink>
+              )}
+
               <button
                 type="button"
                 className="btn logout-3d-btn"
@@ -150,7 +163,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Menu toggle for mobile */}
+        {/* Hamburger icon for mobile */}
         <button
           className={`menu-toggle ${menuOpen ? "open" : ""}`}
           onClick={toggleMenu}

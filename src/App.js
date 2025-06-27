@@ -29,6 +29,8 @@ import ProductDetail from "./Pages/ProductDetail/ProductDetail";
 import ScrollToTop from "./utils/ScrollToTop";
 import PaymentRedirect from "./Pages/PaymentRedirect/PaymentRedirect";
 import PrivacyPolicy from "./Pages/PrivacyPolicy/PrivacyPolicy";
+import RoleProtectedRoute from "./context/RoleProtectedRoute";
+import DeliveryOrdersPage from "./Pages/DeliveryOrders/DeliveryOrdersPage";
 
 function App() {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -127,7 +129,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/delivery/orders"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <RoleProtectedRoute allowedRoles={["deliveryboy", "admin"]}>
+                <DeliveryOrdersPage />
+              </RoleProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
         {/* Catch All */}
         <Route path="*" element={<NotFound />} />
       </Routes>
