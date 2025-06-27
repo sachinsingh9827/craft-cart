@@ -34,7 +34,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [reviewPage, setReviewPage] = useState(1);
   const [totalReviewPages, setTotalReviewPages] = useState(1);
-  const [reviews, setReviews] = useState([]);
+  const [allReviews, setAllReviews] = useState([]);
   const [userReview, setUserReview] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -55,9 +55,9 @@ const ProductDetail = () => {
         const res = await axios.get(
           `${BASE_URL}/api/admin/protect/${productId}`
         );
-        const fetched = res.data.data;
-        setProduct(fetched);
-        setSelectedImage(fetched.images?.[0]?.url || "");
+        const data = res.data.data;
+        setProduct(data);
+        setSelectedImage(data.images?.[0]?.url || "");
       } catch (err) {
         console.error(err);
         showToast("Failed to load product details", "error");
@@ -71,31 +71,15 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        // Fetch user's review separately (if logged in)
-        const userReviewRes = userId
-          ? await axios.get(`${BASE_URL}/api/reviews/user/${productId}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            })
-          : { data: { review: null } };
-
-        setUserReview(userReviewRes.data?.review || null);
-
-        // Fetch paginated reviews
         const res = await axios.get(
           `${BASE_URL}/api/reviews/products/${productId}/reviews?limit=5&page=${reviewPage}`
         );
-
         if (res.data.status === "success") {
-          const all = res.data.reviews || [];
-
-          // Exclude user review from paginated list
-          const filtered = userReviewRes.data?.review
-            ? all.filter((r) => r.user !== userReviewRes.data.review.user)
-            : all;
-
-          setReviews(filtered);
+          const reviews = res.data.reviews || [];
+          const user = reviews.find((r) => r.user === userId);
+          const others = reviews.filter((r) => r.user !== userId);
+          setUserReview(user || null);
+          setAllReviews(others);
           setTotalReviewPages(Math.ceil(res.data.total / res.data.limit));
         }
       } catch (err) {
@@ -103,7 +87,6 @@ const ProductDetail = () => {
         showToast("Failed to load reviews", "error");
       }
     };
-
     fetchReviews();
   }, [productId, reviewPage, userId]);
 
@@ -124,11 +107,10 @@ const ProductDetail = () => {
       );
       navigate(`/order/${pId}`);
     } catch (err) {
-      const status = err.response?.status;
-      if (status === 409) return;
-      if (status === 401) {
-        showToast("Session expired. Please login again.", "warning");
+      if (err.response?.status === 409) return;
+      if (err.response?.status === 401) {
         localStorage.removeItem("token");
+        showToast("Session expired. Please login again.", "warning");
         navigate("/login");
       } else {
         showToast("Error adding to wishlist. Try again.", "error");
@@ -155,11 +137,12 @@ const ProductDetail = () => {
     images,
   } = product;
 
-  const defaultReview = userReview || reviews[0];
   const visibleReviews = showAllReviews
-    ? [...(userReview ? [userReview] : []), ...reviews]
-    : defaultReview
-    ? [defaultReview]
+    ? [...(userReview ? [userReview] : []), ...allReviews]
+    : userReview
+    ? [userReview]
+    : allReviews.length > 0
+    ? [allReviews[0]]
     : [];
 
   return (
@@ -168,7 +151,6 @@ const ProductDetail = () => {
 
       {/* Product Info */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Images */}
         <div className="w-full lg:w-1/2">
           <div className="aspect-square w-full mb-3">
             <img
@@ -249,7 +231,7 @@ const ProductDetail = () => {
               {stock === 0 ? "Out of Stock" : "Buy Now"}
             </Button>
 
-            {numReviews > 1 && (
+            {numReviews > 0 && (
               <Button
                 onClick={() => {
                   setShowAllReviews(!showAllReviews);
@@ -265,7 +247,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Reviews */}
+      {/* Reviews Section */}
       {visibleReviews.length > 0 && (
         <div className="mt-8 mb-2">
           <h2 className="text-lg font-semibold text-[#004080] mb-3">
