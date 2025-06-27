@@ -29,13 +29,12 @@ const VideoUploader = ({ orderId, deliveryBoyId }) => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("video", videoFile);
-    formData.append("orderId", orderId);
     formData.append("deliveryBoyId", deliveryBoyId);
 
     setUploading(true);
     try {
       const response = await axios.post(
-        "https://craft-cart-backend.vercel.app/api/upload-video",
+        `https://craft-cart-backend.vercel.app/api/delivery-video/upload/${orderId}`,
         formData,
         {
           headers: {
