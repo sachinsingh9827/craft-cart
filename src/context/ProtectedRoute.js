@@ -28,16 +28,11 @@ const ProtectedRoute = ({ children }) => {
     }
   }, [token, logout]);
 
+  // Optionally show a loader while checking
   if (loading) return null;
 
-  if (!isValidToken) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "2rem" }}>
-        <h2 style={{ color: "red" }}>Invalid or expired token</h2>
-        <Navigate to="/login" replace />
-      </div>
-    );
-  }
+  // Redirect if token is invalid or missing
+  if (!isValidToken) return <Navigate to="/login" replace />;
 
   return children;
 };

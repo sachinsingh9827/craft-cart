@@ -4,11 +4,13 @@ import { useAuth } from "./AuthContext";
 const RoleProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
 
+  // Redirect to login if user is not authenticated
   if (!user) return <Navigate to="/login" replace />;
 
-  const userRoles = user.role || [];
+  const userRole = user.role;
 
-  const hasAccess = allowedRoles.some((role) => userRoles.includes(role));
+  // Check if user has any allowed role
+  const hasAccess = allowedRoles.includes(userRole);
 
   if (!hasAccess) {
     return (
