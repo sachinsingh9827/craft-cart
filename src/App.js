@@ -47,8 +47,12 @@ function App() {
       "/shop",
       "/about",
       "/about-offer",
-      "/privacy-policy", // ✅ correct
-    ].some((path) => location.pathname.startsWith(path)) &&
+      "/privacy-policy",
+      "/delivery/orders",
+    ].some(
+      (path) =>
+        location.pathname === path || location.pathname.startsWith(path + "/")
+    ) &&
     !/^\/(buynow|wishlist|profile|product|order)\/[^/]+$/.test(
       location.pathname
     );
