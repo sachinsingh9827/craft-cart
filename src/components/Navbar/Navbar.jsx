@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import "./Navbar.css";
-import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 import { encrypt } from "../../utils/cryptoHelper";
+import "./Navbar.css";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
@@ -15,7 +15,7 @@ const Navbar = () => {
   const user = auth?.user;
   const logout = auth?.logout;
 
-  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
   const handleLinkClick = () => setMenuOpen(false);
 
   useEffect(() => {
@@ -24,29 +24,21 @@ const Navbar = () => {
       try {
         const decoded = jwtDecode(token);
         if (decoded.exp * 1000 < Date.now()) {
-          toast.error("Session expired, please login again.");
+          toast.error("Session expired. Please login again.");
           logout?.();
           navigate("/login");
         }
-      } catch (error) {
-        toast.error("Invalid session, please login again.");
+      } catch {
+        toast.error("Invalid token. Please login again.");
         logout?.();
         navigate("/login");
       }
-    } else {
-      logout?.();
     }
   }, [logout, navigate]);
-
-  const handleLoginClick = () => {
-    setMenuOpen(false);
-    navigate("/login");
-  };
 
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(`${BASE_URL}/api/user/auth/logout`, {
         method: "POST",
         headers: {
@@ -54,24 +46,18 @@ const Navbar = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (res.ok) {
-        toast.success("You have been logged out successfully.");
-      } else {
-        toast.error("Logout failed. Try again.");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Something went wrong while logging out.");
+      if (res.ok) toast.success("Logged out successfully.");
+      else toast.error("Logout failed.");
+    } catch (err) {
+      toast.error("Error during logout.");
     } finally {
       logout?.();
-      setMenuOpen(false);
       navigate("/");
+      setMenuOpen(false);
       window.location.reload();
     }
   };
 
-  // ✅ Helper to check user roles
   const hasRole = (role) => user?.role?.includes(role);
 
   return (
@@ -82,19 +68,15 @@ const Navbar = () => {
           <span className="logo-subtext">raft-Cart</span>
         </Link>
 
-        <ToastContainer position="bottom-right" autoClose={3000} />
-
         <div className={`navbar-links ${menuOpen ? "active" : ""}`}>
           <NavLink to="/" onClick={handleLinkClick} className="nav-3d-link">
             <span className="link-text primary">Home</span>
             <span className="link-text secondary">Home</span>
           </NavLink>
-
           <NavLink to="/shop" onClick={handleLinkClick} className="nav-3d-link">
             <span className="link-text primary">Shop</span>
             <span className="link-text secondary">Shop</span>
           </NavLink>
-
           <NavLink
             to="/about"
             onClick={handleLinkClick}
@@ -103,7 +85,6 @@ const Navbar = () => {
             <span className="link-text primary">About</span>
             <span className="link-text secondary">About</span>
           </NavLink>
-
           <NavLink
             to="/contact-us"
             onClick={handleLinkClick}
@@ -115,9 +96,8 @@ const Navbar = () => {
 
           {!user ? (
             <button
-              type="button"
+              onClick={() => navigate("/login")}
               className="nav-3d-link login-btn"
-              onClick={handleLoginClick}
             >
               <span className="link-text primary">Login</span>
               <span className="link-text secondary">Login</span>
@@ -125,37 +105,30 @@ const Navbar = () => {
           ) : (
             <>
               <button
-                type="button"
-                className="btn profile-3d-btn"
+                className="profile-3d-btn"
                 onClick={() => {
-                  const encrypted = encrypt("profile");
                   handleLinkClick();
-                  navigate(`/profile/${encrypted}`);
+                  navigate(`/profile/${encrypt("profile")}`);
                 }}
-                aria-label="Profile Settings"
               >
                 <span className="btn-text primary">Profile</span>
                 <span className="btn-text secondary">Profile</span>
               </button>
 
-              {/* ✅ Show this link only for delivery boy role */}
               {hasRole("deliveryboy") && (
-                <NavLink
-                  to="/delivery/orders"
-                  onClick={handleLinkClick}
-                  className="nav-3d-link"
+                <button
+                  className="profile-3d-btn orders-3d-btn"
+                  onClick={() => {
+                    handleLinkClick();
+                    navigate("/delivery/orders");
+                  }}
                 >
-                  <span className="link-text primary">Delivery Orders</span>
-                  <span className="link-text secondary">Delivery Orders</span>
-                </NavLink>
+                  <span className="btn-text primary">Orders</span>
+                  <span className="btn-text secondary">Orders</span>
+                </button>
               )}
 
-              <button
-                type="button"
-                className="btn logout-3d-btn"
-                onClick={handleLogout}
-                aria-label="Logout"
-              >
+              <button className="profile-3d-btn " onClick={handleLogout}>
                 <span className="btn-text primary">Logout</span>
                 <span className="btn-text secondary">Logout</span>
               </button>
@@ -163,18 +136,18 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Hamburger icon for mobile */}
         <button
           className={`menu-toggle ${menuOpen ? "open" : ""}`}
           onClick={toggleMenu}
-          aria-label="Toggle navigation menu"
-          aria-expanded={menuOpen}
+          aria-label="Toggle menu"
         >
           <span></span>
           <span></span>
           <span></span>
         </button>
       </div>
+
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </nav>
   );
 };

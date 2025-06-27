@@ -343,3 +343,20 @@
   transform: translateX(0) translateY(-50%);
   color: white;
 }
+@media (max-width: 768px) {
+  /* Hide secondary text on mobile */
+  .link-text.secondary {
+    display: none;
+  }
+
+  /* Remove vertical spacing between nav links */
+  .navbar-links {
+    gap: 10px; /* adjust if you want some minimal spacing */
+  }
+
+  .nav-3d-link,
+  .btn,
+  .icon-btn {
+    margin: 0; /* remove margin */
+  }
+}
