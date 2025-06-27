@@ -177,7 +177,7 @@ const DeliveryOrdersPage = () => {
             </h3>
             <VideoUploader
               orderId={selectedOrder._id}
-              deliveryBoyId={selectedOrder.assignedTo || "delivery-boy-id"}
+              deliveryBoyId={JSON.parse(localStorage.getItem("user"))?._id}
               onUploadSuccess={handleVideoUploadSuccess}
             />
           </div>
