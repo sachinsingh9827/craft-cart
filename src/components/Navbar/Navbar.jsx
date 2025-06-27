@@ -4,8 +4,8 @@ import { jwtDecode } from "jwt-decode"; // fixed import (jwtDecode is default ex
 import "./Navbar.css";
 import { useAuth } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
-import { FaShoppingCart, FaHeart } from "react-icons/fa";
 import { encrypt } from "../../utils/cryptoHelper";
+const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,12 +42,35 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const handleLogout = () => {
-    toast.success("You have been logged out successfully.");
-    logout?.();
-    setMenuOpen(false);
-    navigate("/");
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      // Optional: Add loading state or spinner
+
+      const res = await fetch(`${BASE_URL}/api/user/auth/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Pass token to backend
+        },
+      });
+
+      if (res.ok) {
+        toast.success("You have been logged out successfully.");
+      } else {
+        toast.error("Logout failed. Try again.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Something went wrong while logging out.");
+    } finally {
+      // Clear local state
+      logout?.();
+      setMenuOpen(false);
+      navigate("/");
+      window.location.reload();
+    }
   };
 
   return (
