@@ -12,12 +12,20 @@ const DeliveryOrdersPage = () => {
   const fetchOrders = async (page = 1) => {
     const token = localStorage.getItem("token");
 
+    if (!token) {
+      toast.error("User is not authenticated");
+      return;
+    }
+
     setLoading(true);
+
     try {
       const res = await fetch(
         `${BASE_URL}/orders/shipped?page=${page}&limit=10`,
         {
+          method: "GET",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -25,14 +33,19 @@ const DeliveryOrdersPage = () => {
 
       const data = await res.json();
 
-      if (res.ok) {
-        setOrders(data.data || []);
-        setTotalPages(data.totalPages || 1);
-      } else {
-        toast.error(data.message || "Failed to load shipped orders");
+      if (!res.ok) {
+        const errorMsg =
+          data?.message ||
+          `Failed to fetch shipped orders (Status: ${res.status})`;
+        toast.error(errorMsg);
+        return;
       }
+
+      setOrders(data.data || []);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
-      toast.error("Error fetching shipped orders");
+      console.error("❌ Network error while fetching shipped orders:", err);
+      toast.error("Network error while fetching shipped orders");
     } finally {
       setLoading(false);
     }
