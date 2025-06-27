@@ -128,22 +128,18 @@ const DeliveryOrdersPage = () => {
             <p className="font-semibold text-[#004080]">Order ID:</p>
             <p>{selectedOrder.orderId}</p>
           </div>
-
           <div className="flex justify-between">
             <p className="font-semibold text-[#004080]">Customer:</p>
             <p>{selectedOrder.customerName || "N/A"}</p>
           </div>
-
           <div className="flex justify-between">
             <p className="font-semibold text-[#004080]">Contact:</p>
             <p>{selectedOrder.deliveryAddress?.contact}</p>
           </div>
-
           <div className="flex justify-between">
             <p className="font-semibold text-[#004080]">Status:</p>
             <p>{selectedOrder.status}</p>
           </div>
-
           <div>
             <p className="font-semibold text-[#004080] mb-1">Address:</p>
             <p className="text-sm text-right">
@@ -153,7 +149,6 @@ const DeliveryOrdersPage = () => {
               {selectedOrder.deliveryAddress?.postalCode}
             </p>
           </div>
-
           <div>
             <p className="font-semibold text-[#004080]">Items:</p>
             <ul className="ml-4 list-disc text-sm text-gray-700">
@@ -164,12 +159,10 @@ const DeliveryOrdersPage = () => {
               ))}
             </ul>
           </div>
-
           <div className="flex justify-between mt-2">
             <p className="font-semibold text-[#004080]">Total:</p>
             <p>₹{selectedOrder.totalAmount}</p>
           </div>
-
           {/* Video Upload Section */}
           <div className="mt-4">
             <h3 className="font-semibold text-[#004080] mb-2">
@@ -180,8 +173,7 @@ const DeliveryOrdersPage = () => {
               deliveryBoyId={selectedOrder.assignedTo || "delivery-boy-id"}
             />
           </div>
-
-          {!showOtpInput ? (
+          {!showOtpInput && videoUploaded ? (
             <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
               <Button
                 onClick={() => setSelectedOrder(null)}
