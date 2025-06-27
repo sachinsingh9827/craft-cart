@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
+import Pagination from "../../components/Reusable/Pagination";
 const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
 const DeliveryOrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const fetchOrders = async (page = 1) => {
     const token = localStorage.getItem("token");
 
+    setLoading(true);
     try {
       const res = await fetch(
         `${BASE_URL}/orders/shipped?page=${page}&limit=10`,
@@ -27,10 +29,12 @@ const DeliveryOrdersPage = () => {
         setOrders(data.data || []);
         setTotalPages(data.totalPages || 1);
       } else {
-        toast.error(data.message || "Failed to load orders");
+        toast.error(data.message || "Failed to load shipped orders");
       }
     } catch (err) {
       toast.error("Error fetching shipped orders");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,39 +62,49 @@ const DeliveryOrdersPage = () => {
     }
   };
 
-  const handlePrev = () => setPage((prev) => Math.max(prev - 1, 1));
-  const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
-
   return (
     <div className="orders-container">
-      <h2>Shipped Orders</h2>
-      {orders.length === 0 ? (
+      <h2 className="text-xl font-bold mb-4">Shipped Orders</h2>
+
+      {loading ? (
+        <p>Loading orders...</p>
+      ) : orders.length === 0 ? (
         <p>No shipped orders available.</p>
       ) : (
-        <ul>
+        <ul className="space-y-4">
           {orders.map((order) => (
-            <li key={order._id}>
-              <p>Order ID: {order._id}</p>
-              <p>Customer: {order.customerName || "N/A"}</p>
-              <p>Status: {order.status}</p>
-              <button onClick={() => handleDeliver(order._id)}>Send OTP</button>
+            <li
+              key={order._id}
+              className="border p-4 rounded shadow-md bg-white dark:bg-gray-800"
+            >
+              <p>
+                <strong>Order ID:</strong> {order._id}
+              </p>
+              <p>
+                <strong>Customer:</strong>{" "}
+                {order.customerName || order.userId?.name || "N/A"}
+              </p>
+              <p>
+                <strong>Status:</strong> {order.status}
+              </p>
+              <button
+                onClick={() => handleDeliver(order._id)}
+                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Send OTP
+              </button>
             </li>
           ))}
         </ul>
       )}
 
-      {/* Pagination */}
-      <div style={{ marginTop: "1rem" }}>
-        <button onClick={handlePrev} disabled={page === 1}>
-          Prev
-        </button>
-        <span style={{ margin: "0 1rem" }}>
-          Page {page} of {totalPages}
-        </span>
-        <button onClick={handleNext} disabled={page === totalPages}>
-          Next
-        </button>
-      </div>
+      {/* Pagination Component */}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        loading={loading}
+      />
     </div>
   );
 };
