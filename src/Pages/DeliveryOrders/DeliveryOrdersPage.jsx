@@ -25,7 +25,11 @@ const DeliveryOrdersPage = () => {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [totalRemainingOrders, setTotalRemainingOrders] = useState(0);
   const inputRefs = useRef([]);
+  const [videoUploaded, setVideoUploaded] = useState(false); // NEW
 
+  const handleVideoUploadSuccess = () => {
+    setVideoUploaded(true);
+  };
   const fetchOrders = async (page = 1) => {
     const token = localStorage.getItem("token");
     setLoading(true);
@@ -171,6 +175,7 @@ const DeliveryOrdersPage = () => {
             <VideoUploader
               orderId={selectedOrder._id}
               deliveryBoyId={selectedOrder.assignedTo || "delivery-boy-id"}
+              onUploadSuccess={handleVideoUploadSuccess}
             />
           </div>
           {!showOtpInput && videoUploaded ? (
