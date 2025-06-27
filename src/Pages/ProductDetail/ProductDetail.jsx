@@ -4,62 +4,112 @@ import axios from "axios";
 import LoadingPage from "../../components/LoadingPage";
 import Toast, { showToast } from "../../components/Toast/Toast";
 import Button from "../../components/Reusable/Button";
+import Pagination from "../../components/Reusable/Pagination";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
-// Format date to Indian format
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-IN", {
+const formatDate = (dateStr) =>
+  new Date(dateStr).toLocaleDateString("en-IN", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
-};
 
-// Convert number to star rating
 const renderStars = (rating) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 >= 0.5;
   const stars = [];
-
   for (let i = 0; i < fullStars; i++) stars.push("★");
   if (halfStar) stars.push("☆");
   while (stars.length < 5) stars.push("☆");
-
   return stars.join(" ");
 };
 
 const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+
   const [product, setProduct] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [totalReviewPages, setTotalReviewPages] = useState(1);
+  const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
+  const userId = (() => {
+    try {
+      const tokenData = JSON.parse(
+        atob(localStorage.getItem("token").split(".")[1])
+      );
+      return tokenData?.id?._id;
+    } catch {
+      return null;
+    }
+  })();
+
   useEffect(() => {
-    (async () => {
+    const fetchProduct = async () => {
       try {
         const res = await axios.get(
           `${BASE_URL}/api/admin/protect/${productId}`
         );
-        const fetchedProduct = res.data.data;
-        setProduct(fetchedProduct);
-        setSelectedImage(fetchedProduct.images?.[0]?.url || "");
+        const fetched = res.data.data;
+        setProduct(fetched);
+        setSelectedImage(fetched.images?.[0]?.url || "");
       } catch (err) {
         console.error(err);
         showToast("Failed to load product details", "error");
       } finally {
         setLoading(false);
       }
-    })();
+    };
+    fetchProduct();
   }, [productId]);
 
-  const handleBuyNow = async (productId, e) => {
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        // Fetch user's review separately (if logged in)
+        const userReviewRes = userId
+          ? await axios.get(`${BASE_URL}/api/reviews/user/${productId}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            })
+          : { data: { review: null } };
+
+        setUserReview(userReviewRes.data?.review || null);
+
+        // Fetch paginated reviews
+        const res = await axios.get(
+          `${BASE_URL}/api/reviews/products/${productId}/reviews?limit=5&page=${reviewPage}`
+        );
+
+        if (res.data.status === "success") {
+          const all = res.data.reviews || [];
+
+          // Exclude user review from paginated list
+          const filtered = userReviewRes.data?.review
+            ? all.filter((r) => r.user !== userReviewRes.data.review.user)
+            : all;
+
+          setReviews(filtered);
+          setTotalReviewPages(Math.ceil(res.data.total / res.data.limit));
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Failed to load reviews", "error");
+      }
+    };
+
+    fetchReviews();
+  }, [productId, reviewPage, userId]);
+
+  const handleBuyNow = async (pId, e) => {
     e.stopPropagation();
     const token = localStorage.getItem("token");
-
     if (!token) {
       showToast("Please login to continue.", "warning");
       navigate("/login");
@@ -69,30 +119,21 @@ const ProductDetail = () => {
     try {
       await axios.post(
         `${BASE_URL}/api/user/auth/wishlist/add`,
-        { productId },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { productId: pId },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+      navigate(`/order/${pId}`);
     } catch (err) {
       const status = err.response?.status;
-      if (status === 409) {
-        // Already in wishlist
-      } else if (status === 401) {
+      if (status === 409) return;
+      if (status === 401) {
         showToast("Session expired. Please login again.", "warning");
         localStorage.removeItem("token");
         navigate("/login");
-        return;
       } else {
         showToast("Error adding to wishlist. Try again.", "error");
-        return;
       }
     }
-
-    navigate(`/order/${productId}`);
   };
 
   if (loading) return <LoadingPage />;
@@ -111,31 +152,39 @@ const ProductDetail = () => {
     ratings,
     numReviews,
     productId: pId,
-    reviews,
+    images,
   } = product;
 
+  const defaultReview = userReview || reviews[0];
+  const visibleReviews = showAllReviews
+    ? [...(userReview ? [userReview] : []), ...reviews]
+    : defaultReview
+    ? [defaultReview]
+    : [];
+
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 font-montserrat">
+    <div className="max-w-7xl mx-auto px-4 font-montserrat">
       <Toast />
-      <div className="flex flex-col lg:flex-row gap-10">
-        {/* Image Section */}
+
+      {/* Product Info */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Images */}
         <div className="w-full lg:w-1/2">
-          <div className="aspect-square w-full mb-4">
+          <div className="aspect-square w-full mb-3">
             <img
               src={selectedImage}
               alt={name}
               className="w-full h-full object-cover rounded-lg border"
             />
           </div>
-
           <div className="flex flex-wrap gap-2">
-            {(product.images || []).map((img, idx) => (
+            {images?.map((img, idx) => (
               <img
                 key={idx}
                 src={img.url}
                 alt={`thumb-${idx}`}
                 onClick={() => setSelectedImage(img.url)}
-                className={`w-20 h-20 object-cover rounded-md border cursor-pointer transition-all ${
+                className={`w-16 h-16 object-cover rounded-md border cursor-pointer ${
                   selectedImage === img.url ? "ring-2 ring-[#004080]" : ""
                 }`}
               />
@@ -143,105 +192,122 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Info Section */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-[#004080] mb-3">{name}</h1>
-          <p className="text-yellow-500 text-2xl font-semibold mb-2">
-            ₹{price.toFixed(2)}
-          </p>
-          <p className="text-gray-700 mb-4 leading-relaxed">{description}</p>
+        {/* Product Details */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[#004080] mb-2">{name}</h1>
+            <p className="text-yellow-500 text-xl font-semibold mb-1">
+              ₹{price.toFixed(2)}
+            </p>
+            <p className="text-[#004080] mb-3 text-sm">{description}</p>
 
-          <div className="text-sm text-gray-600 space-y-2 mb-4">
-            <p>
-              <strong className="text-gray-800">Category:</strong> {category}
-            </p>
-            <p>
-              <strong className="text-gray-800">Brand:</strong> {brand}
-            </p>
-            <p className="flex items-center gap-1">
-              <strong className="text-gray-800">Stock:</strong>{" "}
-              {stock > 10 && (
-                <span className="text-green-600 font-medium">
-                  In Stock ({stock})
-                </span>
+            <div className="space-y-1 mb-3">
+              <p>
+                <strong className="text-[#004080]">Category:</strong> {category}
+              </p>
+              <p>
+                <strong className="text-[#004080]">Brand:</strong> {brand}
+              </p>
+              <p>
+                <strong className="text-[#004080]">Stock:</strong>{" "}
+                {stock > 10 ? (
+                  <span className="text-green-600">In Stock ({stock})</span>
+                ) : stock > 0 ? (
+                  <span className="text-orange-500">Only {stock} left!</span>
+                ) : (
+                  <span className="text-red-600">Out of Stock</span>
+                )}
+              </p>
+              <p>
+                <strong className="text-[#004080]">Product ID:</strong> {pId}
+              </p>
+            </div>
+
+            <div className="mb-3 space-y-0.5">
+              <p>
+                <strong className="text-[#004080]">Rating:</strong>{" "}
+                {ratings ? `${ratings.toFixed(1)} / 5` : "No ratings yet"}
+              </p>
+              {ratings > 0 && (
+                <p className="text-yellow-500 text-base">
+                  {renderStars(ratings)}
+                </p>
               )}
-              {stock > 0 && stock <= 10 && (
-                <span className="text-orange-500 font-medium">
-                  Only {stock} left!
-                </span>
-              )}
-              {stock === 0 && (
-                <span className="text-red-600 font-medium">Out of Stock</span>
-              )}
-            </p>
-            <p>
-              <strong className="text-gray-800">Product ID:</strong> {pId}
-            </p>
+              <p>
+                <strong className="text-[#004080]">Reviews:</strong>{" "}
+                {numReviews > 0 ? `${numReviews} review(s)` : "No reviews yet"}
+              </p>
+            </div>
           </div>
 
-          <div className="mb-4 space-y-1">
-            <p className="text-md">
-              <strong className="text-gray-800">Rating:</strong>{" "}
-              {ratings ? `${ratings.toFixed(1)} / 5` : "No ratings yet"}
-            </p>
-            {ratings > 0 && (
-              <p className="text-yellow-500 text-lg">{renderStars(ratings)}</p>
+          <div className="flex flex-wrap gap-3 mt-4">
+            <Button
+              onClick={(e) => handleBuyNow(product._id, e)}
+              disabled={stock === 0}
+              className="flex-1"
+            >
+              {stock === 0 ? "Out of Stock" : "Buy Now"}
+            </Button>
+
+            {numReviews > 1 && (
+              <Button
+                onClick={() => {
+                  setShowAllReviews(!showAllReviews);
+                  setReviewPage(1);
+                }}
+                variant={showAllReviews ? "outline" : "solid"}
+                className="flex-1"
+              >
+                {showAllReviews ? "Hide Reviews" : "Show All Reviews"}
+              </Button>
             )}
-            <p className="text-md">
-              <strong className="text-gray-800">Reviews:</strong>{" "}
-              {numReviews > 0 ? `${numReviews} review(s)` : "No reviews yet"}
-            </p>
           </div>
-
-          <Button
-            onClick={(e) => handleBuyNow(product._id, e)}
-            disabled={stock === 0}
-          >
-            {stock === 0 ? "Out of Stock" : "Buy Now"}
-          </Button>
         </div>
       </div>
 
       {/* Reviews */}
-      {reviews?.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-xl font-bold text-[#004080] mb-4">
+      {visibleReviews.length > 0 && (
+        <div className="mt-8 mb-2">
+          <h2 className="text-lg font-semibold text-[#004080] mb-3">
             Customer Reviews
           </h2>
-          <div className="space-y-4">
-            {(showAllReviews ? reviews : [reviews[0]]).map((review) => (
+
+          <div className="space-y-3">
+            {visibleReviews.map((review) => (
               <div
                 key={review._id}
-                className="border border-gray-200 rounded-md p-4 shadow-sm bg-white"
+                className="border rounded-md p-3 bg-white shadow-sm"
               >
                 <div className="flex justify-between items-center mb-1">
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-medium text-sm">
                     {review.name}
+                    {review.user === userId && (
+                      <span className="text-xs text-blue-600 font-semibold ml-1">
+                        (You)
+                      </span>
+                    )}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-xs text-gray-500">
                     {formatDate(review.createdAt)}
                   </span>
                 </div>
-                <div className="text-yellow-500 font-semibold mb-1">
+                <div className="text-yellow-500 font-medium text-sm mb-1">
                   {renderStars(review.rating)} ({review.rating} / 5)
                 </div>
-                <p className="text-gray-700">{review.comment}</p>
+                <p className="text-gray-700 text-sm">{review.comment}</p>
               </div>
             ))}
-
-            {reviews.length > 1 && (
-              <button
-                className={`text-sm font-medium px-3 py-1 mt-4 rounded transition-all ${
-                  showAllReviews
-                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                    : "bg-gray-100 text-blue-600 hover:bg-gray-200"
-                }`}
-                onClick={() => setShowAllReviews((prev) => !prev)}
-              >
-                {showAllReviews ? "Hide Reviews" : "Show All Reviews"}
-              </button>
-            )}
           </div>
+
+          {showAllReviews && totalReviewPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                page={reviewPage}
+                totalPages={totalReviewPages}
+                onPageChange={setReviewPage}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
