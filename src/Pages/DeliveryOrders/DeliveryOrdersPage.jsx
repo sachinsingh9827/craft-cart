@@ -6,6 +6,7 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import Button from "../../components/Reusable/Button";
 import LoadingPage from "../../components/LoadingPage";
+import VideoUploader from "./VideoUploader";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
@@ -167,6 +168,17 @@ const DeliveryOrdersPage = () => {
           <div className="flex justify-between mt-2">
             <p className="font-semibold text-[#004080]">Total:</p>
             <p>₹{selectedOrder.totalAmount}</p>
+          </div>
+
+          {/* Video Upload Section */}
+          <div className="mt-4">
+            <h3 className="font-semibold text-[#004080] mb-2">
+              Unboxing Video:
+            </h3>
+            <VideoUploader
+              orderId={selectedOrder._id}
+              deliveryBoyId={selectedOrder.assignedTo || "delivery-boy-id"}
+            />
           </div>
 
           {!showOtpInput ? (
