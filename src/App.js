@@ -31,6 +31,7 @@ import PaymentRedirect from "./Pages/PaymentRedirect/PaymentRedirect";
 import PrivacyPolicy from "./Pages/PrivacyPolicy/PrivacyPolicy";
 import RoleProtectedRoute from "./context/RoleProtectedRoute";
 import DeliveryOrdersPage from "./Pages/DeliveryOrders/DeliveryOrdersPage";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
   const { token, loading } = useAuth();
