@@ -202,12 +202,13 @@ export default function Orders() {
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         orderId: Date.now(), // Unique order ID
         amount: amountWithTax,
+        userId: userId, // Pass userId for payment processing
         redirectUrl: `${BASE_URL}/payment-redirect`,
       });
 
       if (res.data.success) {
         // Redirect to payment page
-        window.location.href = res.data.data.paymentUrl;
+        window.location.href = res.data.redirectUrl;
       } else {
         toast.error("Failed to initiate payment");
       }
@@ -233,7 +234,6 @@ export default function Orders() {
       const order = {
         userId,
         deliveryAddress,
-        // Ensure quantity is included in items
         items: selectedProducts.map((p) => ({
           productId: p._id,
           name: p.name,
