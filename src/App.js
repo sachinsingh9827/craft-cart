@@ -33,9 +33,13 @@ import RoleProtectedRoute from "./context/RoleProtectedRoute";
 import DeliveryOrdersPage from "./Pages/DeliveryOrders/DeliveryOrdersPage";
 
 function App() {
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
+  const { token, loading } = useAuth();
+  const isAuthenticated = Boolean(token);
+
   const location = useLocation();
   const theme = useSelector((state) => state.theme.theme);
+
+  if (loading) return null; // or a <Loader />
 
   const isNotFound =
     location.pathname !== "/" &&

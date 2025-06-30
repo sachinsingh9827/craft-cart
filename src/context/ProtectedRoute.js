@@ -8,25 +8,25 @@ const ProtectedRoute = ({ children }) => {
   const [isValidToken, setIsValidToken] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const now = Date.now() / 1000;
-
-        if (decoded.exp < now) {
+    if (!loading) {
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          if (decoded.exp * 1000 < Date.now()) {
+            logout();
+            setIsValidToken(false);
+          } else {
+            setIsValidToken(true);
+          }
+        } catch {
           logout();
           setIsValidToken(false);
-        } else {
-          setIsValidToken(true);
         }
-      } catch (error) {
-        logout();
+      } else {
         setIsValidToken(false);
       }
-    } else {
-      setIsValidToken(false);
     }
-  }, [token, logout]);
+  }, [token, logout, loading]); // include loading
 
   // Optionally show a loader while checking
   if (loading) return null;
