@@ -36,6 +36,7 @@ export default function Orders() {
   const [reviewLoading, setReviewLoading] = useState({});
   const [reviewErrors, setReviewErrors] = useState({});
   const [thankYouModalOpen, setThankYouModalOpen] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     if (!userId || !token) {
@@ -246,19 +247,17 @@ export default function Orders() {
             </div>
 
             {expandedOrderId === order._id && (
-              <div className="mt-4 border-t pt-4 text-sm px-2 sm:px-4">
-                <h3 className="text-[#004080] font-semibold mb-2 text-lg">
-                  Invoice
-                </h3>
+              <div className="mt-4 border-t pt-4 text-sm">
+                <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
 
-                {/* --- Order Progress --- */}
+                {/* Order Status Progress */}
                 <div className="my-6">
-                  <h3 className="text-[#004080] font-semibold mb-4 text-base sm:text-lg">
+                  <h3 className="text-[#004080] font-semibold mb-4 text-lg">
                     Order Progress
                   </h3>
 
-                  <div className="relative w-full max-w-3xl mx-auto">
-                    {/* Animated Progress Line */}
+                  <div className="relative w-full  mx-auto px-2 sm:px-2">
+                    {/* Progress Line */}
                     <div
                       className=""
                       style={{
@@ -278,32 +277,39 @@ export default function Orders() {
                             : "0%",
                         backgroundColor:
                           order.status === "cancelled" ? "#dc2626" : "#004080",
+                        left: 0,
                         transform: "translateY(-50%)",
                       }}
                     ></div>
 
-                    {/* Step Numbers Only */}
+                    {/* Steps - Only numbers now */}
                     <div className="flex justify-between items-center relative z-20 flex-wrap">
-                      {[1, 2, 3, 4, 5].map((number, index) => {
-                        const activeIndex = [
-                          "pending",
-                          "confirmed",
-                          "processing",
-                          "shipped",
-                          "delivered",
-                        ].indexOf(order.status.toLowerCase());
-
-                        const isActive = index <= activeIndex;
+                      {[
+                        "pending",
+                        "confirmed",
+                        "processing",
+                        "shipped",
+                        "delivered",
+                      ].map((step, index) => {
+                        const isActive =
+                          index <=
+                          [
+                            "pending",
+                            "confirmed",
+                            "processing",
+                            "shipped",
+                            "delivered",
+                          ].indexOf(order.status.toLowerCase());
                         const isCancelled =
                           order.status.toLowerCase() === "cancelled";
 
                         return (
                           <div
-                            key={index}
-                            className="w-[20%] min-w-[50px] flex justify-center mb-3"
+                            key={step}
+                            className="flex flex-col items-center text-center w-1/5 min-w-[60px] mb-4"
                           >
                             <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mb-1 transition-all duration-300 ${
                                 isCancelled
                                   ? "bg-red-600 text-white animate-pulse"
                                   : isActive
@@ -311,16 +317,16 @@ export default function Orders() {
                                   : "bg-gray-300 text-gray-500"
                               }`}
                             >
-                              {number}
+                              {index + 1}
                             </div>
+                            {/* Name hidden */}
                           </div>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* Only Current Status Text */}
-                  <div className="text-center mt-4 font-medium text-sm sm:text-base">
+                  <div className="text-center mt-4 font-medium text-sm">
                     {order.status === "cancelled" ? (
                       <span className="text-red-600">Order Cancelled</span>
                     ) : (
@@ -331,7 +337,7 @@ export default function Orders() {
                   </div>
                 </div>
 
-                {/* Delivery & Payment Info */}
+                {/* Delivery and Payment Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="font-medium">Delivery Address</p>
@@ -359,12 +365,16 @@ export default function Orders() {
                       className="border rounded p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
                     >
                       <img
-                        src={item.images?.[0]?.url || "/placeholder.jpg"}
+                        src={
+                          item.productId?.images?.[0]?.url || "/placeholder.jpg"
+                        }
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded"
                       />
                       <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium">
+                          {item.productId?.name || item.name}
+                        </p>
                         <p className="text-gray-600">
                           Price: ₹{item.price.toFixed(2)}
                         </p>
@@ -386,7 +396,140 @@ export default function Orders() {
                   </p>
                 </div>
 
-                {/* Cancel Button */}
+                {/* Review Section */}
+                {order.status === "delivered" &&
+                  order.items.map((item) => {
+                    const product = item.productId;
+                    const productId = product?._id || item.productId;
+                    const existingReview = product?.reviews?.find(
+                      (rev) => rev.user === user._id // Assuming you have user._id
+                    );
+
+                    return (
+                      <div key={item._id} className="mb-6">
+                        <p className="font-medium mb-1">
+                          {product?.name || item.name}
+                        </p>
+
+                        {/* Show user's existing review if found */}
+                        {existingReview ? (
+                          <div className="border p-4 rounded bg-green-50 dark:bg-green-900 text-gray-800 dark:text-white">
+                            <div className="flex items-center mb-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <svg
+                                  key={star}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill={
+                                    existingReview.rating >= star
+                                      ? "#facc15"
+                                      : "none"
+                                  }
+                                  viewBox="0 0 24 24"
+                                  stroke="#facc15"
+                                  strokeWidth="1.5"
+                                  className="w-5 h-5"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
+                                  />
+                                </svg>
+                              ))}
+                            </div>
+                            <p className="italic text-sm">
+                              {existingReview.comment}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Reviewed on{" "}
+                              {new Date(
+                                existingReview.createdAt
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ) : (
+                          // Show review form if no review exists by this user
+                          <>
+                            {reviewErrors[productId] && (
+                              <p className="text-red-600 text-sm mb-2">
+                                {reviewErrors[productId]}
+                              </p>
+                            )}
+
+                            <div className="flex flex-col gap-4 p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
+                              {/* Star Rating */}
+                              <div className="flex gap-1 p-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() =>
+                                      handleReviewChange(
+                                        productId,
+                                        "rating",
+                                        star
+                                      )
+                                    }
+                                    className="focus:outline-none"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill={
+                                        reviewInputs[productId]?.rating >= star
+                                          ? "#facc15"
+                                          : "none"
+                                      }
+                                      viewBox="0 0 24 24"
+                                      stroke="#facc15"
+                                      strokeWidth="1.5"
+                                      className="w-5 h-5 transition-all"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.18 6.684a1 1 0 00.95.69h7.017c.969 0 1.371 1.24.588 1.81l-5.683 4.14a1 1 0 00-.364 1.118l2.18 6.684c.3.921-.755 1.688-1.54 1.118l-5.683-4.14a1 1 0 00-1.176 0l-5.683 4.14c-.784.57-1.838-.197-1.539-1.118l2.18-6.684a1 1 0 00-.364-1.118l-5.683-4.14c-.784-.57-.38-1.81.588-1.81h7.017a1 1 0 00.95-.69l2.18-6.684z"
+                                      />
+                                    </svg>
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Comment Box */}
+                              <textarea
+                                value={reviewInputs[productId]?.comment || ""}
+                                onChange={(e) =>
+                                  setReviewInputs((prev) => ({
+                                    ...prev,
+                                    [productId]: {
+                                      ...prev[productId],
+                                      comment: e.target.value,
+                                      manualComment: true,
+                                    },
+                                  }))
+                                }
+                                className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-y"
+                                rows="4"
+                                placeholder="Write your review..."
+                              />
+
+                              {/* Submit Button */}
+                              <Button
+                                onClick={() => handleReviewSubmit(productId)}
+                                disabled={reviewLoading[productId]}
+                                className="w-full sm:w-auto"
+                              >
+                                {reviewLoading[productId]
+                                  ? "Submitting..."
+                                  : "Submit Review"}
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                {/* Cancel Order Button */}
                 {showCancelButton && (
                   <div className="text-right mt-4">
                     <button
