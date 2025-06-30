@@ -203,7 +203,7 @@ export default function Orders() {
         orderId: Date.now(), // Unique order ID
         amount: amountWithTax,
         userId: userId, // Pass userId for payment processing
-        redirectUrl: `${BASE_URL}/payment-redirect`,
+        redirectUrl: `${BASE_URL}/payment-status`,
       });
 
       if (res.data.success) {

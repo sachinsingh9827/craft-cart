@@ -32,6 +32,7 @@ import PrivacyPolicy from "./Pages/PrivacyPolicy/PrivacyPolicy";
 import RoleProtectedRoute from "./context/RoleProtectedRoute";
 import DeliveryOrdersPage from "./Pages/DeliveryOrders/DeliveryOrdersPage";
 import { useAuth } from "./context/AuthContext";
+import PaymentStatus from "./Pages/PaymentStatus/PaymentStatus";
 
 function App() {
   const { token, loading } = useAuth();
@@ -54,6 +55,7 @@ function App() {
       "/about-offer",
       "/privacy-policy",
       "/delivery/orders",
+      "/payment-status",
     ].some(
       (path) =>
         location.pathname === path || location.pathname.startsWith(path + "/")
@@ -96,6 +98,8 @@ function App() {
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/payment-redirect" element={<PaymentRedirect />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
+        <Route path="/payment-status" element={<PaymentStatus />} />
 
         {/* Protected Routes */}
         <Route
