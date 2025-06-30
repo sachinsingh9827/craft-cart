@@ -199,15 +199,15 @@ export default function Orders() {
     setSubmittingOrder(true);
     try {
       const amountWithTax = totals.subtotal + totals.tax + totals.delivery;
+      const orderId = Date.now(); // or UUID
+
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
-        orderId: Date.now(), // Unique order ID
+        orderId,
         amount: amountWithTax,
-        userId: userId, // Pass userId for payment processing
-        redirectUrl: `${BASE_URL}/payment-status`,
+        userId,
       });
 
       if (res.data.success) {
-        // Redirect to payment page
         window.location.href = res.data.redirectUrl;
       } else {
         toast.error("Failed to initiate payment");
