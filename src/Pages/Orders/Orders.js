@@ -255,11 +255,14 @@ export default function Orders() {
                     Order Status
                   </h3>
 
-                  <div className="relative w-full bg-gray-200 rounded-full h-2 mb-4">
+                  {/* Progress Bar with Numbers */}
+                  <div className="relative w-full h-2 bg-gray-200 rounded-full mb-6">
                     <div
-                      className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-300 ${
+                      className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-500 ${
                         order.status === "cancelled"
-                          ? "bg-red-600 w-full"
+                          ? "bg-red-600"
+                          : order.status === "delivered"
+                          ? "bg-green-600"
                           : "bg-[#004080]"
                       }`}
                       style={{
@@ -279,13 +282,40 @@ export default function Orders() {
                             : "0%",
                       }}
                     ></div>
+                    {/* Step Numbers */}
+                    <div className="absolute top-[-16px] left-0 w-full flex justify-between text-xs font-semibold text-gray-700">
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
+                        1
+                      </span>
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
+                        2
+                      </span>
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
+                        3
+                      </span>
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
+                        4
+                      </span>
+                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
+                        5
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="text-sm text-center font-semibold capitalize">
+                  {/* Current Status Text */}
+                  <div className="text-center text-sm font-semibold capitalize">
                     {order.status === "cancelled" ? (
                       <span className="text-red-600">Cancelled</span>
                     ) : (
-                      <span className="text-[#004080]">{order.status}</span>
+                      <span
+                        className={`${
+                          order.status === "delivered"
+                            ? "text-green-600"
+                            : "text-[#004080]"
+                        }`}
+                      >
+                        {order.status}
+                      </span>
                     )}
                   </div>
                 </div>
