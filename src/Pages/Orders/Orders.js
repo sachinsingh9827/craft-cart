@@ -247,76 +247,48 @@ export default function Orders() {
 
             {expandedOrderId === order._id && (
               <div className="mt-4 border-t pt-4 text-sm">
-                {/* Order Status Progress */}
+                <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
+
+                {/* --- Order Status Progress --- */}
                 <div className="my-6">
                   <h3 className="text-[#004080] font-semibold mb-4 text-lg">
-                    Order Progress
+                    Order Status
                   </h3>
-                  <div className="flex items-center justify-between">
-                    {[
-                      "pending",
-                      "confirmed",
-                      "processing",
-                      "shipped",
-                      "delivered",
-                    ].map((step, index, steps) => {
-                      const isActive = steps.indexOf(order.status) >= index;
-                      const isCancelled = order.status === "cancelled";
 
-                      return (
-                        <React.Fragment key={step}>
-                          <div className="flex flex-col items-center flex-1">
-                            <div
-                              className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-xs md:text-sm font-semibold ${
-                                isCancelled
-                                  ? step === "pending"
-                                    ? "bg-red-600 text-white border-red-600"
-                                    : "bg-gray-300 text-white border-gray-300"
-                                  : isActive
-                                  ? "bg-[#004080] text-white border-[#004080]"
-                                  : "bg-white border-gray-300 text-gray-400"
-                              }`}
-                            >
-                              {index + 1}
-                            </div>
-                            <span className="mt-1 text-[10px] md:text-xs capitalize text-center text-gray-700">
-                              {step}
-                            </span>
-                          </div>
+                  <div className="relative w-full bg-gray-200 rounded-full h-2 mb-4">
+                    <div
+                      className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-300 ${
+                        order.status === "cancelled"
+                          ? "bg-red-600 w-full"
+                          : "bg-[#004080]"
+                      }`}
+                      style={{
+                        width:
+                          order.status === "pending"
+                            ? "10%"
+                            : order.status === "confirmed"
+                            ? "30%"
+                            : order.status === "processing"
+                            ? "50%"
+                            : order.status === "shipped"
+                            ? "75%"
+                            : order.status === "delivered"
+                            ? "100%"
+                            : order.status === "cancelled"
+                            ? "100%"
+                            : "0%",
+                      }}
+                    ></div>
+                  </div>
 
-                          {index < steps.length - 1 && (
-                            <div
-                              className={`flex-1 h-1 mx-1 ${
-                                isCancelled
-                                  ? "bg-gray-300"
-                                  : isActive
-                                  ? "bg-[#004080]"
-                                  : "bg-gray-300"
-                              }`}
-                            ></div>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-
-                    {/* Cancelled marker if applicable */}
-                    {order.status === "cancelled" && (
-                      <>
-                        <div className="flex-1 h-1 mx-1 bg-red-600"></div>
-                        <div className="flex flex-col items-center flex-none">
-                          <div className="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white text-xs md:text-sm font-semibold">
-                            ✘
-                          </div>
-                          <span className="mt-1 text-[10px] md:text-xs capitalize text-center text-red-600">
-                            Cancelled
-                          </span>
-                        </div>
-                      </>
+                  <div className="text-sm text-center font-semibold capitalize">
+                    {order.status === "cancelled" ? (
+                      <span className="text-red-600">Cancelled</span>
+                    ) : (
+                      <span className="text-[#004080]">{order.status}</span>
                     )}
                   </div>
                 </div>
-
-                <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
 
                 {/* Delivery and Payment Info */}
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
@@ -377,6 +349,7 @@ export default function Orders() {
                 {order.status === "delivered" &&
                   order.items.map((item) => {
                     const productId = item.productId;
+
                     return (
                       <div key={item._id} className="mb-6">
                         <p className="font-medium mb-1">{item.name}</p>
