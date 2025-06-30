@@ -247,58 +247,72 @@ export default function Orders() {
 
             {expandedOrderId === order._id && (
               <div className="mt-4 border-t pt-4 text-sm">
-                {/* Order Status Progress Bar */}
-                <div className="my-4">
-                  <h3 className="text-[#004080] font-semibold mb-2">
-                    Order Status
+                {/* Order Status Progress */}
+                <div className="my-6">
+                  <h3 className="text-[#004080] font-semibold mb-4 text-lg">
+                    Order Progress
                   </h3>
-                  <div className="flex items-center justify-between text-sm md:text-base">
+                  <div className="flex items-center justify-between">
                     {[
                       "pending",
                       "confirmed",
                       "processing",
                       "shipped",
                       "delivered",
-                      "cancelled",
-                    ].map((step, index, array) => {
-                      const isActive = array.indexOf(order.status) >= index;
+                    ].map((step, index, steps) => {
+                      const isActive = steps.indexOf(order.status) >= index;
                       const isCancelled = order.status === "cancelled";
+
                       return (
-                        <div key={step} className="flex-1 flex items-center">
-                          <div
-                            className={`flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs md:text-sm ${
-                              isCancelled
-                                ? "bg-red-600 text-white border-red-600"
-                                : isActive
-                                ? "bg-[#004080] text-white border-[#004080]"
-                                : "border-gray-300 text-gray-400"
-                            }`}
-                          >
-                            {index + 1}
-                          </div>
-                          {index < array.length - 1 && (
+                        <React.Fragment key={step}>
+                          <div className="flex flex-col items-center flex-1">
                             <div
-                              className={`flex-1 h-1 ${
+                              className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-xs md:text-sm font-semibold ${
                                 isCancelled
-                                  ? "bg-red-300"
+                                  ? step === "pending"
+                                    ? "bg-red-600 text-white border-red-600"
+                                    : "bg-gray-300 text-white border-gray-300"
+                                  : isActive
+                                  ? "bg-[#004080] text-white border-[#004080]"
+                                  : "bg-white border-gray-300 text-gray-400"
+                              }`}
+                            >
+                              {index + 1}
+                            </div>
+                            <span className="mt-1 text-[10px] md:text-xs capitalize text-center text-gray-700">
+                              {step}
+                            </span>
+                          </div>
+
+                          {index < steps.length - 1 && (
+                            <div
+                              className={`flex-1 h-1 mx-1 ${
+                                isCancelled
+                                  ? "bg-gray-300"
                                   : isActive
                                   ? "bg-[#004080]"
                                   : "bg-gray-300"
                               }`}
                             ></div>
                           )}
-                        </div>
+                        </React.Fragment>
                       );
                     })}
-                  </div>
 
-                  <div className="flex justify-between mt-2 text-xs md:text-sm text-gray-600">
-                    <span>Pending</span>
-                    <span>Confirmed</span>
-                    <span>Processing</span>
-                    <span>Shipped</span>
-                    <span>Delivered</span>
-                    <span>Cancelled</span>
+                    {/* Cancelled marker if applicable */}
+                    {order.status === "cancelled" && (
+                      <>
+                        <div className="flex-1 h-1 mx-1 bg-red-600"></div>
+                        <div className="flex flex-col items-center flex-none">
+                          <div className="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white text-xs md:text-sm font-semibold">
+                            ✘
+                          </div>
+                          <span className="mt-1 text-[10px] md:text-xs capitalize text-center text-red-600">
+                            Cancelled
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -363,7 +377,6 @@ export default function Orders() {
                 {order.status === "delivered" &&
                   order.items.map((item) => {
                     const productId = item.productId;
-
                     return (
                       <div key={item._id} className="mb-6">
                         <p className="font-medium mb-1">{item.name}</p>
