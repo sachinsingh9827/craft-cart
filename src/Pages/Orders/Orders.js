@@ -247,6 +247,61 @@ export default function Orders() {
 
             {expandedOrderId === order._id && (
               <div className="mt-4 border-t pt-4 text-sm">
+                {/* Order Status Progress Bar */}
+                <div className="my-4">
+                  <h3 className="text-[#004080] font-semibold mb-2">
+                    Order Status
+                  </h3>
+                  <div className="flex items-center justify-between text-sm md:text-base">
+                    {[
+                      "pending",
+                      "confirmed",
+                      "processing",
+                      "shipped",
+                      "delivered",
+                      "cancelled",
+                    ].map((step, index, array) => {
+                      const isActive = array.indexOf(order.status) >= index;
+                      const isCancelled = order.status === "cancelled";
+                      return (
+                        <div key={step} className="flex-1 flex items-center">
+                          <div
+                            className={`flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs md:text-sm ${
+                              isCancelled
+                                ? "bg-red-600 text-white border-red-600"
+                                : isActive
+                                ? "bg-[#004080] text-white border-[#004080]"
+                                : "border-gray-300 text-gray-400"
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
+                          {index < array.length - 1 && (
+                            <div
+                              className={`flex-1 h-1 ${
+                                isCancelled
+                                  ? "bg-red-300"
+                                  : isActive
+                                  ? "bg-[#004080]"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-between mt-2 text-xs md:text-sm text-gray-600">
+                    <span>Pending</span>
+                    <span>Confirmed</span>
+                    <span>Processing</span>
+                    <span>Shipped</span>
+                    <span>Delivered</span>
+                    <span>Cancelled</span>
+                  </div>
+                </div>
+
                 <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
 
                 {/* Delivery and Payment Info */}
