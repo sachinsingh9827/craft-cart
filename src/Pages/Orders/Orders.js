@@ -250,69 +250,70 @@ export default function Orders() {
                 <h3 className="text-[#004080] font-semibold mb-2">Invoice</h3>
 
                 {/* --- Order Status Progress --- */}
+                {/* Responsive Order Status */}
                 <div className="my-6">
                   <h3 className="text-[#004080] font-semibold mb-4 text-lg">
                     Order Status
                   </h3>
+                  <div className="flex items-center justify-between w-full space-x-2 px-2">
+                    {[
+                      { key: "pending", pct: "10%" },
+                      { key: "confirmed", pct: "30%" },
+                      { key: "processing", pct: "50%" },
+                      { key: "shipped", pct: "75%" },
+                      { key: "delivered", pct: "100%" },
+                    ].map((step, i, arr) => {
+                      const active =
+                        arr.findIndex((s) => s.key === order.status) >= i;
+                      const delivered = order.status === "delivered";
+                      const cancelled = order.status === "cancelled";
 
-                  {/* Progress Bar with Numbers */}
-                  <div className="relative w-full h-2 bg-gray-200 rounded-full mb-6">
-                    <div
-                      className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-500 ${
-                        order.status === "cancelled"
-                          ? "bg-red-600"
-                          : order.status === "delivered"
-                          ? "bg-green-600"
-                          : "bg-[#004080]"
-                      }`}
-                      style={{
-                        width:
-                          order.status === "pending"
-                            ? "10%"
-                            : order.status === "confirmed"
-                            ? "30%"
-                            : order.status === "processing"
-                            ? "50%"
-                            : order.status === "shipped"
-                            ? "75%"
-                            : order.status === "delivered"
-                            ? "100%"
-                            : order.status === "cancelled"
-                            ? "100%"
-                            : "0%",
-                      }}
-                    ></div>
-                    {/* Step Numbers */}
-                    <div className="absolute top-[-16px] left-0 w-full flex justify-between text-xs font-semibold text-gray-700">
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
-                        1
-                      </span>
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
-                        2
-                      </span>
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
-                        3
-                      </span>
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
-                        4
-                      </span>
-                      <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white border border-gray-300 z-10">
-                        5
-                      </span>
-                    </div>
+                      return (
+                        <div
+                          key={step.key}
+                          className="flex-1 flex flex-col items-center"
+                        >
+                          <div
+                            className={`w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full border-2 ${
+                              cancelled
+                                ? "bg-red-500 border-red-500 text-white"
+                                : active
+                                ? `${
+                                    delivered
+                                      ? "bg-green-500 border-green-500 text-white"
+                                      : "bg-[#004080] text-white border-[#004080]"
+                                  }`
+                                : "bg-white border-gray-300 text-gray-300"
+                            } text-xs md:text-base font-semibold`}
+                          >
+                            {i + 1}
+                          </div>
+                          {i < arr.length - 1 && (
+                            <div
+                              className={`h-1 flex-1 my-1 ${
+                                cancelled
+                                  ? "bg-red-300"
+                                  : active
+                                  ? "bg-[#004080]"
+                                  : "bg-gray-200"
+                              }`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  {/* Current Status Text */}
-                  <div className="text-center text-sm font-semibold capitalize">
+                  <div className="mt-2 text-center text-sm md:text-base font-semibold capitalize">
                     {order.status === "cancelled" ? (
                       <span className="text-red-600">Cancelled</span>
                     ) : (
                       <span
-                        className={`${
+                        className={
                           order.status === "delivered"
                             ? "text-green-600"
                             : "text-[#004080]"
-                        }`}
+                        }
                       >
                         {order.status}
                       </span>
