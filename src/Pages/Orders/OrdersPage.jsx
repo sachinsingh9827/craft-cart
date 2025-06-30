@@ -199,21 +199,20 @@ export default function Orders() {
     setSubmittingOrder(true);
     try {
       const amountWithTax = totals.subtotal + totals.tax + totals.delivery;
-      const orderId = Date.now(); // or UUID
 
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
-        orderId,
-        amount: amountWithTax,
         userId,
+        amount: amountWithTax,
+        redirectUrl: `${BASE_URL}/payment-redirect`,
       });
 
-      if (res.data.success) {
+      if (res.data.success && res.data.redirectUrl) {
         window.location.href = res.data.redirectUrl;
       } else {
         toast.error("Failed to initiate payment");
       }
     } catch (err) {
-      toast.error("Error: " + err.message);
+      toast.error("Error: " + err.response?.data?.message || err.message);
     } finally {
       setSubmittingOrder(false);
     }
@@ -574,7 +573,7 @@ export default function Orders() {
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
           <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(3)} className="btn-secondary">
-              Back
+              Back{" "}
             </Button>
             <Button
               onClick={handleConfirmStep4}
