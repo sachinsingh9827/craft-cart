@@ -200,10 +200,32 @@ export default function Orders() {
     try {
       const amountWithTax = totals.subtotal + totals.tax + totals.delivery;
 
+      const deliveryAddress = user.addresses.find(
+        (a) => a._id === selectedAddressId
+      );
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         userId,
         amount: amountWithTax,
-        redirectUrl: `${BASE_URL}/payment-redirect`,
+        subtotal: totals.subtotal,
+        tax: totals.tax,
+        deliveryCharges: totals.delivery,
+        discount: discount,
+        coupon: couponData ? couponData.code : null, // Optional, if any coupon is used
+        deliveryAddress: {
+          street: deliveryAddress.street,
+          city: deliveryAddress.city,
+          state: deliveryAddress.state,
+          postalCode: deliveryAddress.postalCode,
+          country: deliveryAddress.country,
+          contact: deliveryAddress.contact,
+        },
+        items: selectedProducts.map((item) => ({
+          productId: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: item.qty || 1,
+        })),
+        redirectUrl: `${BASE_URL}/payment-redirect`, // Optional if handled via env
       });
 
       if (res.data.success && res.data.redirectUrl) {
@@ -573,7 +595,7 @@ export default function Orders() {
           {paymentError && <p className="text-red-600 mt-3">{paymentError}</p>}
           <div className="flex justify-end gap-2 mt-6">
             <Button onClick={() => setStep(3)} className="btn-secondary">
-              Back{" "}
+              Back
             </Button>
             <Button
               onClick={handleConfirmStep4}
