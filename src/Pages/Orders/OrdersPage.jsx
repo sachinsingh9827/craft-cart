@@ -203,6 +203,7 @@ export default function Orders() {
       const deliveryAddress = user.addresses.find(
         (a) => a._id === selectedAddressId
       );
+
       const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         userId,
         amount: amountWithTax,
@@ -210,7 +211,8 @@ export default function Orders() {
         tax: totals.tax,
         deliveryCharges: totals.delivery,
         discount: discount,
-        coupon: couponData ? couponData.code : null, // Optional, if any coupon is used
+        paymentMethod: "online",
+        coupon: couponData || null,
         deliveryAddress: {
           street: deliveryAddress.street,
           city: deliveryAddress.city,
@@ -225,7 +227,7 @@ export default function Orders() {
           price: item.price,
           quantity: item.qty || 1,
         })),
-        redirectUrl: `${BASE_URL}/payment-redirect`, // Optional if handled via env
+        redirectUrl: `${BASE_URL}/payment-redirect`,
       });
 
       if (res.data.success && res.data.redirectUrl) {
