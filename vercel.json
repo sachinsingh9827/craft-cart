@@ -6,11 +6,11 @@
     },
     {
       "source": "/payment-status",
-      "destination": "/"
+      "destination": "/index.html"
     },
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ]
 }
