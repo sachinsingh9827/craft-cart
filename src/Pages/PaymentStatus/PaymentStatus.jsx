@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app"; // ✅ Your backend URL
 
@@ -7,6 +8,7 @@ const PaymentStatus = () => {
   const [status, setStatus] = useState("checking");
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const navigate = useNavigate();
 
   const fetchStatus = async (orderIdToCheck) => {
     if (!orderIdToCheck) {
@@ -19,16 +21,17 @@ const PaymentStatus = () => {
       const res = await axios.get(
         `${BASE_URL}/api/payment/verify/${orderIdToCheck}`
       );
-
       const paymentStatus = res?.data?.paymentStatus?.status;
 
       if (res.data.success) {
         switch (paymentStatus) {
           case "SUCCESS":
             setStatus("success");
+            localStorage.removeItem("lastOrderId");
             break;
           case "FAILED":
             setStatus("failed");
+            localStorage.removeItem("lastOrderId");
             break;
           case "PENDING":
             setStatus("pending");
@@ -62,7 +65,6 @@ const PaymentStatus = () => {
     }
   }, []);
 
-  // 🔁 Auto-retry if payment is pending
   useEffect(() => {
     if (status === "pending" && orderId) {
       const interval = setInterval(() => {
@@ -74,6 +76,10 @@ const PaymentStatus = () => {
 
   const handleRetry = () => {
     if (orderId) fetchStatus(orderId);
+  };
+
+  const handleGoHome = () => {
+    navigate("/");
   };
 
   const renderStatusMessage = () => {
@@ -115,21 +121,43 @@ const PaymentStatus = () => {
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>🧾 Payment Status</h2>
-      <p style={{ ...styles.text, color: getStatusColor(status) }}>
-        {renderStatusMessage()}
-      </p>
-      <button
-        onClick={handleRetry}
-        style={{
-          ...styles.button,
-          opacity: loading || status === "missing_order" ? 0.5 : 1,
-          cursor:
-            loading || status === "missing_order" ? "not-allowed" : "pointer",
-        }}
-        disabled={loading || status === "missing_order"}
-      >
-        🔁 Retry
-      </button>
+
+      {status === "checking" || loading ? (
+        <p style={{ ...styles.text, fontSize: "1.2rem" }}>
+          🔄 Please wait... checking payment status
+        </p>
+      ) : (
+        <>
+          <p style={{ ...styles.text, color: getStatusColor(status) }}>
+            {renderStatusMessage()}
+          </p>
+
+          <div style={styles.buttonGroup}>
+            <button
+              onClick={handleRetry}
+              style={{
+                ...styles.button,
+                opacity: loading || status === "missing_order" ? 0.5 : 1,
+                cursor:
+                  loading || status === "missing_order"
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+              disabled={loading || status === "missing_order"}
+            >
+              🔁 Retry
+            </button>
+
+            {(status === "success" ||
+              status === "failed" ||
+              status === "error") && (
+              <button onClick={handleGoHome} style={styles.secondaryButton}>
+                🏠 Go to Home
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -147,13 +175,28 @@ const styles = {
     marginBottom: "1rem",
   },
   text: {
-    fontSize: "1.1rem",
+    fontSize: "1.2rem",
     marginBottom: "1.5rem",
+  },
+  buttonGroup: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "1rem",
+    flexWrap: "wrap",
   },
   button: {
     padding: "12px 24px",
     fontSize: "1rem",
     backgroundColor: "#0070f3",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    transition: "0.3s",
+  },
+  secondaryButton: {
+    padding: "12px 24px",
+    fontSize: "1rem",
+    backgroundColor: "#555",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
