@@ -4,30 +4,41 @@ import axios from "axios";
 const BASE_URL = "https://craft-cart-backend.vercel.app";
 
 const PaymentStatus = () => {
-  const [status, setStatus] = useState("checking"); // checking, success, failed, error, missing_order
+  const [status, setStatus] = useState("checking");
   const [loading, setLoading] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (orderIdToCheck) => {
+    if (!orderIdToCheck) {
+      console.warn("⚠️ No orderId found for status check.");
+      setStatus("missing_order");
+      return;
+    }
+
     try {
-      const url = new URLSearchParams(window.location.search);
-      const orderId = url.get("orderId");
-
-      if (!orderId) {
-        setStatus("missing_order");
-        return;
-      }
-
       setLoading(true);
+      console.log(
+        "📤 Sending request to:",
+        `${BASE_URL}/payment/status/${orderIdToCheck}`
+      );
 
-      const res = await axios.get(`${BASE_URL}/payment/status/${orderId}`);
+      const res = await axios.get(
+        `${BASE_URL}/payment/status/${orderIdToCheck}`
+      );
+      console.log("📥 Response received:", res.data);
 
       if (res.data.success && res.data.paymentStatus?.status === "SUCCESS") {
+        console.log("✅ Payment verified as successful.");
         setStatus("success");
       } else {
+        console.log(
+          "❌ Payment not successful. Status:",
+          res.data.paymentStatus?.status
+        );
         setStatus("failed");
       }
     } catch (err) {
-      console.error("Payment status check failed:", err);
+      console.error("🚨 Error verifying payment status:", err.message || err);
       setStatus("error");
     } finally {
       setLoading(false);
@@ -35,12 +46,34 @@ const PaymentStatus = () => {
   };
 
   useEffect(() => {
-    fetchStatus();
+    const params = new URLSearchParams(window.location.search);
+    const urlOrderId = params.get("orderId");
+    const storedOrderId = localStorage.getItem("lastOrderId");
+
+    const resolvedOrderId = urlOrderId || storedOrderId;
+
+    console.log("🌐 URL:", window.location.href);
+    console.log("🧾 URL orderId:", urlOrderId);
+    console.log("📦 Stored orderId:", storedOrderId);
+    console.log("✅ Resolved orderId:", resolvedOrderId);
+
+    if (resolvedOrderId) {
+      setOrderId(resolvedOrderId);
+      fetchStatus(resolvedOrderId);
+    } else {
+      console.warn("⚠️ No orderId found in URL or localStorage.");
+      setStatus("missing_order");
+    }
   }, []);
+
+  const handleRetry = () => {
+    console.log("🔁 Retry clicked. Current orderId:", orderId);
+    if (orderId) fetchStatus(orderId);
+  };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.heading}>Payment Status</h2>
+      <h2 style={styles.heading}>🧾 Payment Status</h2>
 
       {loading || status === "checking" ? (
         <p style={styles.text}>🔄 Verifying your payment...</p>
@@ -50,15 +83,20 @@ const PaymentStatus = () => {
         <p style={{ ...styles.text, color: "red" }}>❌ Payment Failed</p>
       ) : status === "error" ? (
         <p style={{ ...styles.text, color: "orange" }}>
-          ⚠️ Something went wrong while checking payment.
+          ⚠️ Something went wrong while verifying payment.
         </p>
       ) : status === "missing_order" ? (
-        <p style={styles.text}>⚠️ Order ID missing in URL.</p>
+        <p style={styles.text}>⚠️ Order ID missing in URL or local storage.</p>
       ) : null}
 
       <button
-        onClick={fetchStatus}
-        style={styles.button}
+        onClick={handleRetry}
+        style={{
+          ...styles.button,
+          opacity: loading || status === "missing_order" ? 0.5 : 1,
+          cursor:
+            loading || status === "missing_order" ? "not-allowed" : "pointer",
+        }}
         disabled={loading || status === "missing_order"}
       >
         🔁 Retry
@@ -72,11 +110,11 @@ const styles = {
     padding: "2rem",
     textAlign: "center",
     fontFamily: "sans-serif",
-    background: "#f9f9f9",
+    background: "#f0f2f5",
     minHeight: "100vh",
   },
   heading: {
-    fontSize: "1.8rem",
+    fontSize: "2rem",
     marginBottom: "1rem",
   },
   text: {
@@ -84,13 +122,13 @@ const styles = {
     marginBottom: "1rem",
   },
   button: {
-    padding: "10px 20px",
+    padding: "12px 24px",
     fontSize: "1rem",
     backgroundColor: "#0070f3",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
+    borderRadius: "6px",
+    transition: "0.3s",
   },
 };
 
