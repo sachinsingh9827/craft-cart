@@ -1,6 +1,16 @@
 {
   "rewrites": [
-    { "source": "/payment-status", "destination": "/" },
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/api/:match*",
+      "destination": "/api/:match*"
+    },
+    {
+      "source": "/payment-status",
+      "destination": "/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ]
 }
