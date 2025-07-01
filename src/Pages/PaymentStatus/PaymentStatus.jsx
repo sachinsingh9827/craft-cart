@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const BASE_URL = "https://craft-cart-backend.vercel.app";
+const BASE_URL = "https://craft-cart-backend.vercel.app"; // ✅ Your backend URL
 
 const PaymentStatus = () => {
   const [status, setStatus] = useState("checking");
@@ -23,14 +23,18 @@ const PaymentStatus = () => {
       const paymentStatus = res?.data?.paymentStatus?.status;
 
       if (res.data.success) {
-        if (paymentStatus === "SUCCESS") {
-          setStatus("success");
-        } else if (paymentStatus === "FAILED") {
-          setStatus("failed");
-        } else if (paymentStatus === "PENDING") {
-          setStatus("pending");
-        } else {
-          setStatus("unknown");
+        switch (paymentStatus) {
+          case "SUCCESS":
+            setStatus("success");
+            break;
+          case "FAILED":
+            setStatus("failed");
+            break;
+          case "PENDING":
+            setStatus("pending");
+            break;
+          default:
+            setStatus("unknown");
         }
       } else {
         setStatus("failed");
@@ -58,12 +62,12 @@ const PaymentStatus = () => {
     }
   }, []);
 
-  // 🔁 Auto-retry every 5s if payment is pending
+  // 🔁 Auto-retry if payment is pending
   useEffect(() => {
     if (status === "pending" && orderId) {
       const interval = setInterval(() => {
         fetchStatus(orderId);
-      }, 5000); // retry every 5 seconds
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [status, orderId]);
@@ -93,6 +97,21 @@ const PaymentStatus = () => {
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "success":
+        return "green";
+      case "failed":
+        return "red";
+      case "pending":
+        return "orange";
+      case "error":
+        return "#ff9900";
+      default:
+        return "#333";
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>🧾 Payment Status</h2>
@@ -113,21 +132,6 @@ const PaymentStatus = () => {
       </button>
     </div>
   );
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "success":
-      return "green";
-    case "failed":
-      return "red";
-    case "pending":
-      return "orange";
-    case "error":
-      return "#ff9900";
-    default:
-      return "#333";
-  }
 };
 
 const styles = {

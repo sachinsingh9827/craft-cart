@@ -204,7 +204,7 @@ export default function Orders() {
         (a) => a._id === selectedAddressId
       );
 
-      const res = await axios.post(`${BASE_URL}/payment/initiate`, {
+      const res = await axios.post(`${BASE_URL}/api/payment/initiate`, {
         userId,
         amount: amountWithTax,
         subtotal: totals.subtotal,
@@ -227,16 +227,17 @@ export default function Orders() {
           price: item.price,
           quantity: item.qty || 1,
         })),
-        redirectUrl: `${BASE_URL}/payment-redirect`,
       });
 
       if (res.data.success && res.data.redirectUrl) {
+        // Store orderId in localStorage for later verification
+        localStorage.setItem("lastOrderId", res.data.orderId);
         window.location.href = res.data.redirectUrl;
       } else {
         toast.error("Failed to initiate payment");
       }
     } catch (err) {
-      toast.error("Error: " + err.response?.data?.message || err.message);
+      toast.error("Error: " + (err.response?.data?.message || err.message));
     } finally {
       setSubmittingOrder(false);
     }
