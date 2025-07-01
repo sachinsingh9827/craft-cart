@@ -8,95 +8,97 @@ const PaymentStatus = () => {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
-  // 🔍 Fetch payment status from backend
   const fetchStatus = async (orderIdToCheck) => {
     if (!orderIdToCheck) {
-      console.warn("⚠️ No orderId found for status check.");
       setStatus("missing_order");
       return;
     }
 
     try {
       setLoading(true);
-      console.log(
-        "📤 [Request] Verifying payment for orderId:",
-        orderIdToCheck
-      );
-      console.log(
-        "📤 [Endpoint]:",
-        `${BASE_URL}/payment/verify/${orderIdToCheck}`
-      );
-
       const res = await axios.get(
-        `${BASE_URL}/payment/verify/${orderIdToCheck}`
+        `${BASE_URL}/api/payment/verify/${orderIdToCheck}`
       );
 
-      console.log("📥 [Response] Full response object:", res);
-      console.log("📥 [Response.data]:", res.data);
-      console.log("📥 [Payment Status]:", res.data?.paymentStatus?.status);
+      const paymentStatus = res?.data?.paymentStatus?.status;
 
-      if (res.data.success && res.data.paymentStatus?.status === "SUCCESS") {
-        console.log("✅ Payment verified: SUCCESS");
-        setStatus("success");
+      if (res.data.success) {
+        if (paymentStatus === "SUCCESS") {
+          setStatus("success");
+        } else if (paymentStatus === "FAILED") {
+          setStatus("failed");
+        } else if (paymentStatus === "PENDING") {
+          setStatus("pending");
+        } else {
+          setStatus("unknown");
+        }
       } else {
-        console.warn("❌ Payment verification returned non-success status");
         setStatus("failed");
       }
     } catch (err) {
-      console.error("🚨 [Error] While verifying payment status:");
-      console.error(err.response?.data || err.message || err);
+      console.error("Error verifying payment status:", err);
       setStatus("error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🧾 Extract orderId and initiate status check
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlOrderId = params.get("orderId");
     const storedOrderId = localStorage.getItem("lastOrderId");
 
     const resolvedOrderId = urlOrderId || storedOrderId;
-
-    console.log("🌐 [Page URL]:", window.location.href);
-    console.log("🧾 [URL orderId]:", urlOrderId);
-    console.log("📦 [LocalStorage orderId]:", storedOrderId);
-    console.log("🔍 [Resolved orderId]:", resolvedOrderId);
+    setOrderId(resolvedOrderId);
 
     if (resolvedOrderId) {
-      setOrderId(resolvedOrderId);
       fetchStatus(resolvedOrderId);
     } else {
-      console.warn("⚠️ No orderId found in URL or localStorage.");
       setStatus("missing_order");
     }
   }, []);
 
-  // 🔁 Retry manually
+  // 🔁 Auto-retry every 5s if payment is pending
+  useEffect(() => {
+    if (status === "pending" && orderId) {
+      const interval = setInterval(() => {
+        fetchStatus(orderId);
+      }, 5000); // retry every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [status, orderId]);
+
   const handleRetry = () => {
-    console.log("🔁 Retry clicked. Retrying for orderId:", orderId);
     if (orderId) fetchStatus(orderId);
+  };
+
+  const renderStatusMessage = () => {
+    switch (status) {
+      case "checking":
+        return "🔄 Verifying your payment...";
+      case "success":
+        return "✅ Payment Successful!";
+      case "failed":
+        return "❌ Payment Failed";
+      case "pending":
+        return "⏳ Payment is still pending... please wait.";
+      case "error":
+        return "⚠️ Something went wrong while verifying payment.";
+      case "missing_order":
+        return "⚠️ Order ID missing in URL or local storage.";
+      case "unknown":
+        return "❓ Unknown payment status received.";
+      default:
+        return null;
+    }
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>🧾 Payment Status</h2>
-
-      {loading || status === "checking" ? (
-        <p style={styles.text}>🔄 Verifying your payment...</p>
-      ) : status === "success" ? (
-        <p style={{ ...styles.text, color: "green" }}>✅ Payment Successful!</p>
-      ) : status === "failed" ? (
-        <p style={{ ...styles.text, color: "red" }}>❌ Payment Failed</p>
-      ) : status === "error" ? (
-        <p style={{ ...styles.text, color: "orange" }}>
-          ⚠️ Something went wrong while verifying payment.
-        </p>
-      ) : status === "missing_order" ? (
-        <p style={styles.text}>⚠️ Order ID missing in URL or local storage.</p>
-      ) : null}
-
+      <p style={{ ...styles.text, color: getStatusColor(status) }}>
+        {renderStatusMessage()}
+      </p>
       <button
         onClick={handleRetry}
         style={{
@@ -113,6 +115,21 @@ const PaymentStatus = () => {
   );
 };
 
+const getStatusColor = (status) => {
+  switch (status) {
+    case "success":
+      return "green";
+    case "failed":
+      return "red";
+    case "pending":
+      return "orange";
+    case "error":
+      return "#ff9900";
+    default:
+      return "#333";
+  }
+};
+
 const styles = {
   container: {
     padding: "2rem",
@@ -127,7 +144,7 @@ const styles = {
   },
   text: {
     fontSize: "1.1rem",
-    marginBottom: "1rem",
+    marginBottom: "1.5rem",
   },
   button: {
     padding: "12px 24px",
