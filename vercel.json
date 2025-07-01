@@ -2,7 +2,7 @@
   "routes": [
     {
       "src": "/payment-status",
-      "methods": ["POST"],
+      "methods": ["GET", "POST"],
       "dest": "/index.html"
     },
     {
