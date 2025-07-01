@@ -24,11 +24,11 @@ const PaymentStatus = () => {
       );
       console.log(
         "📤 [Endpoint]:",
-        `${BASE_URL}/payment/status/${orderIdToCheck}`
+        `${BASE_URL}/payment/verify/${orderIdToCheck}`
       );
 
       const res = await axios.get(
-        `${BASE_URL}/payment/status/${orderIdToCheck}`
+        `${BASE_URL}/payment/verify/${orderIdToCheck}`
       );
 
       console.log("📥 [Response] Full response object:", res);
