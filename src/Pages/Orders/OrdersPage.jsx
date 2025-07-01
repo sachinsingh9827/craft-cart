@@ -204,7 +204,7 @@ export default function Orders() {
         (a) => a._id === selectedAddressId
       );
 
-      const res = await axios.post(`${BASE_URL}/api/payment/initiate`, {
+      const res = await axios.post(`${BASE_URL}/payment/initiate`, {
         userId,
         amount: amountWithTax,
         subtotal: totals.subtotal,
