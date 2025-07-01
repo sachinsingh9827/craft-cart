@@ -97,7 +97,7 @@ export default function Orders() {
     const deliveryCharges = 30; // fixed delivery charge
     let tax = 0;
     if (paymentOption === "online") {
-      tax = (5 / 100) * subtotal; // 5% tax on product price if online payment
+      tax = (2 / 100) * subtotal; // 2% tax on product price if online payment
     }
     const total = Math.max(subtotal - discount + deliveryCharges + tax, 0);
     setTotals({ subtotal, tax, delivery: deliveryCharges, total });
@@ -579,7 +579,7 @@ export default function Orders() {
                   setPaymentOption("cod");
                 }}
               />
-              <span className="font-semibold">Cash on Delivery (COD)</span>
+              <span className="font-semibold">Cash on Delivery (COD )</span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer border p-3 rounded hover:bg-blue-50">
               <input
@@ -688,7 +688,7 @@ export default function Orders() {
             </div>
             {paymentOption === "online" && (
               <div className="flex justify-between mb-2 text-gray-700">
-                <span>Tax (5% online payment):</span>
+                <span>Tax (2% online payment):</span>
                 <span>₹{totals.tax.toFixed(2)}</span>
               </div>
             )}
