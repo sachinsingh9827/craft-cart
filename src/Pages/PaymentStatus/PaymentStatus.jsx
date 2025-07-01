@@ -8,6 +8,7 @@ const PaymentStatus = () => {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
+  // 🔍 Fetch payment status from backend
   const fetchStatus = async (orderIdToCheck) => {
     if (!orderIdToCheck) {
       console.warn("⚠️ No orderId found for status check.");
@@ -18,33 +19,39 @@ const PaymentStatus = () => {
     try {
       setLoading(true);
       console.log(
-        "📤 Sending request to:",
+        "📤 [Request] Verifying payment for orderId:",
+        orderIdToCheck
+      );
+      console.log(
+        "📤 [Endpoint]:",
         `${BASE_URL}/payment/status/${orderIdToCheck}`
       );
 
       const res = await axios.get(
         `${BASE_URL}/payment/status/${orderIdToCheck}`
       );
-      console.log("📥 Response received:", res.data);
+
+      console.log("📥 [Response] Full response object:", res);
+      console.log("📥 [Response.data]:", res.data);
+      console.log("📥 [Payment Status]:", res.data?.paymentStatus?.status);
 
       if (res.data.success && res.data.paymentStatus?.status === "SUCCESS") {
-        console.log("✅ Payment verified as successful.");
+        console.log("✅ Payment verified: SUCCESS");
         setStatus("success");
       } else {
-        console.log(
-          "❌ Payment not successful. Status:",
-          res.data.paymentStatus?.status
-        );
+        console.warn("❌ Payment verification returned non-success status");
         setStatus("failed");
       }
     } catch (err) {
-      console.error("🚨 Error verifying payment status:", err.message || err);
+      console.error("🚨 [Error] While verifying payment status:");
+      console.error(err.response?.data || err.message || err);
       setStatus("error");
     } finally {
       setLoading(false);
     }
   };
 
+  // 🧾 Extract orderId and initiate status check
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlOrderId = params.get("orderId");
@@ -52,10 +59,10 @@ const PaymentStatus = () => {
 
     const resolvedOrderId = urlOrderId || storedOrderId;
 
-    console.log("🌐 URL:", window.location.href);
-    console.log("🧾 URL orderId:", urlOrderId);
-    console.log("📦 Stored orderId:", storedOrderId);
-    console.log("✅ Resolved orderId:", resolvedOrderId);
+    console.log("🌐 [Page URL]:", window.location.href);
+    console.log("🧾 [URL orderId]:", urlOrderId);
+    console.log("📦 [LocalStorage orderId]:", storedOrderId);
+    console.log("🔍 [Resolved orderId]:", resolvedOrderId);
 
     if (resolvedOrderId) {
       setOrderId(resolvedOrderId);
@@ -66,8 +73,9 @@ const PaymentStatus = () => {
     }
   }, []);
 
+  // 🔁 Retry manually
   const handleRetry = () => {
-    console.log("🔁 Retry clicked. Current orderId:", orderId);
+    console.log("🔁 Retry clicked. Retrying for orderId:", orderId);
     if (orderId) fetchStatus(orderId);
   };
 
