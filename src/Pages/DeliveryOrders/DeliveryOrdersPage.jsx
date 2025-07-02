@@ -221,29 +221,35 @@ const DeliveryOrdersPage = () => {
                     {[...Array(6)].map((_, i) => (
                       <input
                         key={i}
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="\d*"
                         maxLength={1}
-                        value={values.otp[i] || ""}
                         ref={(el) => (inputRefs.current[i] = el)}
+                        value={values.otp[i] || ""}
                         className="w-10 h-12 text-center border border-gray-300 rounded text-lg"
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, "");
-                          const otpArr = values.otp.split("");
-                          otpArr[i] = val;
-                          const newOtp = otpArr.join("").slice(0, 6);
+                          const otpArray = values.otp.split("");
+                          otpArray[i] = val;
+                          const newOtp = otpArray.join("").slice(0, 6);
                           setFieldValue("otp", newOtp);
-                          if (val && i < 5) inputRefs.current[i + 1]?.focus();
+                          if (val && i < 5) {
+                            inputRefs.current[i + 1]?.focus();
+                          }
                         }}
                         onKeyDown={(e) => {
-                          if (
-                            e.key === "Backspace" &&
-                            !values.otp[i] &&
-                            i > 0
-                          ) {
-                            inputRefs.current[i - 1]?.focus();
+                          if (e.key === "Backspace") {
+                            e.preventDefault(); // Prevent auto-delete in mobile
                             const otpArr = values.otp.split("");
-                            otpArr[i - 1] = "";
-                            setFieldValue("otp", otpArr.join(""));
+                            if (values.otp[i]) {
+                              otpArr[i] = "";
+                              setFieldValue("otp", otpArr.join(""));
+                            } else if (i > 0) {
+                              inputRefs.current[i - 1]?.focus();
+                              otpArr[i - 1] = "";
+                              setFieldValue("otp", otpArr.join(""));
+                            }
                           }
                         }}
                       />
