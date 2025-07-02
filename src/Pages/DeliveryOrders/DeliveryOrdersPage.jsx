@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import Button from "../../components/Reusable/Button";
 import LoadingPage from "../../components/LoadingPage";
 import VideoUploader from "./VideoUploader";
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://craft-cart-backend.vercel.app/api";
 
@@ -26,6 +27,7 @@ const DeliveryOrdersPage = () => {
   const [totalRemainingOrders, setTotalRemainingOrders] = useState(0);
   const [videoUploaded, setVideoUploaded] = useState(false);
   const inputRefs = useRef([]);
+  const navigate = useNavigate();
 
   const fetchOrders = async (page = 1) => {
     const token = localStorage.getItem("token");
@@ -101,6 +103,7 @@ const DeliveryOrdersPage = () => {
         setShowOtpInput(false);
         setVideoUploaded(false);
         fetchOrders();
+        navigate("/delivery/delivered");
       } else {
         toast.error(res.data.message || "Invalid OTP");
       }
@@ -124,6 +127,12 @@ const DeliveryOrdersPage = () => {
           Remaining Orders to Deliver:{" "}
           <strong className="text-red-600">{totalRemainingOrders}</strong>
         </span>
+        <Button
+          onClick={() => navigate("/delivery/delivered")}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          View Delivered Orders
+        </Button>
       </div>
 
       {loading ? (

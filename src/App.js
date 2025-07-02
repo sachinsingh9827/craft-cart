@@ -33,6 +33,7 @@ import RoleProtectedRoute from "./context/RoleProtectedRoute";
 import DeliveryOrdersPage from "./Pages/DeliveryOrders/DeliveryOrdersPage";
 import { useAuth } from "./context/AuthContext";
 import PaymentStatus from "./Pages/PaymentStatus/PaymentStatus";
+import DeliveredOrdersPage from "./Pages/DeliveryOrders/DeliveredOrdersPage";
 
 function App() {
   const { token, loading } = useAuth();
@@ -55,6 +56,7 @@ function App() {
       "/about-offer",
       "/privacy-policy",
       "/delivery/orders",
+      "/delivery/delivered", // ✅ Add this line
       "/payment-status",
     ].some(
       (path) =>
@@ -148,6 +150,16 @@ function App() {
             <ProtectedRoute isAuth={isAuthenticated}>
               <RoleProtectedRoute allowedRoles={["deliveryboy", "admin"]}>
                 <DeliveryOrdersPage />
+              </RoleProtectedRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/delivery/delivered"
+          element={
+            <ProtectedRoute isAuth={isAuthenticated}>
+              <RoleProtectedRoute allowedRoles={["deliveryboy", "admin"]}>
+                <DeliveredOrdersPage />
               </RoleProtectedRoute>
             </ProtectedRoute>
           }
